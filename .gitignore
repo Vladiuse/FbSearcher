@@ -1,0 +1,6 @@
+venv
+searcher/chromedriver
+*.pyc
+*.sqlite3
+secrets.json
+media
