@@ -3,17 +3,23 @@ from .models import FbGroup
 from urllib.parse import urlparse
 
 
+def clean_fb_group_url(url):
+    url = urlparse(url).path
+    if url.startswith('/'):
+        url = url[1:]
+    if url.endswith('/'):
+        url =url[:-1]
+    return url
+
+
 class FbGroupSerializer(serializers.ModelSerializer):
     class Meta:
         model = FbGroup
         fields = '__all__'
 
     def to_internal_value(self, data):
-        data['id'] = urlparse(data['raw_url']).path
-        if data['id'].startswith('/'):
-            data['id'] = data['id'][1:]
-        if data['id'].endswith('/'):
-            data['id'] = data['id'][:-1]
+        url = data['raw_url']
+        data['id'] = clean_fb_group_url(url)
         return super().to_internal_value(data)
 
     def validate_raw_url(self, value):
