@@ -24,12 +24,15 @@ class FbGroup(models.Model):
         blank=True,
     )
     raw_url = models.URLField()
+    created = models.DateTimeField(
+        auto_now_add=True,
+    )
 
 
 class FbLibAd(models.Model):
     AD_STATUS = (
-        ('1', 'Активна'),
-        ('0', 'Не активна'),
+        ('1', 'Активно'),
+        ('0', 'Не активно'),
     )
     group = models.ForeignKey(
         to=FbGroup,
@@ -45,6 +48,9 @@ class FbLibAd(models.Model):
     status = models.CharField(
         max_length=1,
         choices=AD_STATUS,
+    )
+    last_update = models.DateTimeField(
+        auto_now=True,
     )
     created = models.DateTimeField(
         auto_now_add=True,

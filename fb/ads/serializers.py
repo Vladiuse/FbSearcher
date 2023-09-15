@@ -19,12 +19,28 @@ class FbLibAdSerializer(serializers.ModelSerializer):
         extra_kwargs = {
             'created': {'read_only': True,},
         }
+
+
+    def create(self, validated_data):
+        ad_data = validated_data['ad']
+        fb_group = FbGroupSerializer(data=validated_data)
+        fb_group.is_valid(raise_exception=True)
+        fb_group.save()
+        ad = FbLibAd.objects.get_or_update(**ad_data)
+        return ad
+
+
+
 class FbGroupSerializer(serializers.ModelSerializer):
-    ads = FbLibAdSerializer(many=True)
 
     class Meta:
         model = FbGroup
         fields = '__all__'
+
+    def create(self, validated_data):
+        obj, created = FbGroup.objects.get_or_create(**validated_data)
+        return obj
+
 
     def to_internal_value(self, data):
         url = data['raw_url']
