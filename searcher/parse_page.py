@@ -34,6 +34,15 @@ class Card:
             except KeyError:
                 return ''
         return ''
+    @property
+    def ads_id(self):
+        info_block = self.soup.find('div', {'class': 'xeuugli x2lwn1j x1cy8zhl x78zum5 x1qughib xh8yej3 xxx'})
+        lines = info_block.find_all('div', {'class': 'x3nfvp2 x1e56ztr'})
+        if lines:
+            id_block = lines[0]
+            if 'Библиотеки' in id_block.text:
+                return ''.join(filter(lambda char:char.isdigit(), id_block.text))
+        return ''
 
     @property
     def ads_time(self):
@@ -52,6 +61,7 @@ class Card:
 
     def print(self):
         print('\n[Card] ******************')
+        print('ID Библиотеки:', self.ads_id)
         print('Status:', self.status)
         print('Org:', self.org_name)
         print('Link:', self.org_link)
@@ -104,3 +114,6 @@ if __name__ == '__main__':
     find = searcher()
     cards = Cards()
     cards.extend(find)
+    for c in cards:
+        c.print()
+    print(len(cards))
