@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import FbGroup
+from .models import FbGroup, FbLibAd
 from urllib.parse import urlparse
 
 
@@ -11,8 +11,17 @@ def clean_fb_group_url(url):
         url =url[:-1]
     return url
 
+class FbLibAdSerializer(serializers.ModelSerializer):
 
+    class Meta:
+        model = FbLibAd
+        fields = '__all__'
+        extra_kwargs = {
+            'created': {'read_only': True,},
+        }
 class FbGroupSerializer(serializers.ModelSerializer):
+    ads = FbLibAdSerializer(many=True)
+
     class Meta:
         model = FbGroup
         fields = '__all__'
@@ -35,3 +44,6 @@ class FbGroupSerializer(serializers.ModelSerializer):
 
     def validate_email(self, value):
         return value.strip()
+
+
+
