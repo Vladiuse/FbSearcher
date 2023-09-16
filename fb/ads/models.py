@@ -98,16 +98,18 @@ class FbLibAd(models.Model):
 
 
     @staticmethod
-    def get_or_create(*,group, id, **kwargs):
+    def create_or_update(*, group, id, **kwargs):
         try:
-            group = FbLibAd.objects.get(group=group, id=id)
+            ad = FbLibAd.objects.get(group=group, id=id)
             created = False
-            group(**kwargs)
-            group.full_clean()
-            group.save()
+            # update
+            ad.status = kwargs.get('status', ad.status)
+            ad.time_text = kwargs.get('time_text', ad.time_text)
+            ad.full_clean()
+            ad.save()
         except FbLibAd.DoesNotExist:
-            group = FbLibAd(group=group, id=id,  **kwargs)
-            group.full_clean()
-            group.save()
+            ad = FbLibAd(group=group, id=id,  **kwargs)
+            ad.full_clean()
+            ad.save()
             created = True
-        return group, created
+        return ad, created
