@@ -131,7 +131,7 @@ element.classList.add('xxx')
 
 if __name__ == '__main__':
     cards = Cards()
-    fb_page = LibraryPage(q='текст')
+    fb_page = LibraryPage(q='дом')
     fb_page.open()
     for page in fb_page:
         card_searcher = CardSearch(page)

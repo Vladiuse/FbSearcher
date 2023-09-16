@@ -1,17 +1,31 @@
 from django.db import models
+from urllib.parse import urlparse
+from django.core.validators import RegexValidator
+from django.core.exceptions import ValidationError
+import re
 
 def clean_fb_group_url(url):
-    pass
+    url = urlparse(url).path
+    if url.startswith('/'):
+        url = url[1:]
+    if url.endswith('/'):
+        url = url[:-1]
+    return url
+
+def replace_http(url):
+    return url.replace('http://', 'https://')
 
 
 
 class FbGroup(models.Model):
+    FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
 
     GROUP_DOMAIN = 'facebook.com'
 
-    id = models.CharField(
+    group_id = models.CharField(
         max_length=255,
-        primary_key=True,)
+        primary_key=True,
+    )
     name = models.CharField(
         max_length=255,
         blank=True,
@@ -23,16 +37,42 @@ class FbGroup(models.Model):
         max_length=255,
         blank=True,
     )
-    raw_url = models.URLField()
+    url = models.URLField(
+        validators=[RegexValidator(regex=r'http[s]?://facebook.com/..{0,100}'),],
+        unique=True,
+    )
     created = models.DateTimeField(
         auto_now_add=True,
     )
 
+    @staticmethod
+    def get_or_create(url):
+        if not re.match(FbGroup.FB_GROUP_PATTERN, url):
+            raise ValidationError(message='Incorrect fb group url')
+        url = replace_http(url)
+        group_id = clean_fb_group_url(url)
+        try:
+            group = FbGroup.objects.get(group_id=group_id, url=url)
+            created = False
+        except FbGroup.DoesNotExist:
+            group = FbGroup(group_id=group_id, url=url)
+            group.full_clean()
+            group.save()
+            created = True
+        return group, created
+
+
+
 
 class FbLibAd(models.Model):
+    ACTIVE = 'Активно'
+    NOT_ACTIVE = 'Не активно'
+
+    ACTIVE_CODE = '1'
+    NOT_ACTIVE_CODE = '0'
     AD_STATUS = (
-        ('1', 'Активно'),
-        ('0', 'Не активно'),
+        (ACTIVE_CODE, ACTIVE),
+        (NOT_ACTIVE_CODE, NOT_ACTIVE),
     )
     group = models.ForeignKey(
         to=FbGroup,
@@ -56,3 +96,18 @@ class FbLibAd(models.Model):
         auto_now_add=True,
     )
 
+
+    @staticmethod
+    def get_or_create(*,group, id, **kwargs):
+        try:
+            group = FbLibAd.objects.get(group=group, id=id)
+            created = False
+            group(**kwargs)
+            group.full_clean()
+            group.save()
+        except FbLibAd.DoesNotExist:
+            group = FbLibAd(group=group, id=id,  **kwargs)
+            group.full_clean()
+            group.save()
+            created = True
+        return group, created

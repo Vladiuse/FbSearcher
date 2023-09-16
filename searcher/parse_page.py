@@ -37,11 +37,12 @@ class Card:
     @property
     def ads_id(self):
         info_block = self.soup.find('div', {'class': 'xeuugli x2lwn1j x1cy8zhl x78zum5 x1qughib xh8yej3 xxx'})
-        lines = info_block.find_all('div', {'class': 'x3nfvp2 x1e56ztr'})
-        if lines:
-            id_block = lines[0]
-            if 'Библиотеки' in id_block.text:
-                return ''.join(filter(lambda char:char.isdigit(), id_block.text))
+        if info_block:
+            lines = info_block.find_all('div', {'class': 'x3nfvp2 x1e56ztr'})
+            if lines:
+                id_block = lines[0]
+                if 'Библиотеки' in id_block.text:
+                    return ''.join(filter(lambda char:char.isdigit(), id_block.text))
         return ''
 
     @property
