@@ -37,10 +37,10 @@ class FbGroup(models.Model):
         max_length=255,
         blank=True,
     )
-    url = models.URLField(
-        validators=[RegexValidator(regex=r'http[s]?://facebook.com/..{0,100}'),],
-        unique=True,
-    )
+    # url = models.URLField(
+    #     validators=[RegexValidator(regex=r'http[s]?://facebook.com/..{0,100}'),],
+    #     unique=True,
+    # )
     created = models.DateTimeField(
         auto_now_add=True,
     )
@@ -49,13 +49,13 @@ class FbGroup(models.Model):
     def get_or_create(url):
         if not re.match(FbGroup.FB_GROUP_PATTERN, url):
             raise ValidationError(message='Incorrect fb group url')
-        url = replace_http(url)
+        # url = replace_http(url)
         group_id = clean_fb_group_url(url)
         try:
-            group = FbGroup.objects.get(group_id=group_id, url=url)
+            group = FbGroup.objects.get(group_id=group_id,)
             created = False
         except FbGroup.DoesNotExist:
-            group = FbGroup(group_id=group_id, url=url)
+            group = FbGroup(group_id=group_id,)
             group.full_clean()
             group.save()
             created = True

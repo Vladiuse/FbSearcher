@@ -6,7 +6,7 @@ from django.core.exceptions import ValidationError
 class FbLibAdModelTest(TestCase):
 
     def test_correct_data_active(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1)
         ad, created = FbLibAd.create_or_update(
             group=group,
             id='1307028233146913',
@@ -17,7 +17,7 @@ class FbLibAdModelTest(TestCase):
         self.assertEqual(group.ads.count(),1)
 
     def test_correct_data_not_active(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1,)
         ad, created = FbLibAd.create_or_update(
             group=group,
             id='1307028233146913',
@@ -28,7 +28,7 @@ class FbLibAdModelTest(TestCase):
         self.assertEqual(group.ads.count(),1)
 
     def test_not_valid_ads_id(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1,)
         with self.assertRaises(ValueError):
             ad, created = FbLibAd.create_or_update(
                 group=group,
@@ -40,7 +40,7 @@ class FbLibAdModelTest(TestCase):
             self.assertEqual(group.ads.count(),1)
 
     def test_not_valid_status(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1,)
         with self.assertRaises(ValidationError):
             ad, created = FbLibAd.create_or_update(
                 group=group,
@@ -52,7 +52,7 @@ class FbLibAdModelTest(TestCase):
             self.assertEqual(group.ads.count(),1)
 
     def test_alredy_exists(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1)
         ad = FbLibAd.objects.create(group=group, status=FbLibAd.ACTIVE_CODE,id='1307028233146913', time_text='Показ начат 22 дек 2021 г.')
         self.assertEqual(FbLibAd.objects.count(), 1)
         self.assertEqual(FbGroup.objects.count(), 1)
@@ -65,7 +65,7 @@ class FbLibAdModelTest(TestCase):
 
 
     def test_update_status_valid(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1,)
         ad = FbLibAd.objects.create(group=group, status=FbLibAd.ACTIVE_CODE,id='1307028233146913', time_text='Показ начат 22 дек 2021 г.')
         self.assertEqual(FbLibAd.objects.count(), 1)
         self.assertEqual(FbGroup.objects.count(), 1)
@@ -78,7 +78,7 @@ class FbLibAdModelTest(TestCase):
         self.assertEqual(ad.status, FbLibAd.NOT_ACTIVE_CODE)
 
     def test_update_status_in_valid(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1,)
         ad = FbLibAd.objects.create(group=group, status=FbLibAd.ACTIVE_CODE,id='1307028233146913', time_text='Показ начат 22 дек 2021 г.')
         self.assertEqual(FbLibAd.objects.count(), 1)
         self.assertEqual(FbGroup.objects.count(), 1)
@@ -91,7 +91,7 @@ class FbLibAdModelTest(TestCase):
 
 
     def test_update_time_text_valid(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1,)
         ad = FbLibAd.objects.create(group=group, status=FbLibAd.ACTIVE_CODE,id='1307028233146913', time_text='Показ начат 22 дек 2021 г.')
         self.assertEqual(FbLibAd.objects.count(), 1)
         self.assertEqual(FbGroup.objects.count(), 1)
@@ -104,7 +104,7 @@ class FbLibAdModelTest(TestCase):
         self.assertEqual(ad.time_text, 'New')
 
     def test_update_time_text_blank(self):
-        group = FbGroup.objects.create(group_id=1, url='123')
+        group = FbGroup.objects.create(group_id=1,)
         ad = FbLibAd.objects.create(group=group, status=FbLibAd.ACTIVE_CODE,id='1307028233146913', time_text='Показ начат 22 дек 2021 г.')
         self.assertEqual(FbLibAd.objects.count(), 1)
         self.assertEqual(FbGroup.objects.count(), 1)
