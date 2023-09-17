@@ -6,12 +6,6 @@ import re
 from django.utils import timezone
 
 
-
-def replace_http(url):
-    return url.replace('http://', 'https://')
-
-
-
 class FbGroup(models.Model):
     FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
 
@@ -49,6 +43,9 @@ class FbGroup(models.Model):
         if url.endswith('/'):
             url = url[:-1]
         return url
+
+    # @staticmethod
+    # def create_from_url():
 #
 # class FbLibAd(models.Model):
 #     ACTIVE = 'Активно'

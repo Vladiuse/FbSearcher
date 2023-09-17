@@ -50,7 +50,7 @@ class FbGroupSerializerTest(TestCase):
         }
         serializer = FbGroupCreateSerializer(data=data)
         serializer.is_valid(raise_exception=True)
-        group = serializer.save()
+        group, created = serializer.save()
         self.assertEqual(group.group_id, '123')
         self.assertEqual(group.last_ad_date, timezone.now().date())
 

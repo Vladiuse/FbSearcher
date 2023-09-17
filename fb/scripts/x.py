@@ -17,3 +17,5 @@ id = clean_fb_group_url(url)
 # group.save()
 group, created = FbGroup.objects.create_or_update(id=id, raw_url=url)
 print(group.pk, group.url)
+
+[{'group_url': 'https://facebook.com/123/'},{'group_url': 'https://facebook.com/1/'},{'group_url': 'https://facebook.com/2/'}]

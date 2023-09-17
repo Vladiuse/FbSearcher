@@ -16,4 +16,4 @@ class FbGroupCreateSerializer(serializers.Serializer):
             group_id=group_id,
             defaults={'last_ad_date': timezone.now().date()},
         )
-        return group
+        return group, created

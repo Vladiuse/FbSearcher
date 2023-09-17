@@ -8,5 +8,5 @@ from . import views
 
 urlpatterns = [
     # path('', include(router.urls)),
-    # path('group_list',  views.FbGroupMAssCreateView.as_view(), name='group-list')
+    path('groups_update/',  views.FbGroupUpdateOrCreateView.as_view(), name='group-update-list')
 ]
