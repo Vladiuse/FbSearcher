@@ -17,7 +17,7 @@ class MaxWaitNewPageTimeError(Exception):
 class LibraryPage:
     URL_PARAMS = {'active_status': 'active',
                   'ad_type': 'all',
-                  'country': 'BY',
+                  'country': None,
                   'q': None,
                   'sort_data[direction]': 'desc',
                   'sort_data[mode]': 'relevancy_monthly_grouped',
@@ -27,7 +27,7 @@ class LibraryPage:
                   'start_date[max]': '',
                   'publisher_platforms[0]': 'facebook',
                   }
-
+    FB_LIB_URL = 'https://www.facebook.com/ads/library/'
     WINDOW_SIZE = (1200, 800)
     CARDS_LOAD_COUNT = 30
     SLEEP_AFTER_SET_FILTER = 5
@@ -36,10 +36,10 @@ class LibraryPage:
 
     BLOCK_CLASS_NAME = 'xxx'
 
-    def __init__(self, *, q, start_date):
+    def __init__(self, *, q, start_date, country):
         self.q = q
         self.start_date = start_date
-        self._url = 'https://www.facebook.com/ads/library/'
+        self.country = country
         self.browser = webdriver.Chrome()
         self.browser.set_window_size(*LibraryPage.WINDOW_SIZE)
         self.page_height = 0
@@ -57,12 +57,13 @@ class LibraryPage:
     def _get_params(self):
         params = self.URL_PARAMS
         params['q'] = self.q
+        params['country'] = self.country
         params['start_date[min]'] = self.start_date
         return params
 
     def _prepare_url(self):
         prepare = PreparedRequest()
-        prepare.prepare_url(self._url, self._get_params())
+        prepare.prepare_url(self.FB_LIB_URL, self._get_params())
         return prepare.url
 
     @property
@@ -139,12 +140,12 @@ element.classList.add('xxx')
 
 
 if __name__ == '__main__':
-    KEY_WORDS = ['косметика', 'еда', 'животные', 'дом', 'стройка', 'игрушки', 'развлечения', 'отдых', 'вечеринки',
+    KEY_WORDS_RU = ['косметика', 'еда', 'животные', 'дом', 'стройка', 'игрушки', 'развлечения', 'отдых', 'вечеринки',
                  'ресторан', 'спорт', 'юрист', 'репетитор', ]
     cards = Cards()
-    for key_word in KEY_WORDS:
+    for key_word in KEY_WORDS_RU:
         try:
-            fb_page = LibraryPage(q=key_word, start_date='2023-09-10')
+            fb_page = LibraryPage(q=key_word, start_date='2023-09-10', country='BY')
             fb_page.open()
             for page in fb_page:
                 card_searcher = CardSearch(page)

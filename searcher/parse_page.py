@@ -97,25 +97,28 @@ class Cards:
     def __getitem__(self, i):
         return self.cards[i]
 
-    def extend(self, seq):
+    def extend(self, seq, log=False):
         self.cards.extend(seq)
-        print(f'Добавлено в колекцию: {len(seq)}/{len(self)}')
+        if log:
+            print(f'Добавлено в колекцию: {len(seq)}/{len(self)}')
 
     def __len__(self):
         return len(self.cards)
 
-    def send_to_db(self, clean_after=True):
+    def send_to_db(self, clean_after=True, log=False):
         unique_group_urs  = set(card.org_link for card in self)
         group_urls = [{'group_url': group_url} for group_url in unique_group_urs]
-        print('\n*** Отправка в БД ***')
-        print(f'Уникальных: {len(unique_group_urs)} из {len(self)}')
         data = {
             'group_urls': group_urls,
         }
         res = req.post(self.API_COLLECTOR_URL, json=data)
-        print('RES:', res.status_code)
-        print(res.json())
-        self.cards.clear()
+        if clean_after:
+            self.cards.clear()
+        if log:
+            print('\n*** Отправка в БД ***')
+            print(f'Уникальных: {len(unique_group_urs)} из {len(self)}')
+            print('RES:', res.status_code)
+            print(res.json())
 
 
 
