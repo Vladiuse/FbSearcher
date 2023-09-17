@@ -1,3 +1,4 @@
+import requests as req
 from bs4 import BeautifulSoup
 
 class Card:
@@ -75,7 +76,7 @@ class CardSearch:
 
 
     def __call__(self):
-        block_class = 'xx'
+        block_class = 'xxx'
         cards = self.soup.select(f'div.xrvj5dj.xdq2opy.xexx8yu.xbxaen2.x18d9i69.xbbxn1n.xdoe023.xbumo9q.x143o31f.x7sq92a.x1crum5w > div.xh8yej3:not(.{block_class})')
         cards_class = []
         for card_soup in cards:
@@ -86,6 +87,8 @@ class CardSearch:
 
 
 class Cards:
+
+    API_COLLECTOR_URL = 'http://127.0.0.1:8000/ads/groups_update/'
 
     def __init__(self):
         self.cards = []
@@ -100,6 +103,21 @@ class Cards:
 
     def __len__(self):
         return len(self.cards)
+
+    def send_to_db(self, clean_after=True):
+        unique_group_urs  = set(card.org_link for card in self)
+        group_urls = [{'group_url': group_url} for group_url in unique_group_urs]
+        print('\n*** Отправка в БД ***')
+        print(f'Уникальных: {len(unique_group_urs)} из {len(self)}')
+        data = {
+            'group_urls': group_urls,
+        }
+        res = req.post(self.API_COLLECTOR_URL, json=data)
+        print('RES:', res.status_code)
+        print(res.json())
+        self.cards.clear()
+
+
 
 
 if __name__ == '__main__':

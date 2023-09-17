@@ -9,33 +9,39 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from parse_page import CardSearch, Cards
 
+
 class MaxWaitNewPageTimeError(Exception):
     """превышено время одидания новой страницы"""
 
+
 class LibraryPage:
-    URL_PARAMS = {'active_status': 'all',
+    URL_PARAMS = {'active_status': 'active',
                   'ad_type': 'all',
                   'country': 'BY',
                   'q': None,
                   'sort_data[direction]': 'desc',
                   'sort_data[mode]': 'relevancy_monthly_grouped',
                   'search_type': 'keyword_unordered',
-                  'media_type': 'all'}
+                  'media_type': 'all',
+                  'start_date[min]': None,
+                  'start_date[max]': '',
+                  'publisher_platforms[0]': 'facebook',
+                  }
 
-    WINDOW_SIZE = (1200,800)
+    WINDOW_SIZE = (1200, 800)
     CARDS_LOAD_COUNT = 30
-    SLEEP_AFTER_SET_FILTER = 2
-    WAIT_AFTER_PAGE_DOWN = 10
+    SLEEP_AFTER_SET_FILTER = 5
     MAX_WAIT_TIME_NEW_PAGE = 30
     TIME_FOR_CARDS_LOADING = 5
 
     BLOCK_CLASS_NAME = 'xxx'
 
-    def __init__(self,q):
+    def __init__(self, *, q, start_date):
+        self.q = q
+        self.start_date = start_date
         self._url = 'https://www.facebook.com/ads/library/'
         self.browser = webdriver.Chrome()
         self.browser.set_window_size(*LibraryPage.WINDOW_SIZE)
-        self.q = q
         self.page_height = 0
         # self.no_height_change_count = 0
         self.current_page = 0
@@ -45,9 +51,13 @@ class LibraryPage:
         self.i = 1
         return self
 
+    def close(self):
+        self.browser.close()
+
     def _get_params(self):
         params = self.URL_PARAMS
         params['q'] = self.q
+        params['start_date[min]'] = self.start_date
         return params
 
     def _prepare_url(self):
@@ -61,7 +71,7 @@ class LibraryPage:
 
     def open(self):
         self.browser.get(self.url)
-        self.set_filters()
+        # self.set_filters()
         sleep(self.SLEEP_AFTER_SET_FILTER)
         self._get_pages_count()
 
@@ -92,7 +102,6 @@ class LibraryPage:
             sleep(1)
         return self.get_html()
 
-
     def _mark_cards_as_loaded(self):
         script = """
 cards = document.querySelectorAll('.xh8yej3:not(.xxx)')
@@ -101,7 +110,6 @@ element.classList.add('xxx')
 });
         """
         self.browser.execute_script(script)
-
 
     def _press_down_key(self):
         self.browser.find_element(By.CSS_SELECTOR, 'body').send_keys(Keys.END)
@@ -117,7 +125,7 @@ element.classList.add('xxx')
     def _get_count_of_adds(self):
         block = self.browser.find_element(By.CSS_SELECTOR, 'div.xdbano7')
         block_w_text = block.find_element(By.CSS_SELECTOR, 'div.x8t9es0.x1uxerd5.xrohxju')
-        cards_count = ''.join(filter(lambda x: x.isdigit(),block_w_text.text))
+        cards_count = ''.join(filter(lambda x: x.isdigit(), block_w_text.text))
         return cards_count
 
     def _get_pages_count(self):
@@ -129,15 +137,20 @@ element.classList.add('xxx')
         except ValueError:
             self.pages_count = 'Неопределено'
 
+
 if __name__ == '__main__':
+    KEY_WORDS = ['косметика', 'еда', 'животные', 'дом', 'стройка', 'игрушки', 'развлечения', 'отдых', 'вечеринки',
+                 'ресторан', 'спорт', 'юрист', 'репетитор', ]
     cards = Cards()
-    fb_page = LibraryPage(q='дом')
-    fb_page.open()
-    for page in fb_page:
-        card_searcher = CardSearch(page)
-        find_cards = card_searcher()
-        cards.extend(find_cards)
-    for i in cards:
-        print(i.print())
-        break
-    print('Карточек найдено', len(cards))
+    for key_word in KEY_WORDS:
+        try:
+            fb_page = LibraryPage(q=key_word, start_date='2023-09-10')
+            fb_page.open()
+            for page in fb_page:
+                card_searcher = CardSearch(page)
+                find_cards = card_searcher()
+                cards.extend(find_cards)
+                cards.send_to_db()
+            fb_page.close()
+        except Exception as error:
+            print(key_word, 'ERROR', error)
