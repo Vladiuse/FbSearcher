@@ -7,14 +7,14 @@ from time import sleep
 from time import time
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
-from parse_page import CardSearch, Cards
+from .cards_class import CardSearch, Cards
 
 
 class MaxWaitNewPageTimeError(Exception):
     """превышено время одидания новой страницы"""
 
 
-class LibraryPage:
+class FbLibPage:
     URL_PARAMS = {'active_status': 'active',
                   'ad_type': 'all',
                   'country': None,
@@ -30,10 +30,10 @@ class LibraryPage:
     FB_LIB_URL = 'https://www.facebook.com/ads/library/'
     WINDOW_SIZE = (1200, 800)
     CARDS_LOAD_COUNT = 30
-    SLEEP_AFTER_SET_FILTER = 5
-    MAX_WAIT_TIME_NEW_PAGE = 30
-    TIME_FOR_CARDS_LOADING = 5
-
+    WAIT_AFTER_LOADING = 5
+    MAX_WAIT_TIME_NEW_PAGE = 20
+    TIME_FOR_CARDS_LOADING = 3
+    MAX_PAGE_ITERATION = 30
     BLOCK_CLASS_NAME = 'xxx'
 
     def __init__(self, *, q, start_date, country):
@@ -41,7 +41,7 @@ class LibraryPage:
         self.start_date = start_date
         self.country = country
         self.browser = webdriver.Chrome()
-        self.browser.set_window_size(*LibraryPage.WINDOW_SIZE)
+        self.browser.set_window_size(*FbLibPage.WINDOW_SIZE)
         self.page_height = 0
         # self.no_height_change_count = 0
         self.current_page = 0
@@ -72,8 +72,7 @@ class LibraryPage:
 
     def open(self):
         self.browser.get(self.url)
-        # self.set_filters()
-        sleep(self.SLEEP_AFTER_SET_FILTER)
+        sleep(self.WAIT_AFTER_LOADING)
         self._get_pages_count()
 
     def get_html(self):
@@ -84,6 +83,8 @@ class LibraryPage:
 
     def __next__(self):
         self.current_page += 1
+        if self.current_page >= self.MAX_PAGE_ITERATION:
+            raise StopIteration
         print(f'Страница {self.current_page} из ~{self.pages_count}')
         if self.current_page == 1:
             return self.get_html()
@@ -97,11 +98,13 @@ class LibraryPage:
                 break
             else:
                 if time() - start > self.MAX_WAIT_TIME_NEW_PAGE:
-                    with open('fb_site_example/index.html', 'w') as file:
-                        file.write(self.get_html())
                     raise StopIteration
             sleep(1)
         return self.get_html()
+
+    def destroy_old_cards(self):
+        pass
+    # TODO
 
     def _mark_cards_as_loaded(self):
         script = """
@@ -147,7 +150,7 @@ if __name__ == '__main__':
     cards = Cards()
     for key_word in KEY_WORDS_RU:
         try:
-            fb_page = LibraryPage(q=key_word, start_date='2023-09-10', country='BY')
+            fb_page = FbLibPage(q=key_word, start_date='2023-09-10', country='BY')
             fb_page.open()
             for page in fb_page:
                 card_searcher = CardSearch(page)
