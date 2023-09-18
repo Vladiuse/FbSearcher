@@ -6,16 +6,24 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 import re
 from django.utils import timezone
-from .fb_group_page import FbGroupPage
+from parsers  import FbGroupPage
 import requests as req
 from django.core.files.base import ContentFile
 from io import StringIO
 from django.db.models import Q
+import http.cookiejar
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
     'Accept-Language': 'en-US,en;q=0.5'
 }
+
+
+def load_netscape_cookies(cookie_file):
+    jar = http.cookiejar.MozillaCookieJar(cookie_file)
+    jar.load()
+    return jar
 
 class KeyWord(models.Model):
     word = models.CharField(
@@ -109,9 +117,9 @@ class FbGroup(models.Model):
     def url(self):
         return f'https://facebook.com/{self.pk}/'
 
-    def get_group_req_html(self, log_html_data=False) ->str:
+    def get_group_req_html(self, cookies_path,log_html_data=True, ) ->str:
         """Получить исходный код страницы группы"""
-        res = req.get(self.url, headers=headers)
+        res = req.get(self.url, headers=headers, cookies=load_netscape_cookies(cookies_path))
         if res.status_code == 200:
             if log_html_data:
                 self.log_html_source_file(html=res.text)
@@ -121,19 +129,20 @@ class FbGroup(models.Model):
             return ''
 
     def log_html_source_file(self, html):
-        if os.path.exists(self.req_html_data.path):
-            os.remove(self.req_html_data.path)
+        if self.req_html_data:
+            if os.path.exists(self.req_html_data.path):
+                os.remove(self.req_html_data.path)
         file = ContentFile(html)
         self.req_html_data.save(f'{self.pk}.html', file)
 
-    def update_group_info(self):
-        html = self.get_group_req_html()
+    def update_group_info(self, cookies_path):
+        html = self.get_group_req_html(cookies_path)
         if html:
             page = FbGroupPage(html)
 
             if page.is_login_form:
                 self.status = self.NEED_LOGIN
-                print('NED_LOGIN', self)
+                print('NEED_LOGIN', self)
             else:
                 page()
                 self.email = page.result.pop('group_email', self.email)
@@ -151,68 +160,3 @@ class FbGroup(models.Model):
         print('Not loaded:', FbGroup.not_loaded_objects.count())
 
 
-    # def get_page_data(self):
-    #     try:
-    #         with open(self.req_html_data.path) as file:
-    #             html = file.read()
-    #         page = FbGroupPage(html)
-    #         page()
-    #         print(page.result)
-    #         self.email = page.result.pop('group_email', self.email)
-    #         self.name = page.result.pop('group_name', self.name)
-    #         self.save()
-    #     except Exception as error:
-    #         print(error)
-
-    # @staticmethod
-    # def create_from_url():
-#
-# class FbLibAd(models.Model):
-#     ACTIVE = 'Активно'
-#     NOT_ACTIVE = 'Не активно'
-#
-#     ACTIVE_CODE = '1'
-#     NOT_ACTIVE_CODE = '0'
-#     AD_STATUS = (
-#         (ACTIVE_CODE, ACTIVE),
-#         (NOT_ACTIVE_CODE, NOT_ACTIVE),
-#     )
-#     group = models.ForeignKey(
-#         to=FbGroup,
-#         on_delete=models.CASCADE,
-#         related_name='ads',
-#     )
-#     id = models.BigIntegerField(
-#         primary_key=True,
-#     )
-#     time_text = models.CharField(
-#         max_length=255,
-#     )
-#     status = models.CharField(
-#         max_length=1,
-#         choices=AD_STATUS,
-#     )
-#     last_update = models.DateTimeField(
-#         auto_now=True,
-#     )
-#     created = models.DateTimeField(
-#         auto_now_add=True,
-#     )
-#
-#
-#     @staticmethod
-#     def create_or_update(*, group, id, **kwargs):
-#         try:
-#             ad = FbLibAd.objects.get(group=group, id=id)
-#             created = False
-#             # update
-#             ad.status = kwargs.get('status', ad.status)
-#             ad.time_text = kwargs.get('time_text', ad.time_text)
-#             ad.full_clean()
-#             ad.save()
-#         except FbLibAd.DoesNotExist:
-#             ad = FbLibAd(group=group, id=id,  **kwargs)
-#             ad.full_clean()
-#             ad.save()
-#             created = True
-#         return ad, created

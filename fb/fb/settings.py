@@ -46,6 +46,7 @@ INSTALLED_APPS = [
 
     'ads.apps.AdsConfig',
     'accounts.apps.AccountsConfig',
+    'proxies.apps.ProxiesConfig',
 ]
 
 MIDDLEWARE = [
