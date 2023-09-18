@@ -4,9 +4,34 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 import re
 from django.utils import timezone
+from .fb_group_page import FbGroupPage
+import requests as req
+from django.core.files.base import ContentFile
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'en-US,en;q=0.5'
+}
+
+
+class FullFbGroupManager(models.Manager):
+
+    def get_queryset(self):
+        qs = FbGroup.objects.exclude(email='', name='')
+        return qs
+
+
+class EmptyGroupManager(models.Manager):
+
+    def get_queryset(self):
+        qs = FbGroup.objects.filter(email='', name='')
+        return qs
 
 
 class FbGroup(models.Model):
+    objects = models.Manager()
+    full_objects = FullFbGroupManager()
+    empty_objects = EmptyGroupManager()
     FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
 
     GROUP_DOMAIN = 'facebook.com'
@@ -26,14 +51,22 @@ class FbGroup(models.Model):
         max_length=255,
         blank=True,
     )
-    # url = models.URLField(
-    #     validators=[RegexValidator(regex=r'http[s]?://facebook.com/..{0,100}'),],
-    #     unique=True,
-    # )
+
     created = models.DateField(
         auto_now_add=True,
     )
     last_ad_date = models.DateField(default=timezone.now)
+    req_html_data = models.FileField(upload_to='req_html_data', blank=True)
+
+
+    def __str__(self):
+        return f'<FbGroup> {self.url}'
+
+    def get_req_html_data(self):
+        res = req.get(self.url, headers=headers)
+        if res.status_code == 200:
+            file = ContentFile(str(res.content))
+            self.req_html_data.save('test.html',file)
 
     @staticmethod
     def fb_group_url_to_id(url):
@@ -43,6 +76,21 @@ class FbGroup(models.Model):
         if url.endswith('/'):
             url = url[:-1]
         return url
+
+    @property
+    def url(self):
+        return f'https://facebook.com/{self.pk}/'
+
+    def get_page_data(self):
+        try:
+            page = FbGroupPage(self.url)
+            page()
+            print(page.result)
+            self.email = page.result.pop('group_email', self.email)
+            self.name = page.result.pop('group_name', self.name)
+            self.save()
+        except Exception as error:
+            print(error)
 
     # @staticmethod
     # def create_from_url():
