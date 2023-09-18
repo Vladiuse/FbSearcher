@@ -4,3 +4,4 @@ searcher/chromedriver
 *.sqlite3
 secrets.json
 media
+fb/scripts
