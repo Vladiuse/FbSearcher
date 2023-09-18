@@ -1,21 +1,15 @@
-from ads.models import FbGroup, clean_fb_group_url, replace_http
-from ads.serializers import FbGroupSerializer , FbLibAdCreateSerializer
+from ads.models import FbGroup
+from ads.fb_group_page import FbGroupPage
 
-FbGroup.objects.all().delete()
-data = {'group_url': 'https://facebook.com/123/',
-        'id': '859762788802222',
-        'name': 'All Language Translator',
-        'time_text': 'Показ начат 23 ноя 2022 г.',
-        'status': 'Активно',
-        }
+# for num,group in enumerate(FbGroup.objects.all()):
+#     print(num, group)
+#     group.get_req_html_data()
 
-url = 'https://x.facebook.com/1235'
-url = replace_http(url)
-id = clean_fb_group_url(url)
-# group = FbGroup(id=id, raw_url=url)
-# group.full_clean()
-# group.save()
-group, created = FbGroup.objects.create_or_update(id=id, raw_url=url)
-print(group.pk, group.url)
-
-[{'group_url': 'https://facebook.com/123/'},{'group_url': 'https://facebook.com/1/'},{'group_url': 'https://facebook.com/2/'}]
+for group in FbGroup.objects.all():
+    with open(group.req_html_data.path) as file:
+        html = file.read()
+    page = FbGroupPage(html)
+    page()
+    res = page.result
+    if page.is_login_form:
+        print(group, page.group_name, page.group_email)
