@@ -30,10 +30,12 @@ class FbLibPage:
     FB_LIB_URL = 'https://www.facebook.com/ads/library/'
     WINDOW_SIZE = (1200, 800)
     CARDS_LOAD_COUNT = 30
+
+
     WAIT_AFTER_LOADING = 5
     MAX_WAIT_TIME_NEW_PAGE = 20
     TIME_FOR_CARDS_LOADING = 3
-    MAX_PAGE_ITERATION = 30
+    MAX_PAGE_ITERATION = 15
     BLOCK_CLASS_NAME = 'xxx'
 
     def __init__(self, *, q, start_date, country):

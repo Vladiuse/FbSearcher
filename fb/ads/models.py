@@ -26,6 +26,10 @@ class KeyWord(models.Model):
     def __str__(self):
         return self.word
 
+class ActualGroupManager(models.Manager):
+    def get_queryset(self):
+        qs = FbGroup.objects.exclude(Q(email='') |Q(name='')).filter(last_ad_date=timezone.now().date())
+        return qs
 
 class FullFbGroupManager(models.Manager):
 
@@ -39,6 +43,7 @@ class EmptyGroupManager(models.Manager):
     def get_queryset(self):
         qs = FbGroup.objects.filter(email='', name='')
         return qs
+
 class NotLoadedGroupManager(models.Manager):
     def get_queryset(self):
         qs = FbGroup.objects.filter(status=FbGroup.NOT_LOADED)
@@ -49,11 +54,12 @@ class FbGroup(models.Model):
     full_objects = FullFbGroupManager()
     empty_objects = EmptyGroupManager()
     not_loaded_objects = NotLoadedGroupManager()
+    actual_objects = ActualGroupManager()
 
     FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
 
     NOT_LOADED = 'not_loaded'
-    NEED_LOGIN = 'not_loaded'
+    NEED_LOGIN = 'need_login'
     COLLECTED = 'collected'
     STATUSES = (
         (NOT_LOADED, 'Не загружен'),
@@ -127,12 +133,23 @@ class FbGroup(models.Model):
 
             if page.is_login_form:
                 self.status = self.NEED_LOGIN
+                print('NED_LOGIN', self)
             else:
                 page()
                 self.email = page.result.pop('group_email', self.email)
                 self.name = page.result.pop('group_name', self.name)
-                self.save()
                 self.status = self.COLLECTED
+                print('GOOD', self, self.email, self.name)
+            self.save()
+
+    @staticmethod
+    def global_stat():
+        print('All:', FbGroup.objects.count())
+        print('Actual:', FbGroup.actual_objects.count())
+        print('Full:', FbGroup.full_objects.count())
+        print('Empty:', FbGroup.empty_objects.count())
+        print('Not loaded:', FbGroup.not_loaded_objects.count())
+
 
     # def get_page_data(self):
     #     try:
