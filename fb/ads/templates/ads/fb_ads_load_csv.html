@@ -1,18 +1,73 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<h1>Load Fb AdsLib csv file {{xxx}}</h1>
-<form method="POST" enctype="multipart/form-data" >
-    {%csrf_token%}
-    {{form.as_div}}
-    <button type="submit">Upload</button>
-</form>
-<h3>Всего групп: {{reader.total}}</h3>
-<h3>Уникальных групп: {{reader|length}}</h3>
-<h3>Добавлено новых: </h3>
-</body>
-</html>
+{%extends 'ads/base.html'%}
+
+{%block head_text%}
+Обновить группы из CSV файла
+{%endblock%}
+{%block content%}
+<style>
+    .wrapper{
+        
+    }
+    .wrapper.center{
+        display: flex;
+        justify-content: center;
+    }
+    form{
+        margin: 20px 0;
+    }
+    form button{
+        margin-top: 15px;
+        width: 100%;
+        text-align: center;
+    }
+    form,table{
+        max-width: 700px;
+    }
+
+</style>
+<div class="container">
+    <div class="wrapper center">
+        <form class="form" method="POST" enctype="multipart/form-data" >
+            {%csrf_token%}
+            {{form.as_div}}
+            <button class="btn btn-primary" type="submit">Загузить</button>
+        </form>
+    </div>
+</div>
+<div class="container">
+    <div class="wrapper center">
+        {%if reader%}
+        <table class="table">
+            <thead class="table-primary">
+              <tr>
+                <td colspan="2">Сsv файл {{reader.file_name}}</td>
+             </tr>
+
+            </thead>
+            <tbody>
+              <tr>
+                <td>Всего групп в файле</td>
+                <td>{{reader.total}}</td>
+              </tr>
+              <tr>
+                <td>Уникальных групп</td>
+                <td>{{reader|length}}</td>
+              </tr>
+              <tr>
+                <td colspan="2" class="table-primary">БД</td>
+             </tr>
+             <tr>
+                <td>Новых</td>
+                <td> {{update_result.new}}</td>
+              </tr>
+              <tr>
+                <td>Обновлено</td>
+                <td>{{update_result.updated}}</td>
+              </tr>
+            </tbody>
+          </table>
+          {%endif%}
+    </div>
+</div>
+
+{%endblock%}

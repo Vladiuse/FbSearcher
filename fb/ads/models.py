@@ -6,7 +6,7 @@ from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
 import re
 from django.utils import timezone
-from parsers  import FbGroupPage
+from parsers import FbGroupPage
 import requests as req
 from django.core.files.base import ContentFile
 from io import StringIO
@@ -25,6 +25,7 @@ def load_netscape_cookies(cookie_file):
     jar.load()
     return jar
 
+
 class KeyWord(models.Model):
     word = models.CharField(
         max_length=30,
@@ -34,15 +35,17 @@ class KeyWord(models.Model):
     def __str__(self):
         return self.word
 
+
 class ActualGroupManager(models.Manager):
     def get_queryset(self):
-        qs = FbGroup.objects.exclude(Q(email='') |Q(name='')).filter(last_ad_date=timezone.now().date())
+        qs = FbGroup.objects.exclude(Q(email='') | Q(name='')).filter(last_ad_date=timezone.now().date())
         return qs
+
 
 class FullFbGroupManager(models.Manager):
 
     def get_queryset(self):
-        qs = FbGroup.objects.exclude(Q(email='') |Q(name=''))
+        qs = FbGroup.objects.exclude(Q(email='') | Q(name=''))
         return qs
 
 
@@ -52,10 +55,12 @@ class EmptyGroupManager(models.Manager):
         qs = FbGroup.objects.filter(email='', name='')
         return qs
 
+
 class NotLoadedGroupManager(models.Manager):
     def get_queryset(self):
         qs = FbGroup.objects.filter(status=FbGroup.NOT_LOADED)
         return qs
+
 
 class FbGroup(models.Model):
     objects = models.Manager()
@@ -100,9 +105,20 @@ class FbGroup(models.Model):
     last_ad_date = models.DateField(default=timezone.now)
     req_html_data = models.FileField(upload_to='req_html_data', blank=True)
 
-
     def __str__(self):
         return f'<FbGroup> {self.url}'
+
+    @property
+    def url(self):
+        return f'https://facebook.com/{self.pk}/'
+
+    @staticmethod
+    def global_stat():
+        print('All:', FbGroup.objects.count())
+        print('Actual:', FbGroup.actual_objects.count())
+        print('Full:', FbGroup.full_objects.count())
+        print('Empty:', FbGroup.empty_objects.count())
+        print('Not loaded:', FbGroup.not_loaded_objects.count())
 
     @staticmethod
     def fb_group_url_to_id(url):
@@ -113,11 +129,27 @@ class FbGroup(models.Model):
             url = url[:-1]
         return url
 
-    @property
-    def url(self):
-        return f'https://facebook.com/{self.pk}/'
+    @staticmethod
+    def update_db_by_group_ids(ids: iter) -> dict:
+        print('update_db_by_group_ids')
+        new_count = 0
+        updated = 0
+        for group_id in ids:
+            group_model, created = FbGroup.objects.update_or_create(
+                group_id=group_id,
+                defaults={'last_ad_date': timezone.now().date()},
+            )
+            if created:
+                new_count += 1
+            else:
+                updated += 1
+        result = {
+            'new': new_count,
+            'updated': updated,
+        }
+        return result
 
-    def get_group_req_html(self, cookies_path,log_html_data=True, ) ->str:
+    def get_group_req_html(self, cookies_path, log_html_data=True, ) -> str:
         """Получить исходный код страницы группы"""
         res = req.get(self.url, headers=headers, cookies=load_netscape_cookies(cookies_path))
         if res.status_code == 200:
@@ -150,13 +182,3 @@ class FbGroup(models.Model):
                 self.status = self.COLLECTED
                 print('GOOD', self, self.email, self.name)
             self.save()
-
-    @staticmethod
-    def global_stat():
-        print('All:', FbGroup.objects.count())
-        print('Actual:', FbGroup.actual_objects.count())
-        print('Full:', FbGroup.full_objects.count())
-        print('Empty:', FbGroup.empty_objects.count())
-        print('Not loaded:', FbGroup.not_loaded_objects.count())
-
-

@@ -4,8 +4,10 @@ from .serializers import FbGroupCreateSerializer
 from rest_framework.response import Response
 from .forms import FbLibCsvForm
 from .fb_adlib_csv_reader import FbLibStatCsvReader
+from .models import FbGroup
 
-
+def index(request):
+    return render(request, 'ads/index.html')
 class FbGroupUpdateOrCreateView(APIView):
 
     def post(self, request):
@@ -40,10 +42,12 @@ def update_from_csv(request):
         if form.is_valid():
             file = request.FILES['csv_file']
             fb_lib_file_reader = FbLibStatCsvReader(file.temporary_file_path())
-            fb_lib_file_reader()
+            fb_lib_file_reader.read()
+            update_result = FbGroup.update_db_by_group_ids(fb_lib_file_reader)
             content = {
                 'form': FbLibCsvForm(),
                 'reader': fb_lib_file_reader,
+                'update_result': update_result,
             }
             return render(request, 'ads/fb_ads_load_csv.html', context=content)
         else:
