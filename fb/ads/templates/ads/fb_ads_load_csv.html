@@ -20,8 +20,11 @@
         width: 100%;
         text-align: center;
     }
-    form,table{
+    form{
         max-width: 700px;
+    }
+    table{
+        max-width: 400px;
     }
 
 </style>
@@ -29,45 +32,73 @@
     <div class="wrapper center">
         <form class="form" method="POST" enctype="multipart/form-data" >
             {%csrf_token%}
-            {{form.as_div}}
-            <button class="btn btn-primary" type="submit">Загузить</button>
+            <!-- {{form.as_div}} -->
+            <label for="formFileMultiple" class="form-label">Выберете csv файты для загрузки</label>
+            {{ form.csv_file.errors }}
+            <input class="form-control" name="csv_file" type="file" id="formFileMultiple" multiple required>
+            <button class="btn btn-primary" type="submit">
+                <div class="spinner-grow spinner-grow-sm" role="status" style="display: none;">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                <span>Загузить</span>
+            </button>
         </form>
     </div>
 </div>
 <div class="container">
+    {%if readers_n_results%}
     <div class="wrapper center">
-        {%if reader%}
-        <table class="table">
-            <thead class="table-primary">
-              <tr>
-                <td colspan="2">Сsv файл {{reader.file_name}}</td>
-             </tr>
-
-            </thead>
-            <tbody>
-              <tr>
-                <td>Всего групп в файле</td>
-                <td>{{reader.total}}</td>
-              </tr>
-              <tr>
-                <td>Уникальных групп</td>
-                <td>{{reader|length}}</td>
-              </tr>
-              <tr>
-                <td colspan="2" class="table-primary">БД</td>
-             </tr>
-             <tr>
-                <td>Новых</td>
-                <td> {{update_result.new}}</td>
-              </tr>
-              <tr>
-                <td>Обновлено</td>
-                <td>{{update_result.updated}}</td>
-              </tr>
-            </tbody>
-          </table>
-          {%endif%}
+        <h4>Файлов обработано: {{readers_n_results|length}}, Создано новых групп: {{new_groups_created}}</h4>
     </div>
-</div>
+    {%for reader, update_result in readers_n_results%}
+    <div class="wrapper center">
+            <table class="table">
+                <thead class="table-primary">
+                <tr>
+                    <td colspan="2">Сsv файл {{reader.file_name}}</td>
+                </tr>
 
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Групп в файле</td>
+                    <td>{{reader.total}}</td>
+                </tr>
+                <tr>
+                    <td>Уникальных</td>
+                    <td>{{reader|length}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table">
+                <thead class="table-primary">
+                <tr>
+                    <td colspan="2">БД</td>
+                </tr>
+
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Новых</td>
+                    <td> {{update_result.new}}</td>
+                </tr>
+                <tr>
+                    <td>Обновлено</td>
+                    <td>{{update_result.updated}}</td>
+                </tr>
+                </tbody>
+            </table>    
+    </div>
+    {%endfor%}
+    {%endif%}
+    
+</div>
+<script>
+    $('form').submit(function(){
+        console.log('123')
+    $('form button').attr('disabled', true)
+    $('form button .spinner-grow').show()
+    $('form button span').text('Загружаеться')
+    })
+</script>
 {%endblock%}

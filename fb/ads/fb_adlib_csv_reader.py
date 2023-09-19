@@ -4,13 +4,16 @@ from os import path
 
 class FbLibStatCsvReader:
 
-    def __init__(self, path):
+    def __init__(self, path, file_name=None):
         self.path = path
+        self._file_name = file_name
         self.unique_group_ids = list()
         self.total = 0
 
     @property
     def file_name(self):
+        if self._file_name:
+            return self._file_name
         return path.basename(self.path)
 
     def read(self):

@@ -1,3 +1,4 @@
+from time import sleep
 from rest_framework.views import APIView
 from django.shortcuts import render
 from .serializers import FbGroupCreateSerializer
@@ -5,9 +6,14 @@ from rest_framework.response import Response
 from .forms import FbLibCsvForm
 from .fb_adlib_csv_reader import FbLibStatCsvReader
 from .models import FbGroup
+from django.views import View
+from django.http import HttpResponse
+
 
 def index(request):
     return render(request, 'ads/index.html')
+
+
 class FbGroupUpdateOrCreateView(APIView):
 
     def post(self, request):
@@ -35,29 +41,44 @@ class FbGroupUpdateOrCreateView(APIView):
         return Response(response)
 
 
-def update_from_csv(request):
-    """Загрузить в БД группы из csv файла"""
-    if request.method == 'POST':
-        form = FbLibCsvForm(request.POST, request.FILES)
-        if form.is_valid():
-            file = request.FILES['csv_file']
-            fb_lib_file_reader = FbLibStatCsvReader(file.temporary_file_path())
-            fb_lib_file_reader.read()
-            update_result = FbGroup.update_db_by_group_ids(fb_lib_file_reader)
-            content = {
-                'form': FbLibCsvForm(),
-                'reader': fb_lib_file_reader,
-                'update_result': update_result,
-            }
-            return render(request, 'ads/fb_ads_load_csv.html', context=content)
-        else:
-            content = {
-                'form': form,
-            }
-            return render(request, 'ads/fb_ads_load_csv.html', context=content)
-    else:
+class UpdateFbGroupFromCsv(View):
+    template_name = 'ads/fb_ads_load_csv.html'
+
+    def get(self, request):
         form = FbLibCsvForm()
         content = {
             'form': form,
         }
-        return render(request, 'ads/fb_ads_load_csv.html', context=content)
+        return render(request, self.template_name, context=content)
+
+    def post(self, request):
+        sleep(5)
+        form = FbLibCsvForm(request.POST, request.FILES)
+        if form.is_valid():
+            start_groups_count = FbGroup.objects.count()
+            files = request.FILES.getlist('csv_file')
+            readers_n_results = []
+            for file in files:
+                fb_lib_file_reader = FbLibStatCsvReader(file.temporary_file_path(), file_name=file.name)
+                fb_lib_file_reader.read()
+                update_result = FbGroup.update_db_by_group_ids(fb_lib_file_reader)
+                readers_n_results.append([fb_lib_file_reader,update_result])
+            content = {
+                'form': FbLibCsvForm(),
+                'readers_n_results': readers_n_results,
+                'total_result': None,
+                'new_groups_created': FbGroup.objects.count() - start_groups_count,
+            }
+            return render(request, self.template_name, context=content)
+        else:
+            content = {
+                'form': form,
+            }
+            return render(request, self.template_name, context=content)
+
+    def read_one_csv_file(self):
+
+        pass
+
+    def read_few_csv_files(self):
+        pass
