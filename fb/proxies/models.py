@@ -14,6 +14,7 @@ class Proxy(models.Model):
     data = models.CharField(max_length=255, unique=True)
     status = models.BooleanField(max_length=50,  default=NOT_CHECKED, null=True)
     error_text = models.CharField(max_length=255, blank=True)
+    created = models.DateField(auto_now_add=True)
 
     def __str__(self):
         return f'<Proxy:{self.pk}> {self.data}'

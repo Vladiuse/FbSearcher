@@ -52,7 +52,6 @@ class UpdateFbGroupFromCsv(View):
         return render(request, self.template_name, context=content)
 
     def post(self, request):
-        sleep(5)
         form = FbLibCsvForm(request.POST, request.FILES)
         if form.is_valid():
             start_groups_count = FbGroup.objects.count()
