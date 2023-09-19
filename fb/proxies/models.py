@@ -3,16 +3,16 @@ from .check_proxies import CheckProxyApi64, CheckProxyHttpBin, CodeNot200
 from requests.exceptions import ConnectTimeout
 
 class Proxy(models.Model):
-    WORK = 'work'
-    NOT_WORK = 'not_work'
-    NOT_CHECKED = 'no_checked'
+    WORK = True
+    NOT_WORK = False
+    NOT_CHECKED = None
     STATUSES = (
         (WORK, 'Работает'),
         (NOT_WORK, 'Не работает'),
         (NOT_CHECKED, 'Не проверен'),
     )
     data = models.CharField(max_length=255, unique=True)
-    status = models.CharField(max_length=50, choices=STATUSES, default=NOT_CHECKED)
+    status = models.BooleanField(max_length=50,  default=NOT_CHECKED, null=True)
     error_text = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
@@ -37,10 +37,17 @@ class Proxy(models.Model):
                 self.status = Proxy.WORK
             else:
                 self.status = Proxy.NOT_WORK
-            self.save()
         except ConnectTimeout:
             self.error_text = 'Time out error'
-            self.save()
+            self.status = Proxy.NOT_WORK
         except CodeNot200:
             self.error_text = 'Not 200 status code'
+            self.status = Proxy.NOT_WORK
+        except Exception:
+            self.error_text = 'Other Error'
+            self.status = Proxy.NOT_WORK
+        finally:
             self.save()
+
+
+
