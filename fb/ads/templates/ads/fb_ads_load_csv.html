@@ -5,11 +5,14 @@
     <title>Title</title>
 </head>
 <body>
-<h1>Load Fb AdsLib csv file</h1>
+<h1>Load Fb AdsLib csv file {{xxx}}</h1>
 <form method="POST" enctype="multipart/form-data" >
     {%csrf_token%}
     {{form.as_div}}
     <button type="submit">Upload</button>
 </form>
+<h3>Всего групп: {{reader.total}}</h3>
+<h3>Уникальных групп: {{reader|length}}</h3>
+<h3>Добавлено новых: </h3>
 </body>
 </html>

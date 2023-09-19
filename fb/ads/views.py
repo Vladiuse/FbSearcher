@@ -3,11 +3,10 @@ from django.shortcuts import render
 from .serializers import FbGroupCreateSerializer
 from rest_framework.response import Response
 from .forms import FbLibCsvForm
-import csv
-from django.http import HttpResponse
+from .fb_adlib_csv_reader import FbLibStatCsvReader
+
 
 class FbGroupUpdateOrCreateView(APIView):
-
 
     def post(self, request):
         groups_items = request.data['group_urls']
@@ -34,32 +33,19 @@ class FbGroupUpdateOrCreateView(APIView):
         return Response(response)
 
 
-class FbLibStatCsvReader:
-
-    def __init__(self, path):
-        self.path = path
-        self.group_ids = set()
-        self.total = 0
-
-    def __call__(self):
-        with open(self.path, 'r', encoding='utf-8') as csv_file:
-            table = csv.DictReader(csv_file, delimiter=',', quotechar='"')
-            for row in table:
-                self.group_ids.add(row['page_id'])
-                self.total += 1
-
-    def __len__(self):
-        return len(self.group_ids)
-
 def update_from_csv(request):
+    """Загрузить в БД группы из csv файла"""
     if request.method == 'POST':
         form = FbLibCsvForm(request.POST, request.FILES)
         if form.is_valid():
             file = request.FILES['csv_file']
             fb_lib_file_reader = FbLibStatCsvReader(file.temporary_file_path())
             fb_lib_file_reader()
-            res = str(len(fb_lib_file_reader))
-            return HttpResponse(res)
+            content = {
+                'form': FbLibCsvForm(),
+                'reader': fb_lib_file_reader,
+            }
+            return render(request, 'ads/fb_ads_load_csv.html', context=content)
         else:
             content = {
                 'form': form,
@@ -70,4 +56,4 @@ def update_from_csv(request):
         content = {
             'form': form,
         }
-        return render(request,'ads/fb_ads_load_csv.html', context=content)
+        return render(request, 'ads/fb_ads_load_csv.html', context=content)
