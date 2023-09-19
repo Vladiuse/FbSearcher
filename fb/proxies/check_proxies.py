@@ -1,56 +1,62 @@
 import requests as req
 
+
 class CodeNot200(Exception):
     pass
 
+
 class CheckProxy:
+    CHECK_TIMEOUT = 10
     GET_MY_IP = ''
 
-    def __init__(self, proxy):
+    def __init__(self, proxy, no_proxy_ip=None):
         self.proxy = proxy
-        self.no_proxy_ip = None
+        self.no_proxy_ip = no_proxy_ip
         self.proxy_ip = None
 
     def __call__(self):
-        self.get_ip()
+        if not self.no_proxy_ip:
+            self.no_proxy_ip = self.get_ip()
         self.get_proxy_ip()
 
     @property
-    def is_work(self):
+    def is_work(self) -> bool:
         return self.no_proxy_ip != self.proxy_ip
 
-    def get_ip(self):
-        res = req.get(self.GET_MY_IP, timeout=10)
+    @classmethod
+    def get_ip(cls):
+        res = req.get(cls.GET_MY_IP, timeout=CheckProxy.CHECK_TIMEOUT)
         if res.status_code == 200:
-            self.no_proxy_ip = self.get_ip_from_response(res)
+            return cls.get_ip_from_response(res)
         else:
             raise CodeNot200
 
     def get_proxy_ip(self):
         proxies = {
-        'https': self.proxy
+            'https': self.proxy
         }
-        res = req.get(self.GET_MY_IP, proxies=proxies, timeout=10)
+        res = req.get(self.GET_MY_IP, proxies=proxies, timeout=CheckProxy.CHECK_TIMEOUT)
         if res.status_code == 200:
             self.proxy_ip = self.get_ip_from_response(res)
         else:
             raise CodeNot200
 
-
-    def get_ip_from_response(self, res):
+    @staticmethod
+    def get_ip_from_response(res):
         raise NotImplementedError
 
 
 class CheckProxyApi64(CheckProxy):
     GET_MY_IP = 'https://api64.ipify.org?format=json'
 
-    def get_ip_from_response(self, res):
+    @staticmethod
+    def get_ip_from_response(res) -> str:
         return res.json()['ip']
 
 
 class CheckProxyHttpBin(CheckProxy):
     GET_MY_IP = 'https://httpbin.org/ip'
 
-    def get_ip_from_response(self, res):
+    @staticmethod
+    def get_ip_from_response(res) -> str:
         return res.json()['origin']
-

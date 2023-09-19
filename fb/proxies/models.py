@@ -23,12 +23,12 @@ class Proxy(models.Model):
     def url(self):
         return f'socks5://{self.data}/'
 
-    def check_proxy(self):
+    def check_proxy(self, *,no_proxy_ip):
         print(self)
         try:
             checkers_result = []
             for checker_class in (CheckProxyApi64, CheckProxyHttpBin):
-                proxy_checker = checker_class(self.data)
+                proxy_checker = checker_class(self.data, no_proxy_ip=no_proxy_ip)
                 proxy_checker()
                 if proxy_checker.is_work:
                     checkers_result.append(True)
@@ -44,11 +44,18 @@ class Proxy(models.Model):
         except CodeNot200:
             self.error_text = 'Not 200 status code'
             self.status = Proxy.NOT_WORK
-        except Exception:
-            self.error_text = 'Other Error'
+        except Exception as error:
+            self.error_text = str(error)[:255]
             self.status = Proxy.NOT_WORK
         finally:
             self.save()
+
+    @staticmethod
+    def check_proxies(qs):
+        no_proxy_ip = CheckProxyApi64.get_ip()
+        print(no_proxy_ip, 'no_proxy_ip')
+        for proxy_model in qs:
+            proxy_model.check_proxy(no_proxy_ip=no_proxy_ip)
 
 
 
