@@ -1,4 +1,5 @@
-from time import sleep
+import random as r
+from time import sleep, time
 from rest_framework.views import APIView
 from django.shortcuts import render
 from .serializers import FbGroupCreateSerializer
@@ -8,6 +9,9 @@ from .fb_adlib_csv_reader import FbLibStatCsvReader
 from .models import FbGroup
 from django.views import View
 from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from .models import ThreadCounter
+
 
 
 def index(request):
@@ -81,3 +85,14 @@ class UpdateFbGroupFromCsv(View):
 
     def read_few_csv_files(self):
         pass
+
+@csrf_exempt
+def sleep_10(request):
+    try:
+        name = request.POST['name']
+        model, created = ThreadCounter.objects.get_or_create(name=name)
+        model.count += 1
+        model.save()
+        return HttpResponse(f'{model} {model.count}')
+    except Exception as error:
+        return HttpResponse(str(error))

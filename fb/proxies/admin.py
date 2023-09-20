@@ -1,14 +1,13 @@
 from django.contrib import admin
-
+from django import forms
 from .models import Proxy
 from .form import ProxyForm
-
 
 class ProxyAdmin(admin.ModelAdmin):
     form = ProxyForm
     actions = ['check_proxies']
-    list_display = ['pk', 'data', 'url', 'status', 'error_text_short']
-    list_display_links = ['pk', 'data']
+    list_display = ['pk', 'ip','port', 'url', 'status', 'error_text_short', 'created']
+    list_display_links = ['pk', 'ip']
     @admin.action(description='Проверить прокси')
     def check_proxies(self, request, queryset):
         Proxy.check_proxies(qs=queryset)
@@ -18,5 +17,5 @@ class ProxyAdmin(admin.ModelAdmin):
             return obj.error_text[:40] + '...'
         return obj.error_text
 
-
 admin.site.register(Proxy, ProxyAdmin)
+

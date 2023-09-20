@@ -182,3 +182,19 @@ class FbGroup(models.Model):
                 self.status = self.COLLECTED
                 print('GOOD', self, self.email, self.name)
             self.save()
+
+
+class ThreadCounter(models.Model):
+    name = models.CharField(max_length=20,primary_key=True)
+    count = models.IntegerField(default=0)
+    created = models.DateTimeField(auto_now_add=True)
+    last_update = models.DateTimeField(auto_now=True)
+
+    def stat(self):
+        delta = self.last_update - self.created
+        print(self, f'AVG: {round(int(self.count) / delta.total_seconds(),1)}Count:{self.count} start:{self.created} last:{self.last_update}', )
+
+
+    @staticmethod
+    def clean_counters():
+        ThreadCounter.objects.bulk_update(count=0)

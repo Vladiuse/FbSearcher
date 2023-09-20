@@ -13,7 +13,7 @@ class FbAccount(models.Model):
         (BAN, 'Бан')
     )
     name = models.CharField(max_length=50)
-    cookie = models.FileField(upload_to='cookies')
+    cookie = models.FileField(upload_to='cookies') #  TODO rename to cookie_file
     status = models.CharField(max_length=50, choices=STATUSES, default=WORK)
     created = models.DateField(auto_now_add=True)
     use_in_work = models.BooleanField(default=True)
@@ -32,6 +32,11 @@ class FbAccount(models.Model):
             self.is_cookie_valid = False
             self.save()
             raise LoadError
+
+    def get_cookie(self):
+        jar = http.cookiejar.MozillaCookieJar(self.cookie.path)
+        jar.load()
+        return jar
 
 
 
