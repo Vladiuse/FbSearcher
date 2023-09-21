@@ -33,10 +33,6 @@
         <form class="form" method="POST" enctype="multipart/form-data" >
 
             {%csrf_token%}
-            {{ form.csv_file_type.errors }}
-            <label for="" class="form-label">Выберите тип файла</label>
-            {{ form.csv_file_type}}
-            <!-- {{form.as_div}} -->
             <label for="formFileMultiple" class="form-label">Выберете csv файты для загрузки</label>
             {{ form.csv_file.errors }}
             <input class="form-control" name="csv_file" type="file" id="formFileMultiple" multiple required>

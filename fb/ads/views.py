@@ -4,13 +4,14 @@ from rest_framework.views import APIView
 from django.shortcuts import render
 from .serializers import FbGroupCreateSerializer
 from rest_framework.response import Response
-from .forms import FbLibCsvForm
-from .fb_adlib_csv_reader import FbLibStatCsvReader
+from .forms import FbLibCsvForm, FbLibZipForm
+from .fb_adlib_csv_reader import FbLibStatCsvReader, FbLibStatZipReader, Fb7DaysZipReader
 from .models import FbGroup
 from django.views import View
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import ThreadCounter
+from django.core.files.uploadedfile import InMemoryUploadedFile
 
 
 
@@ -46,6 +47,7 @@ class FbGroupUpdateOrCreateView(APIView):
 
 
 class UpdateFbGroupFromCsv(View):
+    """Обновить БД фб групп из csv"""
     template_name = 'ads/fb_ads_load_csv.html'
 
     def get(self, request):
@@ -85,6 +87,55 @@ class UpdateFbGroupFromCsv(View):
 
     def read_few_csv_files(self):
         pass
+
+
+class UpdateFbGroupFromZip(View):
+    """Обновить БД фб групп из zip"""
+    template_name = 'ads/zip_load/index.html'
+
+
+    def get(self, request):
+        form = FbLibZipForm()
+        content = {
+            'form': form,
+        }
+        return render(request, self.template_name, context=content)
+
+    def post(self, request):
+        print(request.POST)
+        form = FbLibZipForm(request.POST, request.FILES)
+        if form.is_valid():
+            print('VALID')
+            csv_file_type = form.cleaned_data['zip_file_type']
+            if csv_file_type == FbLibZipForm.FB_ADS_LIB_TYPE:
+                reader_class = FbLibStatZipReader
+            else:
+                reader_class = Fb7DaysZipReader
+            start_groups_count = FbGroup.objects.count()
+            readers_n_results = []
+            files = request.FILES.getlist('zip_files')
+            for file in files:
+                if isinstance(file, InMemoryUploadedFile):
+                    reader = reader_class(file, file_name=file.name)
+                else:
+                    reader = reader_class(file.temporary_file_path(), file_name=file.name)
+                reader.read()
+                update_result = FbGroup.update_db_by_group_ids(reader)
+                readers_n_results.append([reader,update_result])
+            content = {
+                'form': FbLibZipForm(),
+                'readers_n_results': readers_n_results,
+                'total_result': None,
+                'new_groups_created': FbGroup.objects.count() - start_groups_count,
+            }
+            return render(request, self.template_name, context=content)
+        else:
+            content = {
+                'form': form,
+            }
+            return render(request, self.template_name, context=content)
+
+
 
 @csrf_exempt
 def sleep_10(request):

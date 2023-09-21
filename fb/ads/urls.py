@@ -10,6 +10,7 @@ urlpatterns = [
     # path('', include(router.urls)),
     path('', views.index, name='index'),
     path('update_from_csv/', views.UpdateFbGroupFromCsv.as_view(), name='update-from-csv'),
+    path('update_from_zip/', views.UpdateFbGroupFromZip.as_view(), name='update-from-zip'),
     path('groups_update/',  views.FbGroupUpdateOrCreateView.as_view(), name='group-update-list'),
     path('sleep_10/', views.sleep_10, )
 ]
