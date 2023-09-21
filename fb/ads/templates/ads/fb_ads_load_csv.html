@@ -1,7 +1,7 @@
 {%extends 'ads/base.html'%}
 
 {%block head_text%}
-Обновить группы из CSV файла
+Обновить группы из CSV файла FbAdsLibrary
 {%endblock%}
 {%block content%}
 <style>
@@ -31,7 +31,11 @@
 <div class="container">
     <div class="wrapper center">
         <form class="form" method="POST" enctype="multipart/form-data" >
+
             {%csrf_token%}
+            {{ form.csv_file_type.errors }}
+            <label for="" class="form-label">Выберите тип файла</label>
+            {{ form.csv_file_type}}
             <!-- {{form.as_div}} -->
             <label for="formFileMultiple" class="form-label">Выберете csv файты для загрузки</label>
             {{ form.csv_file.errors }}
