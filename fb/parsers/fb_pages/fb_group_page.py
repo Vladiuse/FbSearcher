@@ -8,7 +8,7 @@ class FbGroupPage:
     def __init__(self, html, user_cookie=True):
         self.html = html
         self.use_cookie = user_cookie
-        self.soup =  BeautifulSoup(html, 'html.parser')
+        self.soup = BeautifulSoup(html, 'html.parser')
         self.group_name = None
         self.group_email = None
 
@@ -78,6 +78,18 @@ class FbGroupPage:
             email_text = email_match[0]
             email = email_text.split(':')[-1].replace('"', '').replace('\\u0040', '@')
             self.group_email= email
+
+
+if __name__ == '__main__':
+    fb_group_no_login_html_path = '/home/vlad/PycharmProjects/FbSearcher/fb/parsers/fb_pages_html/group_page/group_no_login.html'
+    fb_group_login_html_path = '/home/vlad/PycharmProjects/FbSearcher/fb/parsers/fb_pages_html/group_page/group_login.html'
+    with open(fb_group_no_login_html_path) as file:
+        no_login_page = FbGroupPage(file.read())
+
+    with open(fb_group_login_html_path) as file:
+        login_page = FbGroupPage(file.read())
+
+    print('NO')
 
 
 

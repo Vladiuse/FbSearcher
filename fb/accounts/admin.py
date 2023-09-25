@@ -7,7 +7,7 @@ from .models import FbAccount
 
 
 class FbAccountAdmin(admin.ModelAdmin):
-    list_display = ['pk', 'name', 'status', 'created', 'use_in_work', 'cookie', 'is_cookie_valid']
+    list_display = ['pk', 'name', 'proxy','status', 'created', 'use_in_work', 'cookie_file', 'is_cookie_file_valid', 'is_cookie_auth']
     list_display_links = ['pk', 'name']
     actions = ['check_cookies']
 

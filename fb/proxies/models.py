@@ -31,8 +31,8 @@ class Proxy(models.Model):
     class Meta:
         unique_together = ['ip', 'port']
 
-    # def __str__(self):
-    #     return f'<Proxy:{self.pk}> {self.data}'
+    def __str__(self):
+        return f'Id:{self.pk}:{self.ip}:{self.port}'
 
     @property
     def url(self):
