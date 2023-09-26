@@ -11,15 +11,22 @@ from selenium import webdriver
 from selenium.webdriver.firefox.options import Options
 
 
-
+class WorkFbAccountManager(models.Manager):
+    def get_queryset(self):
+        return FbAccount.objects.filter(use_in_work=True)
 class FbAccount(models.Model):
     WORK = 'work'
     BAN = 'ban'
+    NO_PASSWORD = 'no_password'
     STATUSES = (
         (WORK, 'Рабочий'),
-        (BAN, 'Бан')
+        (BAN, 'Бан'),
+        (NO_PASSWORD, 'Нет пароля'),
     )
-    name = models.CharField(max_length=50)
+    objects = models.Manager()
+    work_objects = WorkFbAccountManager()
+
+    name = models.CharField(max_length=50) # TODO add fb account id
     password = models.CharField(max_length=50, blank=True)
     mail_password = models.CharField(max_length=50, blank=True)
     status = models.CharField(max_length=50, choices=STATUSES, default=WORK)
@@ -54,7 +61,7 @@ class FbAccount(models.Model):
             self.is_cookie_auth = page.is_auth
         self.save()
 
-    def check_cookie_file(self):
+    def check_cookie_file(self): # TODO addcheck is account id in cookie file
         """Проверить файл куки на валидность"""
         jar = http.cookiejar.MozillaCookieJar(self.cookie_file.path)
         try:

@@ -20,6 +20,7 @@ class FbGroupDataFilter(admin.SimpleListFilter):
         ]
 
     def queryset(self, request, queryset):
+        queryset = queryset.filter(status=FbGroup.COLLECTED)
         if self.value() == self.EMPTY:
             return queryset.filter(name='').filter(email='')
         if self.value() == self.NO_MAIL:
@@ -31,6 +32,7 @@ class FbGroupAdmin(admin.ModelAdmin):
     list_display = ['pk', 'status','name' ,'email', 'url_link']
     list_display_links = ['pk']
     list_filter = ['status', FbGroupDataFilter]
+    search_fields = ['pk']
 
     def url_link(self, obj):
         return mark_safe(f'<a target="_blank" href="{obj.url}">{obj.url}<a/>')

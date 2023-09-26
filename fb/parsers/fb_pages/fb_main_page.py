@@ -11,6 +11,11 @@ class FbPageError(Exception):
 class FbMainPage:
     URL = 'https://facebook.com/'
 
+    BAN_MESSAGES = [
+        'We suspended your account',
+        '180 days',
+    ]
+
     def __init__(self, html):
         self.html = html
         self.soup = BeautifulSoup(html, 'lxml')
@@ -29,6 +34,10 @@ class FbMainPage:
         if is_register_page == is_auth_page:
             raise FbPageError('Лог/разлог не определен')
         return not is_register_page and is_auth_page
+
+    @property
+    def is_ban(self):
+        return any(msg in self.html for msg in self.BAN_MESSAGES)
 
 
 class FbMainPageOld:
@@ -63,11 +72,13 @@ class FbMainPageOld:
 
 
 if __name__ == '__main__':
-    dir_path = '/home/vlad/PycharmProjects/FbSearcher/fb/media/test_account_cookie_auth'
-    for file in os.listdir(dir_path):
-        path = os.path.join(dir_path, file)
-        with open(path) as file:
-            html = file.read()
-            page = FbMainPage(html)
-            print(file, page.is_auth)
+    main_no_login_path = '/home/vlad/PycharmProjects/FbSearcher/fb/parsers/fb_pages_html/main_page/fb_main_no_login.html'
+    main_login_path = '/home/vlad/PycharmProjects/FbSearcher/fb/parsers/fb_pages_html/main_page/fb_main_login.html'
+    main_login_180_ban_path = '/home/vlad/PycharmProjects/FbSearcher/fb/parsers/fb_pages_html/main_page_180_ban/6_test 3.html'
+    main_no_login = FbMainPage(open(main_no_login_path).read())
+    main_login = FbMainPage(open(main_login_path).read())
+    main_login_ban = FbMainPage(open(main_login_180_ban_path).read())
+    print(main_no_login.is_auth, main_no_login.is_ban)
+    print(main_login.is_auth, main_login.is_ban)
+    print(main_login_ban.is_auth, main_login_ban.is_ban)
 

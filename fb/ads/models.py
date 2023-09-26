@@ -19,6 +19,10 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.5'
 }
 
+def remove_if_exists(path):
+    if os.path.exists(path):
+        os.remove(path)
+
 
 def load_netscape_cookies(cookie_file):
     jar = http.cookiejar.MozillaCookieJar(cookie_file)
@@ -70,6 +74,7 @@ class FbGroup(models.Model):
     actual_objects = ActualGroupManager()
 
     FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
+    REQ_HTML_DIR = '/home/vlad/PycharmProjects/FbSearcher/fb/media/req_html_data'
 
     NOT_LOADED = 'not_loaded'
     NEED_LOGIN = 'need_login'
@@ -110,7 +115,8 @@ class FbGroup(models.Model):
 
     @property
     def url(self):
-        return f'https://facebook.com/{self.pk}/'
+        return f'https://www.facebook.com/profile.php?id={self.pk}'
+        # return f'https://facebook.com/{self.pk}/'
 
     @staticmethod
     def global_stat():
@@ -182,6 +188,15 @@ class FbGroup(models.Model):
                 self.status = self.COLLECTED
                 print('GOOD', self, self.email, self.name)
             self.save()
+
+    def log_req_data(self, html):
+        if self.req_html_data:
+            remove_if_exists(self.req_html_data.path)
+        file = ContentFile(html)
+        file_name = f'{self.pk}.html'
+        self.req_html_data.save(file_name, file)
+
+
 
 
 class ThreadCounter(models.Model):
