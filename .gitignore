@@ -5,3 +5,4 @@ searcher/chromedriver
 secrets.json
 media
 fb/scripts
+fb/secrets.json

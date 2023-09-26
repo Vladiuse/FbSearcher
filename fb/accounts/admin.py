@@ -9,7 +9,7 @@ from .models import FbAccount
 class FbAccountAdmin(admin.ModelAdmin):
     list_display = ['pk', 'name', 'proxy','status', 'created', 'use_in_work', 'cookie_file', 'is_cookie_file_valid', 'is_cookie_auth']
     list_display_links = ['pk', 'name']
-    actions = ['check_cookies']
+    actions = ['check_cookies', 'check_cookies_auth', ]
 
     @admin.action(description='Проверить файлы куки')
     def check_cookies(self, request, qs):
@@ -22,6 +22,11 @@ class FbAccountAdmin(admin.ModelAdmin):
         if incorrect_accounts:
             msg = 'Некоректные куки у: ' + ' ,'.join(account.name for account in incorrect_accounts)
             messages.add_message(request, messages.ERROR, msg)
+
+    @admin.action(description='Проверить авторизацию куки')
+    def check_cookies_auth(self, request, qs):
+        for account in qs:
+            account.check_cookie_auth()
 
 
 admin.site.register(FbAccount, FbAccountAdmin)

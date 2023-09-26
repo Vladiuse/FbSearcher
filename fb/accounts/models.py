@@ -1,3 +1,4 @@
+from time import sleep
 from django.db import models
 import http.cookiejar
 from django.core.exceptions import ValidationError
@@ -6,6 +7,9 @@ from http.cookiejar import LoadError
 from proxies.models import Proxy
 from parsers import FbMainPage
 import requests as req
+from selenium import webdriver
+from selenium.webdriver.firefox.options import Options
+
 
 
 class FbAccount(models.Model):
@@ -16,10 +20,12 @@ class FbAccount(models.Model):
         (BAN, 'Бан')
     )
     name = models.CharField(max_length=50)
+    password = models.CharField(max_length=50, blank=True)
+    mail_password = models.CharField(max_length=50, blank=True)
     status = models.CharField(max_length=50, choices=STATUSES, default=WORK)
-    cookie_file = models.FileField(upload_to='cookies') #  TODO rename to cookie_file
+    cookie_file = models.FileField(upload_to='cookies', blank=True)
     created = models.DateField(auto_now_add=True)
-    proxy = models.OneToOneField(Proxy, on_delete=models.SET_NULL,blank=True,null=True )
+    proxy = models.OneToOneField(Proxy, on_delete=models.SET_NULL, blank=True, null=True)
     use_in_work = models.BooleanField(default=True)
     is_cookie_file_valid = models.BooleanField(default=None, null=True)
     is_cookie_auth = models.BooleanField(default=None, null=True)
@@ -29,8 +35,10 @@ class FbAccount(models.Model):
 
     def check_cookie_auth(self):
         """Проверить являються ли куки актуальными, залогинен ли аккаунт под ними"""
+        if self.is_cookie_file_valid is None:
+            self.check_cookie_file()
         if not self.is_cookie_file_valid:
-            self.is_cookie_auth = None
+            self.is_cookie_file_valid = None
         else:
             res = req.get(FbMainPage.URL,
                           cookies=self.get_cookie(),
@@ -63,6 +71,7 @@ class FbAccount(models.Model):
         jar = http.cookiejar.MozillaCookieJar(self.cookie_file.path)
         jar.load()
         return jar
+
 
 
 

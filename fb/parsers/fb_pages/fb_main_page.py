@@ -14,7 +14,8 @@ class FbMainPage:
 
     def _is_register_page(self):
         """Являеться ли страница страницей входа в фейсбук"""
-        fb_login_image = self.soup.find('img', {'src': 'https://static.xx.fbcdn.net/rsrc.php/yu/r/dyZbZB6M64R.svg'})
+        # fb_login_image = self.soup.find('img', {'src': 'https://static.xx.fbcdn.net/rsrc.php/yu/r/dyZbZB6M64R.svg'})
+        fb_login_image = 'src="https://static.xx.fbcdn.net/rsrc.php' in self.html
         fb_login_form = self.soup.find('form', {'class': '_9vtf'})
         return bool(fb_login_image and fb_login_form)
 
@@ -33,5 +34,8 @@ class FbMainPage:
         return not is_register_page and is_auth_page
 
 if __name__ == '__main__':
-    pass
-
+    path = '/home/vlad/html/error_main_fb_page.html'
+    with open(path) as file:
+        html = file.read()
+        page = FbMainPage(html)
+        print(page.is_auth)
