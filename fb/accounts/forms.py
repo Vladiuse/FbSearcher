@@ -7,9 +7,12 @@ class FbAccountForm(forms.ModelForm):
 
     def __init__(self,  *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fields['proxy'].queryset = self.fields['proxy'].queryset.filter(
-            Q(fbaccount__isnull=True)| Q(fbaccount=kwargs['instance'])
-        )
+        if 'instance' in kwargs:
+            self.fields['proxy'].queryset = self.fields['proxy'].queryset.filter(
+                Q(fbaccount__isnull=True)| Q(fbaccount=kwargs['instance'])
+            )
+        else:
+            self.fields['proxy'].queryset = self.fields['proxy'].queryset.filter(fbaccount__isnull=True)
 
     class Meta:
         model = FbAccount

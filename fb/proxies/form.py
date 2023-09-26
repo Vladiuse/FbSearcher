@@ -7,4 +7,4 @@ class ProxyForm(forms.ModelForm):
 
     class Meta:
         model = Proxy
-        fields =  ['id', 'ip', 'port','protocol', 'login', 'password', 'status','error_text']
+        fields =  ['id', 'comment','ip', 'port','protocol', 'login', 'password', 'status','error_text']

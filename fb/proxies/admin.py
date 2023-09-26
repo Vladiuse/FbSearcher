@@ -6,7 +6,7 @@ from .form import ProxyForm
 class ProxyAdmin(admin.ModelAdmin):
     form = ProxyForm
     actions = ['check_proxies']
-    list_display = ['pk', 'ip','port', 'url', 'status', 'error_text_short', 'created']
+    list_display = ['pk', 'comment','ip','port', 'url', 'status', 'error_text_short', 'created']
     list_display_links = ['pk', 'ip']
     @admin.action(description='Проверить прокси')
     def check_proxies(self, request, queryset):

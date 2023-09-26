@@ -46,10 +46,10 @@ class FbAccount(models.Model):
                           )
             if not res.status_code == 200:
                 raise ZeroDivisionError(res.status_code)
-            # log
-            with open(f'/home/vlad/html/{self.name}.html', 'w') as file:
+            req_log_path = '/home/vlad/PycharmProjects/FbSearcher/fb/media/test_account_cookie_auth'
+            req_log_file_name = f'{self.pk}_{self.name}.html'
+            with open(os.path.join(req_log_path, req_log_file_name), 'w') as file:
                 file.write(res.text)
-
             page = FbMainPage(res.text)
             self.is_cookie_auth = page.is_auth
         self.save()

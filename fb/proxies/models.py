@@ -27,6 +27,7 @@ class Proxy(models.Model):
     error_text = models.CharField(max_length=255, blank=True)
     protocol = models.CharField(max_length=10, choices=PROTOCOLS, default=HTTP)
     created = models.DateField(auto_now_add=True)
+    comment = models.CharField(max_length=255, blank=True,)
 
     class Meta:
         unique_together = ['ip', 'port']
