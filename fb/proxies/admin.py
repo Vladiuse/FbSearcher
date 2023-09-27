@@ -8,8 +8,10 @@ class ProxyAdmin(admin.ModelAdmin):
     actions = ['check_proxies']
     list_display = ['pk', 'comment','ip','port', 'url', 'status', 'error_text_short', 'created']
     list_display_links = ['pk', 'ip']
+    search_fields = ['comment']
     @admin.action(description='Проверить прокси')
     def check_proxies(self, request, queryset):
+        queryset.update(status=Proxy.NOT_CHECKED)
         Proxy.check_proxies(qs=queryset)
 
     def error_text_short(self, obj):

@@ -12,6 +12,7 @@ class FbAccountAdmin(admin.ModelAdmin):
     list_display_links = ['pk', 'name']
     actions = ['check_cookies', 'check_cookies_auth', ]
     form = FbAccountForm
+    autocomplete_fields = ['proxy']
 
     @admin.action(description='Проверить файлы куки')
     def check_cookies(self, request, qs):

@@ -33,7 +33,7 @@ class Proxy(models.Model):
         unique_together = ['ip', 'port']
 
     def __str__(self):
-        return f'Id:{self.pk}:{self.ip}:{self.port}'
+        return f'Id:{self.pk}:{self.comment}:{self.ip}'
 
     @property
     def url(self):

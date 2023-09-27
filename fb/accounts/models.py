@@ -36,9 +36,13 @@ class FbAccount(models.Model):
     use_in_work = models.BooleanField(default=True)
     is_cookie_file_valid = models.BooleanField(default=None, null=True)
     is_cookie_auth = models.BooleanField(default=None, null=True)
+    check_text = models.CharField(max_length=255, blank=True)
 
     def __str__(self):
         return self.name
+
+    def check_(self):
+        """Проверить аккаунт, куки файл, аутентификацию и бан"""
 
     def check_cookie_auth(self):
         """Проверить являються ли куки актуальными, залогинен ли аккаунт под ними"""
