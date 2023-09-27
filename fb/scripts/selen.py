@@ -50,7 +50,7 @@ import json
 #
 # driver.quit()
 
-account = FbAccount.objects.get(pk=12)
+account = FbAccount.objects.get(pk=11)
 ext_path = '/home/vlad/html/cclelndahbckbenkjhflpdbgdldlbecc.zip'
 
 chrome_options = Options()
@@ -60,12 +60,11 @@ options = {
         'https': account.proxy.url,
 	}
 }
-cookie = '[{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1730381166","name":"sb","value":"WS0UZfwUKBVo3EIUZs0I7xbF"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1730381166","name":"datr","value":"WS0UZecvQTpSjfA1gKLTbrSM"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1727357166","name":"c_user","value":"100055990284401"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1727357166","name":"xs","value":"24%3ALjluSE9tXHN_fQ%3A2%3A1695821162%3A-1%3A-1"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1703597173","name":"fr","value":"0BwXYkn6wcDXaPmnj.AWU5m7xSO1EPGRCCCDBI3d8GQz8.BlFC1Z.LI.AAA.0.0.BlFC1v.AWUBEschD4g"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"0","name":"presence","value":"C%7B%22t3%22%3A%5B%5D%2C%22utc3%22%3A1695821181332%2C%22v%22%3A1%7D"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1696425997","name":"wd","value":"901x905"}]'
-cookie = json.loads(cookie)
-
+# cookie = '[{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1730381166","name":"sb","value":"WS0UZfwUKBVo3EIUZs0I7xbF"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1730381166","name":"datr","value":"WS0UZecvQTpSjfA1gKLTbrSM"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1727357166","name":"c_user","value":"100055990284401"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1727357166","name":"xs","value":"24%3ALjluSE9tXHN_fQ%3A2%3A1695821162%3A-1%3A-1"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1703597173","name":"fr","value":"0BwXYkn6wcDXaPmnj.AWU5m7xSO1EPGRCCCDBI3d8GQz8.BlFC1Z.LI.AAA.0.0.BlFC1v.AWUBEschD4g"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"0","name":"presence","value":"C%7B%22t3%22%3A%5B%5D%2C%22utc3%22%3A1695821181332%2C%22v%22%3A1%7D"},{"domain":".facebook.com","hostOnly":false,"path":"\/","secure":true,"expirationDate":"1696425997","name":"wd","value":"901x905"}]'
+# cookie = json.loads(cookie)
 driver = webdriver.Chrome( seleniumwire_options=options, chrome_options=chrome_options)
 driver.get('https://facebook.com/')
-for coo in cookie:
+for coo in account.cookie_json:
     driver.add_cookie(coo)
-input()
+input('Press enter to exit: ')
 driver.quit()
