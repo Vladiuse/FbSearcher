@@ -14,6 +14,7 @@ class FbMainPage:
     BAN_MESSAGES = [
         'We suspended your account',
         '180 days',
+        '180 \\u',
     ]
 
     def __init__(self, html):

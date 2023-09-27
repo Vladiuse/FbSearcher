@@ -194,7 +194,11 @@ class FbGroup(models.Model):
             remove_if_exists(self.req_html_data.path)
         file = ContentFile(html)
         file_name = f'{self.pk}.html'
-        self.req_html_data.save(file_name, file)
+        self.req_html_data.save(file_name, file, encodings='utf-8')
+
+    @staticmethod
+    def clean_data():
+        FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED)
 
 
 

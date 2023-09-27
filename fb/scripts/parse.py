@@ -4,7 +4,7 @@ from time import time
 from accounts.models import FbAccount
 from ads.models import FbGroup
 from django.core.paginator import Paginator
-accounts = FbAccount.work_objects.select_related('proxy').all()
+accounts = FbAccount.work_objects.select_related('proxy').filter(pk__in=[10,11,12])
 fb_groups = FbGroup.objects.filter(status=FbGroup.NOT_LOADED)
 from parsers import FbGroupPage
 import os
@@ -25,7 +25,7 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.5'
 }
 
-before_req_sleep = time_sleep_factory(0.5, 1.5)
+before_req_sleep = time_sleep_factory(1, 2)
 def task(account, page):
     sleep(3)
     print('\n***** STREAM *****', account, page)
@@ -62,7 +62,7 @@ def task(account, page):
     auth_count_false = fbgroups_pages_is_auth.count(False)
     per_seccond = round(group_count / total_time, 1)
     print(f'Total time: {total_time}, Per sec: {per_seccond}, auth_count: {auth_count_true}/{auth_count_false}')
-    with open(f'/home/vlad/html/{str(account)}.txt', 'w') as file:
+    with open(f'/home/vlad/html/log_collect_groups/{str(account)}.txt', 'w') as file:
         for line in stat:
             file.write(str(line)+'\n')
 

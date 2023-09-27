@@ -31,6 +31,7 @@ class FbAccount(models.Model):
     mail_password = models.CharField(max_length=50, blank=True)
     status = models.CharField(max_length=50, choices=STATUSES, default=WORK)
     cookie_file = models.FileField(upload_to='cookies', blank=True)
+    cookie_json = models.JSONField(blank=True, default=list)
     created = models.DateField(auto_now_add=True)
     proxy = models.OneToOneField(Proxy, on_delete=models.SET_NULL, blank=True, null=True)
     use_in_work = models.BooleanField(default=True)
@@ -57,12 +58,17 @@ class FbAccount(models.Model):
                           )
             if not res.status_code == 200:
                 raise ZeroDivisionError(res.status_code)
+            # log
             req_log_path = '/home/vlad/PycharmProjects/FbSearcher/fb/media/test_account_cookie_auth'
             req_log_file_name = f'{self.pk}_{self.name}.html'
             with open(os.path.join(req_log_path, req_log_file_name), 'w') as file:
                 file.write(res.text)
+            # log
             page = FbMainPage(res.text)
             self.is_cookie_auth = page.is_auth
+            if page.is_ban:
+                self.is_cookie_auth = False
+                self.check_text = 'Ban'
         self.save()
 
     def check_cookie_file(self): # TODO addcheck is account id in cookie file
