@@ -17,6 +17,8 @@ class FbGroupPage:
     def __call__(self):
         self.get_group_name()
         self.get_group_email()
+        if not self.group_email:
+            self.get_email_by_regex()
 
     @property
     def is_auth(self):
@@ -49,6 +51,13 @@ class FbGroupPage:
         if email_icon_element:
             email_text_content = email_icon_element.parent.parent.get_text().strip()
             self.group_email = email_text_content
+
+    def get_email_by_regex(self):
+        res = re.search(r'"[\w\d_-]{2,50}\\u0040[\w\d_-]{2,50}.[\w]{2,6}"|"[\w\d_-]{2,50}@[\w\d_-]{2,50}\.[\w]{2,6}"',
+                        self.html)
+        if res:
+            email_text = res.group(0)
+            self.group_email= email_text.replace('\\u0040', '@')
 
 
     def find_mail_regex(self):
