@@ -155,46 +155,18 @@ class FbGroup(models.Model):
         }
         return result
 
-    def get_group_req_html(self, cookies_path, log_html_data=True, ) -> str:
-        """Получить исходный код страницы группы"""
-        res = req.get(self.url, headers=headers, cookies=load_netscape_cookies(cookies_path))
-        if res.status_code == 200:
-            if log_html_data:
-                self.log_html_source_file(html=res.text)
-            return res.text
-        else:
-            print('Error req', res.status_code, self)
-            return ''
-
-    def log_html_source_file(self, html):
-        if self.req_html_data:
-            if os.path.exists(self.req_html_data.path):
-                os.remove(self.req_html_data.path)
-        file = ContentFile(html)
-        self.req_html_data.save(f'{self.pk}.html', file)
-
-    def update_group_info(self, cookies_path):
-        html = self.get_group_req_html(cookies_path)
-        if html:
-            page = FbGroupPage(html)
-
-            if page.is_login_form:
-                self.status = self.NEED_LOGIN
-                print('NEED_LOGIN', self)
-            else:
-                page()
-                self.email = page.result.pop('group_email', self.email)
-                self.name = page.result.pop('group_name', self.name)
-                self.status = self.COLLECTED
-                print('GOOD', self, self.email, self.name)
-            self.save()
+    def update(self, data:dict):
+        self.name = data.get('group_name', '')
+        self.email = data.get('group_email', '')
+        self.status = FbGroup.COLLECTED
+        self.save()
 
     def log_req_data(self, html):
         if self.req_html_data:
             remove_if_exists(self.req_html_data.path)
         file = ContentFile(html)
         file_name = f'{self.pk}.html'
-        self.req_html_data.save(file_name, file, encodings='utf-8')
+        self.req_html_data.save(file_name, file)
 
     @staticmethod
     def clean_data():

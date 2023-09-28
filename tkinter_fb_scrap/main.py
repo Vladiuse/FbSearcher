@@ -171,6 +171,7 @@ class App(tk.Tk):
             return
 
         self.scanning = True
+        # self.scan()
         scan_thread = threading.Thread(target=self.scan, args=[])
         scan_thread.start()
 

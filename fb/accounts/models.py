@@ -14,7 +14,15 @@ from selenium.webdriver.firefox.options import Options
 class WorkFbAccountManager(models.Manager):
     def get_queryset(self):
         return FbAccount.objects.filter(use_in_work=True)
+
 class FbAccount(models.Model):
+    HEADERS = {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
+        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+        'Accept-Language': 'en-US,en;q=0.5'
+    }
+    DP_UA = 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/116.0.0.0 Safari/537.36'
+
     WORK = 'work'
     BAN = 'ban'
     NO_PASSWORD = 'no_password'
@@ -38,6 +46,7 @@ class FbAccount(models.Model):
     is_cookie_file_valid = models.BooleanField(default=None, null=True)
     is_cookie_auth = models.BooleanField(default=None, null=True)
     check_text = models.CharField(max_length=255, blank=True)
+    user_agent = models.CharField(max_length=255, default=DP_UA)
 
     def __str__(self):
         return self.name
