@@ -1,7 +1,7 @@
 import os.path
 
 from django.contrib import admin
-from .models import FbGroup
+from .models import FbGroup, FbPagExample
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
@@ -31,17 +31,20 @@ class FbGroupDataFilter(admin.SimpleListFilter):
             return queryset.exclude(name='').exclude(email='')
 
 class FbGroupAdmin(admin.ModelAdmin):
-    list_display = ['pk', 'status','name' ,'email', 'url_link', 'req_log_file']
+    list_display = ['pk', 'status','name' ,'title','email', 'url_link', 'req_log_file']
     list_display_links = ['pk']
     list_filter = ['status', FbGroupDataFilter]
-    search_fields = ['pk']
+    search_fields = ['pk', 'title', 'name']
 
     def url_link(self, obj):
         return mark_safe(f'<a target="_blank" href="{obj.url}">Open group<a/>')
 
     def req_log_file(self, obj):
         if obj.req_html_data and os.path.exists(obj.req_html_data.path):
-            return mark_safe(f'<a target="_blank" href="{obj.req_html_data.path}">{obj.pk}<a/>')
+            return mark_safe(f'<a target="_blank" href="{obj.req_html_data.url}">{obj.pk}<a/>')
         return '-'
+class FbPageExampleAdmin(admin.ModelAdmin):
+    list_display = ['pk', 'name', 'desc']
 
 admin.site.register(FbGroup, FbGroupAdmin)
+admin.site.register(FbPagExample, FbPageExampleAdmin)

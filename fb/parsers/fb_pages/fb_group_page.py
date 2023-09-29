@@ -13,12 +13,22 @@ class FbGroupPage:
         self.soup = BeautifulSoup(html, 'lxml')
         self.group_name = None
         self.group_email = None
+        self.regex_email = None
+        self.regex_name = None
+        self.title = self._get_title()
+        print(self.title)
 
     def __call__(self):
         self.get_group_name()
         self.get_group_email()
         if not self.group_email:
             self.get_email_by_regex()
+
+    def _get_title(self):
+        title = self.soup.find('title')
+        if title:
+            return title.text.strip()
+
 
     @property
     def is_auth(self):
@@ -32,10 +42,13 @@ class FbGroupPage:
             res.update({ 'group_email': self.group_email})
         if self.group_name:
             res.update({'group_name': self.group_name})
+        if self.title:
+            res.update({'title': self.title})
         return res
 
 
     def get_group_name(self):
+        """Достать имя группы из блока"""
         h1_block = self.soup.find('h1', class_='x1heor9g x1qlqyl8 x1pd3egz x1a2a7pz')
         if h1_block:
             if h1_block.find('span'):
@@ -46,6 +59,7 @@ class FbGroupPage:
                 raise NotFoundGroupNameError
 
     def get_group_email(self):
+        """Достать мыло из блока"""
         email_icon_element = self.soup.find('img',
                                        {'src': 'https://static.xx.fbcdn.net/rsrc.php/v3/yE/r/2PIcyqpptfD.png'})
         if email_icon_element:
@@ -53,15 +67,17 @@ class FbGroupPage:
             self.group_email = email_text_content
 
     def get_email_by_regex(self):
-        res = re.search(r'"[\w\d_-]{2,50}\\u0040[\w\d_-]{2,50}.[\w]{2,6}"|"[\w\d_-]{2,50}@[\w\d_-]{2,50}\.[\w]{2,6}"',
-                        self.html)
+        """Найти мыло в коде (елси незалогинен)"""
+        res = re.search(r'"text":"[\w\d_-]{2,50}(\\u0040|@)[\w\d_-]{2,50}\.[\w]{2,6}"',
+                         self.html)
         if res:
             email_text = res.group(0)
             self.group_email= email_text.replace('\\u0040', '@')
 
+    def is_login_form(self):
+        """Являеться ли страница страницей входа ( сформой)"""
+        pass
 
-    def find_mail_regex(self):
-        match = re.search('[\w\-.]{2,50}@[\w\-.]{1,20}', self.html)
 
 
 if __name__ == '__main__':

@@ -16,7 +16,7 @@ HEADERS = {
     'Accept-Language': 'en-US,en;q=0.5'
 }
 
-group = FbGroup.objects.all()
+
 start = time()
 def task(page):
     for num,group in enumerate(page.object_list):
@@ -35,9 +35,9 @@ def task(page):
 
 end = time()
 print(start- end)
-groups = FbGroup.objects.exclude(status='collected')
+groups = FbGroup.objects.filter(status='not_loaded')
 print(groups.count())
-paginator = Paginator(groups, 200)
+paginator = Paginator(groups, 700)
 for page_num in paginator.page_range:
     page = paginator.page(page_num)
     print(page)

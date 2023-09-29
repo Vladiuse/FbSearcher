@@ -16,7 +16,7 @@ HEADERS = {
     'Accept-Language': 'en-US,en;q=0.5'
 }
 
-group = FbGroup.objects.all()[1251:]
+group = FbGroup.objects.all()[3000:4000]
 start = time()
 for num,group in enumerate(group):
     try:

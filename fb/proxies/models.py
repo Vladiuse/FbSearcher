@@ -2,6 +2,7 @@ from django.db import models
 from .check_proxies import CheckProxyApi64, CheckProxyHttpBin, CodeNot200
 from requests.exceptions import ConnectTimeout
 
+
 class Proxy(models.Model):
     WORK = True
     NOT_WORK = False
@@ -23,11 +24,11 @@ class Proxy(models.Model):
     port = models.CharField(max_length=6)
     login = models.CharField(max_length=30)
     password = models.CharField(max_length=30)
-    status = models.BooleanField(max_length=50,  default=NOT_CHECKED, null=True)
+    status = models.BooleanField(max_length=50, default=NOT_CHECKED, null=True)
     error_text = models.CharField(max_length=255, blank=True)
     protocol = models.CharField(max_length=10, choices=PROTOCOLS, default=HTTP)
     created = models.DateField(auto_now_add=True)
-    comment = models.CharField(max_length=255, blank=True,)
+    comment = models.CharField(max_length=255, blank=True, )
 
     class Meta:
         unique_together = ['ip', 'port']
@@ -42,9 +43,7 @@ class Proxy(models.Model):
         else:
             return f'{self.protocol}://{self.ip}:{self.port}/'
 
-
-    def check_proxy(self, *,no_proxy_ip):
-        print(self)
+    def check_proxy(self, *, no_proxy_ip):
         try:
             checkers_result = []
             for checker_class in (CheckProxyApi64, CheckProxyHttpBin):
@@ -57,9 +56,12 @@ class Proxy(models.Model):
             if all(checkers_result):
                 self.status = Proxy.WORK
                 self.error_text = ''
+            elif any(checkers_result):
+                self.status = Proxy.NOT_WORK
+                self.error_text = 'Айпи не поменялся'
             else:
                 self.status = Proxy.NOT_WORK
-                self.error_text = 'diff checkers result'
+                self.error_text = 'Diff checkers result'
         except ConnectTimeout:
             self.error_text = 'Time out error'
             self.status = Proxy.NOT_WORK
@@ -75,10 +77,9 @@ class Proxy(models.Model):
     @staticmethod
     def check_proxies(qs):
         no_proxy_ip = CheckProxyApi64.get_ip()
-        print(no_proxy_ip, 'no_proxy_ip')
+        print('Текущий :', no_proxy_ip)
         for proxy_model in qs:
             proxy_model.check_proxy(no_proxy_ip=no_proxy_ip)
-
 
 # class ProxyPassword(Proxy):
 #     login = models.CharField(max_length=30)
@@ -88,5 +89,3 @@ class Proxy(models.Model):
 #     @property
 #     def url(self):
 #         return f'http://{self.login}:{self.password}@{self.data}/'
-
-

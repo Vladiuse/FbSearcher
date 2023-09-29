@@ -12,6 +12,7 @@ from django.core.files.base import ContentFile
 from io import StringIO
 from django.db.models import Q
 import http.cookiejar
+import shutil
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -95,6 +96,10 @@ class FbGroup(models.Model):
         max_length=255,
         blank=True,
     )
+    title = models.CharField(
+        max_length=255,
+        blank=True,
+    )
     email = models.EmailField(
         blank=True,
     )
@@ -158,6 +163,7 @@ class FbGroup(models.Model):
     def update(self, data:dict):
         self.name = data.get('group_name', self.name)
         self.email = data.get('group_email', self.email)
+        self.title = data.get('title', self.title)
         self.status = FbGroup.COLLECTED
         self.save()
 
@@ -170,7 +176,7 @@ class FbGroup(models.Model):
 
     @staticmethod
     def clean_data():
-        FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED)
+        FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='')
 
 
 
@@ -189,3 +195,13 @@ class ThreadCounter(models.Model):
     @staticmethod
     def clean_counters():
         ThreadCounter.objects.bulk_update(count=0)
+
+
+class FbPagExample(models.Model):
+
+    name = models.CharField(max_length=255)
+    desc = models.CharField(max_length=255)
+    template = models.FileField(upload_to='fb_pages_examples')
+
+    def __str__(self):
+        return self.name

@@ -33,7 +33,8 @@ class CheckProxy:
 
     def get_proxy_ip(self):
         proxies = {
-            'https': self.proxy
+            'https': self.proxy,
+            # 'http': self.proxy,
         }
         res = req.get(self.GET_MY_IP, proxies=proxies, timeout=CheckProxy.CHECK_TIMEOUT)
         if res.status_code == 200:
@@ -51,7 +52,9 @@ class CheckProxyApi64(CheckProxy):
 
     @staticmethod
     def get_ip_from_response(res) -> str:
-        return res.json()['ip']
+        ip = res.json()['ip']
+        print(' 1 CheckProxyApi64', ip)
+        return ip
 
 
 class CheckProxyHttpBin(CheckProxy):
@@ -59,4 +62,6 @@ class CheckProxyHttpBin(CheckProxy):
 
     @staticmethod
     def get_ip_from_response(res) -> str:
-        return res.json()['origin']
+        ip = res.json()['origin']
+        print('1 CheckProxyHttpBin', ip)
+        return ip
