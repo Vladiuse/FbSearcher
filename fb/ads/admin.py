@@ -34,7 +34,7 @@ class FbGroupAdmin(admin.ModelAdmin):
     list_display = ['pk', 'status','name' ,'title','email', 'url_link', 'req_log_file']
     list_display_links = ['pk']
     list_filter = ['status', FbGroupDataFilter]
-    search_fields = ['pk', 'title', 'name']
+    search_fields = ['pk', 'title', 'name', 'email']
 
     def url_link(self, obj):
         return mark_safe(f'<a target="_blank" href="{obj.url}">Open group<a/>')

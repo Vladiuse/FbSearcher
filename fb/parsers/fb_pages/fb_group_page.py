@@ -16,7 +16,6 @@ class FbGroupPage:
         self.regex_email = None
         self.regex_name = None
         self.title = self._get_title()
-        print(self.title)
 
     def __call__(self):
         self.get_group_name()
