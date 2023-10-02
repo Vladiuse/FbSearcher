@@ -19,15 +19,22 @@ class FbGroupPage:
 
     def __call__(self):
         self.get_group_name()
-        self.get_group_email()
-        if not self.group_email:
-            self.get_email_by_regex()
+        self.find_email()
 
     def _get_title(self):
         title = self.soup.find('title')
         if title:
             return title.text.strip()
 
+    def find_email(self):
+        self.group_email = self.get_group_email_from_html_block()
+        if not self.group_email:
+            self.group_email = self.get_email_by_regex()
+
+    @property
+    def is_login_form(self):
+        """Являеться ли страница страницей входа (сформой)"""
+        return
 
     @property
     def is_auth(self):
@@ -57,26 +64,67 @@ class FbGroupPage:
             if not self.group_name:
                 raise NotFoundGroupNameError
 
-    def get_group_email(self):
+    def get_group_email_from_html_block(self):
         """Достать мыло из блока"""
         email_icon_element = self.soup.find('img',
                                        {'src': 'https://static.xx.fbcdn.net/rsrc.php/v3/yE/r/2PIcyqpptfD.png'})
         if email_icon_element:
             email_text_content = email_icon_element.parent.parent.get_text().strip()
-            self.group_email = email_text_content
+            return email_text_content
 
     def get_email_by_regex(self):
-        """Найти мыло в коде (елси незалогинен)"""
+        """Найти мыло в коде (елси незалогинен)
+        Пример: "text":"someemail@gmail.com"
+        """
         res = re.search(r'"text":"[\w\d_-]{2,50}(\\u0040|@)[\w\d_-]{2,50}\.[\w]{2,6}"',
                          self.html)
         if res:
-            email_text = res.group(0)
-            self.group_email= email_text.replace('\\u0040', '@')
+            email_text_in_code = res.group(0)
+            email_text_in_code = email_text_in_code.replace('"text":"','')
+            email_text_in_code = email_text_in_code.replace('"','')
+            email_text_in_code = email_text_in_code.replace('\\u0040','@')
+            return email_text_in_code
 
-    def is_login_form(self):
-        """Являеться ли страница страницей входа ( сформой)"""
-        pass
 
+class FbGroupPageNoAuth:
+
+    def __init__(self, html):
+        self.html = html
+        self.soup = BeautifulSoup(html, 'lxml')
+        self.email = None
+        self.name = None
+
+    def __call__(self):
+        self.name = self.get_name()
+        self.email = self.get_email()
+
+    def get_email(self):
+        return self._get_email_by_regex()
+
+    def get_name(self):
+        return self._get_name_from_title()
+
+    def _get_name_from_title(self):
+        title = self.soup.find('title')
+        if title:
+            if '|' in title.text:
+                name, *other = title.text.split('|')
+                return name.strip()
+            else:
+                return title.text.strip()
+
+    def _get_email_by_regex(self):
+        """Найти мыло в коде (елси незалогинен)
+        Пример: "text":"someemail@gmail.com"
+        """
+        res = re.search(r'"text":"[\w\d_-]{2,50}(\\u0040|@)[\w\d_-]{2,50}\.[\w]{2,6}"',
+                         self.html)
+        if res:
+            email_text_in_code = res.group(0)
+            email_text_in_code = email_text_in_code.replace('"text":"','')
+            email_text_in_code = email_text_in_code.replace('"','')
+            email_text_in_code = email_text_in_code.replace('\\u0040','@')
+            return email_text_in_code
 
 
 if __name__ == '__main__':

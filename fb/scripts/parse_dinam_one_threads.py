@@ -38,7 +38,7 @@ end = time()
 print(start- end)
 groups = FbGroup.objects.filter(status='not_loaded')
 print(groups.count())
-paginator = Paginator(groups, 700)
+paginator = Paginator(groups, 710)
 for page_num in paginator.page_range:
     page = paginator.page(page_num)
     print(page)

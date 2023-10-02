@@ -44,7 +44,8 @@ class FbGroupAdmin(admin.ModelAdmin):
             return mark_safe(f'<a target="_blank" href="{obj.req_html_data.url}">{obj.pk}<a/>')
         return '-'
 class FbPageExampleAdmin(admin.ModelAdmin):
-    list_display = ['pk', 'name', 'desc']
+    list_display = ['pk', 'type', 'desc', 'name','is_auth']
+    list_display_links = ['pk', 'name']
 
 admin.site.register(FbGroup, FbGroupAdmin)
 admin.site.register(FbPagExample, FbPageExampleAdmin)

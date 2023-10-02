@@ -199,9 +199,16 @@ class ThreadCounter(models.Model):
 
 class FbPagExample(models.Model):
 
+    PAGES_TYPES = [
+        ('fb_group', 'Группа'),
+        ('fb_main', 'Главная'),
+    ]
+    type = models.CharField(max_length=30, blank=True, choices=PAGES_TYPES)
     name = models.CharField(max_length=255)
     desc = models.CharField(max_length=255)
     template = models.FileField(upload_to='fb_pages_examples')
+    orig_url = models.URLField(blank=True)
+    is_auth = models.BooleanField(verbose_name='Выполнен ли вход')
 
     def __str__(self):
         return self.name
