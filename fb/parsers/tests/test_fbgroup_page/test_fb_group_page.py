@@ -1,5 +1,5 @@
 from unittest import TestCase
-from parsers import FbGroupPage
+from parsers import FbGroupPage, FbGroupPageNoAuth
 
 class TestGetMail(TestCase):
 
@@ -32,34 +32,38 @@ class TestGetMail(TestCase):
         self.assertEqual(result, None)
 
 
+
+
+class FbGroupNoAuthTestEmail(TestCase):
+
     def test_get_email_by_regex_no_email(self):
         code = """ """
-        page = FbGroupPage(code)
-        result = page.get_email_by_regex()
+        page = FbGroupPageNoAuth(code)
+        result = page._get_email_by_regex()
         self.assertEqual(result, None)
 
     def test_get_email_by_regex_email_exists(self):
         code = """Найти мыло в коде (елси незалогинен)
               Пример: "text":"someemail@gmail.com" dasda
               """
-        page = FbGroupPage(code)
-        result = page.get_email_by_regex()
+        page = FbGroupPageNoAuth(code)
+        result = page._get_email_by_regex()
         self.assertEqual(result, 'someemail@gmail.com')
 
     def test_get_email_by_regex_email_exists_2(self):
         code = """Найти мыло в коде (елси незалогинен)
               Пример: "text":"someemail\\u0040gmail.com" dasda
               """
-        page = FbGroupPage(code)
-        result = page.get_email_by_regex()
+        page = FbGroupPageNoAuth(code)
+        result = page._get_email_by_regex()
         self.assertEqual(result, 'someemail@gmail.com')
 
     def test_get_email_by_regex_email_clean_code_1(self):
         code = """Найти мыло в коде (елси незалогинен)
               Пример: "text":"someemail@gmail.com" dasda
               """
-        page = FbGroupPage(code)
-        result = page.get_email_by_regex()
+        page = FbGroupPageNoAuth(code)
+        result = page._get_email_by_regex()
         self.assertEqual(result, 'someemail@gmail.com')
         for string in ('"', '"text"', ':', ' '):
             self.assertTrue(string not in result)
@@ -68,10 +72,114 @@ class TestGetMail(TestCase):
         code = """Найти мыло в коде (елси незалогинен)
               Пример: "text":"someemail\\u0040gmail.com" dasda
               """
-        page = FbGroupPage(code)
-        result = page.get_email_by_regex()
+        page = FbGroupPageNoAuth(code)
+        result = page._get_email_by_regex()
         self.assertEqual(result, 'someemail@gmail.com')
         for string in ('"', '"text"', ':', ' '):
             self.assertTrue(string not in result)
+
+    def test_get_email(self):
+        code = """Найти мыло в коде (елси незалогинен)
+              Пример: "text":"someemail\\u0040gmail.com" dasda
+              """
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, 'someemail@gmail.com')
+
+
+
+class FbGroupNoAuthTestName(TestCase):
+
+    def test_no_title(self):
+        code = ''
+        page = FbGroupPageNoAuth(code)
+        res = page._get_name_from_title()
+        self.assertIsNone(res)
+
+    def test_title_exists(self):
+        code = """
+        <title>xxx</title>
+        """
+        page = FbGroupPageNoAuth(code)
+        res = page._get_name_from_title()
+        self.assertEqual(res, 'xxx')
+
+    def test_clean_title_one(self):
+        code = """
+        <title>xxx| yyy</title>
+        """
+        page = FbGroupPageNoAuth(code)
+        res = page._get_name_from_title()
+        self.assertEqual(res, 'xxx')
+
+    def test_clean_title_few(self):
+        code = """
+        <title>xxx| yyy | zzz</title>
+        """
+        page = FbGroupPageNoAuth(code)
+        res = page._get_name_from_title()
+        self.assertEqual(res, 'xxx')
+
+    def test_get_name(self):
+        code = """
+        <title>xxx| yyy | zzz</title>
+        """
+        page = FbGroupPageNoAuth(code)
+        res = page.get_name()
+        self.assertEqual(res, 'xxx')
+
+
+class FbGroupNoAuthTest(TestCase):
+
+    def test_call(self):
+        code = """
+        <title>xxx| yyy | zzz</title>
+        Найти мыло в коде (елси незалогинен)
+              Пример: "text":"someemail\\u0040gmail.com" dasda
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertTrue(page.name, 'xxx')
+        self.assertTrue(page.email, 'someemail@gmail.com')
+
+    def test_get_result_no_data(self):
+        code = """
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.result, {})
+
+    def test_get_result_no_email(self):
+        code = """
+                <title>xxx| yyy | zzz</title>
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.result['name'], 'xxx')
+        self.assertTrue('email' not in page.result)
+
+    def test_get_result_no_name(self):
+        code = """
+                     Найти мыло в коде (елси незалогинен)
+              Пример: "text":"someemail\\u0040gmail.com" dasda
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.result['email'], 'someemail@gmail.com')
+        self.assertTrue('name' not in page.result)
+
+    def test_not_call_before_result(self):
+        code = """
+                     Найти мыло в коде (елси незалогинен)
+              Пример: "text":"someemail\\u0040gmail.com" dasda
+        """
+        page = FbGroupPageNoAuth(code)
+        with self.assertRaises(AttributeError):
+            page.result
+
+
+
+
+
 
 

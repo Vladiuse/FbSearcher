@@ -87,16 +87,32 @@ class FbGroupPage:
 
 
 class FbGroupPageNoAuth:
+    """Группа Фб ьез аутентификации"""
 
     def __init__(self, html):
         self.html = html
         self.soup = BeautifulSoup(html, 'lxml')
         self.email = None
         self.name = None
+        self._title = None
 
     def __call__(self):
         self.name = self.get_name()
         self.email = self.get_email()
+        setattr(self,'_is_call', True)
+
+    @property
+    def result(self):
+        if not hasattr(self, '_is_call'):
+            raise AttributeError('Call FbGroup before result')
+        res = {}
+        if self.email:
+            res.update({ 'email': self.email})
+        if self.name:
+            res.update({'name': self.name})
+        if self._title:
+            res.update({'title': self._title})
+        return res
 
     def get_email(self):
         return self._get_email_by_regex()
@@ -107,6 +123,7 @@ class FbGroupPageNoAuth:
     def _get_name_from_title(self):
         title = self.soup.find('title')
         if title:
+            self._title = title.text
             if '|' in title.text:
                 name, *other = title.text.split('|')
                 return name.strip()
