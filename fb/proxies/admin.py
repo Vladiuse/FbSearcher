@@ -1,14 +1,16 @@
 from django.contrib import admin
 from django import forms
-from .models import Proxy
+from .models import Proxy, ProxyAuth, ProxyMobile
 from .form import ProxyForm
 
+
+
 class ProxyAdmin(admin.ModelAdmin):
-    form = ProxyForm
     actions = ['check_proxies']
-    list_display = ['pk', 'fbaccount','comment','ip','port', 'url', 'status', 'error_text_short', 'created']
+    list_display = ['pk', 'comment','ip','port', 'url', 'status', 'error_text_short', 'created']
     list_display_links = ['pk', 'ip']
     search_fields = ['comment']
+    form = ProxyForm
     @admin.action(description='Проверить прокси')
     def check_proxies(self, request, queryset):
         queryset.update(status=Proxy.NOT_CHECKED)
@@ -20,4 +22,5 @@ class ProxyAdmin(admin.ModelAdmin):
         return obj.error_text
 
 admin.site.register(Proxy, ProxyAdmin)
-
+admin.site.register(ProxyAuth, ProxyAdmin)
+admin.site.register(ProxyMobile, ProxyAdmin)

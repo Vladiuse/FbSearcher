@@ -3,7 +3,7 @@ from .check_proxies import CheckProxyApi64, CheckProxyHttpBin, CodeNot200
 from requests.exceptions import ConnectTimeout
 
 
-class Proxy(models.Model):
+class ProxyAbs(models.Model):
     WORK = True
     NOT_WORK = False
     NOT_CHECKED = None
@@ -22,8 +22,6 @@ class Proxy(models.Model):
     )
     ip = models.GenericIPAddressField()
     port = models.CharField(max_length=6)
-    login = models.CharField(max_length=30)
-    password = models.CharField(max_length=30)
     status = models.BooleanField(max_length=50, default=NOT_CHECKED, null=True)
     error_text = models.CharField(max_length=255, blank=True)
     protocol = models.CharField(max_length=10, choices=PROTOCOLS, default=HTTP)
@@ -31,6 +29,7 @@ class Proxy(models.Model):
     comment = models.CharField(max_length=255, blank=True, )
 
     class Meta:
+        abstract = True
         unique_together = ['ip', 'port']
 
     def __str__(self):
@@ -38,10 +37,7 @@ class Proxy(models.Model):
 
     @property
     def url(self):
-        if self.login and self.password:
-            return f'{self.protocol}://{self.login}:{self.password}@{self.ip}:{self.port}/'
-        else:
-            return f'{self.protocol}://{self.ip}:{self.port}/'
+        return f'{self.protocol}://{self.ip}:{self.port}/'
 
     def check_proxy(self, *, no_proxy_ip):
         try:
@@ -54,23 +50,23 @@ class Proxy(models.Model):
                 else:
                     checkers_result.append(False)
             if all(checkers_result):
-                self.status = Proxy.WORK
+                self.status = ProxyAbs.WORK
                 self.error_text = ''
             elif any(checkers_result):
-                self.status = Proxy.NOT_WORK
+                self.status = ProxyAbs.NOT_WORK
                 self.error_text = 'Айпи не поменялся'
             else:
-                self.status = Proxy.NOT_WORK
+                self.status = ProxyAbs.NOT_WORK
                 self.error_text = 'Diff checkers result'
         except ConnectTimeout:
             self.error_text = 'Time out error'
-            self.status = Proxy.NOT_WORK
+            self.status = ProxyAbs.NOT_WORK
         except CodeNot200:
             self.error_text = 'Not 200 status code'
-            self.status = Proxy.NOT_WORK
+            self.status = ProxyAbs.NOT_WORK
         except Exception as error:
             self.error_text = str(error)[:255]
-            self.status = Proxy.NOT_WORK
+            self.status = ProxyAbs.NOT_WORK
         finally:
             self.save()
 
@@ -81,11 +77,22 @@ class Proxy(models.Model):
         for proxy_model in qs:
             proxy_model.check_proxy(no_proxy_ip=no_proxy_ip)
 
-# class ProxyPassword(Proxy):
-#     login = models.CharField(max_length=30)
-#     password = models.CharField(max_length=30)
-#
-#
-#     @property
-#     def url(self):
-#         return f'http://{self.login}:{self.password}@{self.data}/'
+class Proxy(ProxyAbs):
+    pass
+
+class ProxyAuth(ProxyAbs):
+    login = models.CharField(max_length=30)
+    password = models.CharField(max_length=30)
+
+    @property
+    def url(self):
+        return f'{self.protocol}://{self.login}:{self.password}@{self.ip}:{self.port}/'
+
+class ProxyMobile(ProxyAbs):
+    login = models.CharField(max_length=30)
+    password = models.CharField(max_length=30)
+    change_ip_url = models.URLField()
+
+    @property
+    def url(self):
+        return f'{self.protocol}://{self.login}:{self.password}@{self.ip}:{self.port}/'

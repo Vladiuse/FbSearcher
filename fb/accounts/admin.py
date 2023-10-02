@@ -6,13 +6,11 @@ from .models import FbAccount
 from .forms import FbAccountForm
 
 
-
 class FbAccountAdmin(admin.ModelAdmin):
-    list_display = ['pk', 'name', 'proxy','status', 'created', 'use_in_work', 'cookie_file', 'is_cookie_file_valid', 'is_cookie_auth', 'check_text']
+    list_display = ['pk', 'name','status', 'created', 'use_in_work', 'cookie_file', 'is_cookie_file_valid', 'is_cookie_auth', 'check_text']
     list_display_links = ['pk', 'name']
     actions = ['check_cookies', 'check_cookies_auth', ]
     form = FbAccountForm
-    autocomplete_fields = ['proxy']
 
     @admin.action(description='Проверить файлы куки')
     def check_cookies(self, request, qs):
