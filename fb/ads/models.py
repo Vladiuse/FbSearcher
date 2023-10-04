@@ -176,7 +176,7 @@ class FbGroup(models.Model):
 
     @staticmethod
     def clean_data():
-        FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='')
+        FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
 
 
 
