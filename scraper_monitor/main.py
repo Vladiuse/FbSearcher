@@ -8,8 +8,6 @@ from time import sleep
 from threading import Thread
 
 
-
-
 class Response:
 
     def __init__(self, status_code, text=None):
@@ -47,13 +45,18 @@ def draw_proxy(num):
 
 
 class ProxyStream:
-
     REQ_BAR_MAX_LEN = 35
 
     def __init__(self, proxy):
         self.proxy = proxy
-        self.reqs = [r.randint(0,1) for _ in range(r.randint(0,100))]
-        self.progress_frame = ttk.Frame(self.proxy.frame, borderwidth=1, relief='solid', padding=[5, 10], )
+        self.reqs = [r.randint(0, 1) for _ in range(r.randint(0, 100))]
+
+        # stream frame
+        self.stream_frame = ttk.Frame(self.proxy.frame, borderwidth=1, relief='solid', padding=[5, 10], )
+        self.stream_frame.pack(padx=5, pady=5, expand=True, fill=X)
+
+        # line 2
+        self.progress_frame = ttk.Frame(self.stream_frame, )
         self.progress_frame.pack(padx=5, pady=5, expand=True, fill=X)
         self.stream_name_label = ttk.Label(self.progress_frame, text=f'Thread #{1}')
         self.stream_name_label.grid(row=0, column=0)
@@ -64,35 +67,33 @@ class ProxyStream:
         self.kill_stream_btn = ttk.Button(self.progress_frame, text=f'Kill #{1}', )
         self.kill_stream_btn.grid(row=0, column=3, padx=5, )
 
-        self.status_frame = ttk.Frame(self.proxy.frame, borderwidth=1, relief='solid', padding=[5, 10], )
+        self.status_frame = ttk.Frame(self.stream_frame, )
         self.status_frame.pack(padx=5, pady=5, expand=True, fill=X)
         self.success_reqs_label = ttk.Label(self.status_frame, text='Success: 30')
-        self.success_reqs_label.pack(side=LEFT, padx=5)
+        self.success_reqs_label.pack(side=LEFT)
         self.mails_count_label = ttk.Label(self.status_frame, text='Mails: 15')
         self.mails_count_label.pack(side=LEFT, padx=5)
         self.errors_count_label = ttk.Label(self.status_frame, text='Errors: 3')
         self.errors_count_label.pack(side=LEFT, padx=5)
-        self.reqs_canvas = Canvas(self.status_frame,bg='grey',width=460, height=20)
+        self.reqs_canvas = Canvas(self.status_frame, bg='grey', width=460, height=20)
         self.reqs_canvas.pack(side=LEFT, padx=5)
         padding = 3
-        height =16
+        height = 16
         width = 10
         if len(self.reqs) < self.REQ_BAR_MAX_LEN:
             line = self.reqs
         else:
             line = self.reqs[-self.REQ_BAR_MAX_LEN:]
         print(len(self.reqs), len(line))
-        for i,req in enumerate(line):
+        for i, req in enumerate(line):
             top = 2
             if req:
                 fill = '#A8D863'
             else:
                 fill = '#D87763'
             self.reqs_canvas.create_rectangle(
-                i*(width+padding), top, i*(width+padding) + width, padding+ height,
-                outline=fill,fill=fill)
-
-
+                i * (width + padding), top, i * (width + padding) + width, padding + height,
+                outline=fill, fill=fill)
 
 
 class ProxyBar:
@@ -120,7 +121,7 @@ class ProxyBar:
 
 
 root = Tk()
-root.geometry('800x600')
+root.geometry('800x1000')
 for i in range(1, 3):
     ProxyBar(i)
 
