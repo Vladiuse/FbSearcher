@@ -18,13 +18,17 @@ class Response:
 class Request:
 
     def get(self, url):
+        if r.randint(0, 8) == 8:
+            raise AttributeError
         choices = [
             Response(200, {'name': 'XXX', 'email': 'some@gmail.com'}),
             Response(200, {'name': 'XXX', }),
+            Response(200, {}),
             Response(300),
         ]
         sleep(r.uniform(0.5, 1.5))
         return r.choice(choices)
+
 
 req = Request()
 
@@ -54,7 +58,7 @@ class ProxyStream:
         self.reqs = []
         self.urls = urls
 
-        #counters
+        # counters
         self.success_reqs_count = 0
         self.emails_count = 0
         self.error_reqs_count = 0
@@ -88,36 +92,47 @@ class ProxyStream:
         self.reqs_canvas.pack(side=LEFT, padx=5)
 
     def _draw_canvas_reqs(self):
+        ERROR_REQ_COLOR = '#dc0000'
+        NO_DATA_COLOR = '#F1C830'
+        NO_MAIL_COLOR = '#BFF130'
+        FULL_DATA = '#39F130'
         self.reqs_canvas.delete('all')
         padding = 3
         height = 16
         width = 10
+        top = 2
         if len(self.reqs) < self.REQ_BAR_MAX_LEN:
             line = self.reqs
         else:
             line = self.reqs[-self.REQ_BAR_MAX_LEN:]
-        for i, req in enumerate(line):
-            top = 2
-            if req.status_code == 200:
-                fill = '#A8D863'
+        for i, res in enumerate(line):
+            if isinstance(res, Response):
+                if not res.text:
+                    fill = NO_DATA_COLOR
+                elif 'email' not in res.text:
+                    fill = NO_MAIL_COLOR
+                else:
+                    fill = FULL_DATA
             else:
-                fill = '#D87763'
+                fill = ERROR_REQ_COLOR
             self.reqs_canvas.create_rectangle(
                 i * (width + padding), top, i * (width + padding) + width, padding + height,
                 outline=fill, fill=fill)
 
     def run(self):
-        for num,url in enumerate(self.urls):
-            res = req.get(url)
+        for num, url in enumerate(self.urls):
+            try:
+                res = req.get(url)
+            except Exception as error:
+                res = error
             self.reqs.append(res)
             self.update_req_counters(res)
 
-
         self.stream_name_label['background'] = '#96DB33'
 
-    def update_req_counters(self,res):
+    def update_req_counters(self, res):
         self.reqs_count += 1
-        if res.status_code == 200:
+        if isinstance(res, Response) and res.status_code == 200:
             self.success_reqs_count += 1
             if 'email' in res.text:
                 self.emails_count += 1
@@ -142,7 +157,7 @@ class ProxyBar:
         self.urls = ['1' for _ in range(30)]
         self.total_reqs_count = 0
 
-        #ttk
+        # ttk
         self.frame = ttk.Frame(borderwidth=1, relief='solid', padding=[5, 10])
         self.frame.pack(padx=5, pady=5, expand=True, anchor='nw', fill=X)
         self.proxy_name_label = ttk.Label(self.frame, text=f'Proxy #{num}')
@@ -158,6 +173,8 @@ class ProxyBar:
         self.kill_stream_btn = ttk.Button(self.frame, text=f'Kill proxy', )
         self.kill_stream_btn.pack()
         self.streams = [ProxyStream(self, ['1' for _ in range(50)]) for _ in range(ProxyBar.STREAM_COUNT)]
+
+    def start_parse(self):
         for proxy_stream in self.streams:
             thread = Thread(target=proxy_stream.run)
             thread.start()
@@ -172,51 +189,20 @@ class ProxyBar:
 
 root = Tk()
 root.geometry('800x1000')
+proxies = []
+
+
+def start_parse():
+    start_btn['state'] = ["disabled"]
+    start_btn['text'] = 'Processed'
+    for proxy in proxies:
+        proxy.start_parse()
+
+
+start_btn = ttk.Button(text='Start', command=start_parse)
+start_btn.pack(pady=10)
 for i in range(1, 3):
-    ProxyBar(i)
+    proxies.append(ProxyBar(i))
 
 root.mainloop()
-#
-# class Stream:
-#
-#     def __init__(self, stream_name):
-#         self.value = 0
-#         self.progres_label = ttk.Label(text=stream_name)
-#         self.progres_bar = ttk.Progressbar(maximum=100, value=self.value, length=500)
-#         self.progres_label.pack(pady=10)
-#         self.progres_bar.pack()
-#
-#     def start(self):
-#         print('22222')
-#         sleep(1)
-#         while self.value <= 100:
-#             self.value += r.randint(1,8)
-#             sleep(0.3)
-#             self.progres_bar['value'] = self.value
-#         else:
-#             self.progres_label['foreground'] = '#B71C1C'
-#             self.progres_label['background'] = '#FFCDD2'
-#             self.progres_label['text'] = self.progres_label['text'] + ' Complete'
-#
-# # def draw_bar(stream_name):
-# #     s = Stream(stream_name)
-# #     s.start()
-#
-# def main():
-#     bars = [Stream(f'Stream #{i}') for i in range(5)]
-#     for bar in bars:
-#         thread = Thread(target=bar.start)
-#         thread.start()
-#     print('11111')
-#     sleep(10)
-#     for t in threading.enumerate():
-#         print(t, t.name)
-#     # sleep(1)
-#     # print('SLEEP 10')
-#     # for t in threading.enumerate():
-#     #     print(t, t.name)
-#
-#
-# start_btn = ttk.Button(text='start', command=main)
-# start_btn.pack()
-# root.mainloop()
+
