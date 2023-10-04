@@ -26,6 +26,8 @@ class Request:
         sleep(r.uniform(0.5, 1.5))
         return r.choice(choices)
 
+req = Request()
+
 
 def draw_proxy(num):
     frame = ttk.Frame(borderwidth=1, relief='solid', padding=[5, 10])
@@ -47,9 +49,16 @@ def draw_proxy(num):
 class ProxyStream:
     REQ_BAR_MAX_LEN = 35
 
-    def __init__(self, proxy):
+    def __init__(self, proxy, urls):
         self.proxy = proxy
-        self.reqs = [r.randint(0, 1) for _ in range(r.randint(0, 100))]
+        self.reqs = []
+        self.urls = urls
+
+        #counters
+        self.success_reqs_count = 0
+        self.emails_count = 0
+        self.error_reqs_count = 0
+        self.reqs_count = 0
 
         # stream frame
         self.stream_frame = ttk.Frame(self.proxy.frame, borderwidth=1, relief='solid', padding=[5, 10], )
@@ -60,20 +69,20 @@ class ProxyStream:
         self.progress_frame.pack(padx=5, pady=5, expand=True, fill=X)
         self.stream_name_label = ttk.Label(self.progress_frame, text=f'Thread #{1}')
         self.stream_name_label.grid(row=0, column=0)
-        self.stream_progress_label = ttk.Label(self.progress_frame, text=f'({10}/{120})')
+        self.stream_progress_label = ttk.Label(self.progress_frame, text=f'({0}/{len(self.urls)})')
         self.stream_progress_label.grid(row=0, column=1, padx=5)
-        self.progress_bar = ttk.Progressbar(self.progress_frame, maximum=100, value=10, length=500, )
+        self.progress_bar = ttk.Progressbar(self.progress_frame, maximum=len(self.urls), value=0, length=500, )
         self.progress_bar.grid(row=0, column=2)
         self.kill_stream_btn = ttk.Button(self.progress_frame, text=f'Kill #{1}', )
         self.kill_stream_btn.grid(row=0, column=3, padx=5, )
 
         self.status_frame = ttk.Frame(self.stream_frame, )
         self.status_frame.pack(padx=5, pady=5, expand=True, fill=X)
-        self.success_reqs_label = ttk.Label(self.status_frame, text='Success: 30')
+        self.success_reqs_label = ttk.Label(self.status_frame, text=f'Success: {0}')
         self.success_reqs_label.pack(side=LEFT)
-        self.mails_count_label = ttk.Label(self.status_frame, text='Mails: 15')
+        self.mails_count_label = ttk.Label(self.status_frame, text=f'Mails: {0}')
         self.mails_count_label.pack(side=LEFT, padx=5)
-        self.errors_count_label = ttk.Label(self.status_frame, text='Errors: 3')
+        self.errors_count_label = ttk.Label(self.status_frame, text=f'Errors: {0}')
         self.errors_count_label.pack(side=LEFT, padx=5)
         self.reqs_canvas = Canvas(self.status_frame, bg='grey', width=460, height=20)
         self.reqs_canvas.pack(side=LEFT, padx=5)
@@ -84,7 +93,6 @@ class ProxyStream:
             line = self.reqs
         else:
             line = self.reqs[-self.REQ_BAR_MAX_LEN:]
-        print(len(self.reqs), len(line))
         for i, req in enumerate(line):
             top = 2
             if req:
@@ -94,11 +102,42 @@ class ProxyStream:
             self.reqs_canvas.create_rectangle(
                 i * (width + padding), top, i * (width + padding) + width, padding + height,
                 outline=fill, fill=fill)
+    def draw_canvas_reqs(self):
+        pass
+
+    def run(self):
+        for num,url in enumerate(self.urls):
+            res = req.get(url)
+            self.update_req_counters(res)
+            self.reqs.append(res)
+
+
+        self.stream_name_label['background'] = '#96DB33'
+
+    def update_req_counters(self,res):
+        self.reqs_count += 1
+        if res.status_code == 200:
+            self.success_reqs_count += 1
+            if 'email' in res.text:
+                self.emails_count += 1
+        else:
+            self.error_reqs_count += 1
+
+        self._update_counters_tkk()
+
+    def _update_counters_tkk(self):
+        self.stream_progress_label['text'] = f'({self.reqs_count}/{len(self.urls)})'
+        self.progress_bar['value'] = self.reqs_count
+        self.success_reqs_label['text'] = f'Success: {self.success_reqs_count}'
+        self.mails_count_label['text'] = f'Mails: {self.emails_count}'
+        self.errors_count_label['text'] = f'Errors: {self.error_reqs_count}'
 
 
 class ProxyBar:
+    STREAM_COUNT = 3
 
     def __init__(self, num):
+        self.urls = ['1' for _ in range(30)]
         self.frame = ttk.Frame(borderwidth=1, relief='solid', padding=[5, 10])
         self.frame.pack(padx=5, pady=5, expand=True, anchor='nw', fill=X)
         self.proxy_name_label = ttk.Label(self.frame, text=f'Proxy #{num}')
@@ -113,11 +152,10 @@ class ProxyBar:
 
         self.kill_stream_btn = ttk.Button(self.frame, text=f'Kill proxy', )
         self.kill_stream_btn.pack()
-        self.streams = [
-            ProxyStream(self),
-            ProxyStream(self),
-            ProxyStream(self),
-        ]
+        self.streams = [ProxyStream(self, ['1' for _ in range(10)]) for _ in range(ProxyBar.STREAM_COUNT)]
+        for proxy_stream in self.streams:
+            thread = Thread(target=proxy_stream.run)
+            thread.start()
 
 
 root = Tk()
