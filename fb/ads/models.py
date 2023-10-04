@@ -161,8 +161,8 @@ class FbGroup(models.Model):
         return result
 
     def update(self, data:dict):
-        self.name = data.get('group_name', self.name)
-        self.email = data.get('group_email', self.email)
+        self.name = data.get('name', self.name)
+        self.email = data.get('email', self.email)
         self.title = data.get('title', self.title)
         self.status = FbGroup.COLLECTED
         self.save()

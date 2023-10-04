@@ -143,6 +143,18 @@ class FbGroupPageNoAuth:
             email_text_in_code = email_text_in_code.replace('\\u0040','@')
             return email_text_in_code
 
+    def _get_name_from_code(self):
+        var = 'profile_header_renderer'
+        pos = self.html.find(var)
+        if pos != -1:
+            string = self.html[pos:pos+1000]
+            match = re.search('"name":"[^"]{3,255}"', string)
+            if match:
+                group_name = match.group(0)
+                group_name = group_name.replace('"name":"', '')
+                group_name = group_name.replace('"', '')
+                return group_name
+
 
 if __name__ == '__main__':
     fb_group_no_login_html_path = '/home/vlad/PycharmProjects/FbSearcher/fb/parsers/fb_pages_html/group_page/group_no_login.html'

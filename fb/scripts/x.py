@@ -2,9 +2,9 @@ from threading import Thread
 import requests as req
 from time import time
 from accounts.models import FbAccount
-from ads.models import FbGroup
+from ads.models import FbGroup, FbPagExample
 from django.core.paginator import Paginator
-from parsers import FbGroupPage
+from parsers import FbGroupPage, FbGroupPageNoAuth
 from proxies.models import Proxy
 import os
 import random as r
@@ -12,12 +12,9 @@ from time import sleep
 from requests.exceptions import ConnectTimeout
 
 
-res = req.get('https://www.facebook.com/profile.php?id=997341353721766')
-print(res.status_code)
-mail_domain = 'afdbayern.de'
-page = FbGroupPage(res.text)
-page()
-print(page.result)
-print(mail_domain in res.text)
-with open('/home/vlad/html/test.html', 'w') as file:
-    file.write(res.text)
+fb_group = FbPagExample.objects.get(pk=5)
+with open(fb_group.template.path) as file:
+    html = file.read()
+
+page = FbGroupPageNoAuth(html)
+print(page._get_name_from_code())

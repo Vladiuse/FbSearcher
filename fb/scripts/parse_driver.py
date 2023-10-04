@@ -16,7 +16,11 @@ import json
 
 
 url = 'https://www.facebook.com/profile.php?id=997341353721766'
+groups = FbGroup.objects.all()[:100]
 driver = webdriver.Chrome()
+driver.get(url)
+for group in groups:
+    driver.get(url)
 driver.get(url)
 
 source = driver.page_source
