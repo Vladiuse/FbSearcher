@@ -86,6 +86,9 @@ class ProxyStream:
         self.errors_count_label.pack(side=LEFT, padx=5)
         self.reqs_canvas = Canvas(self.status_frame, bg='grey', width=460, height=20)
         self.reqs_canvas.pack(side=LEFT, padx=5)
+
+    def _draw_canvas_reqs(self):
+        self.reqs_canvas.delete('all')
         padding = 3
         height = 16
         width = 10
@@ -95,21 +98,19 @@ class ProxyStream:
             line = self.reqs[-self.REQ_BAR_MAX_LEN:]
         for i, req in enumerate(line):
             top = 2
-            if req:
+            if req.status_code == 200:
                 fill = '#A8D863'
             else:
                 fill = '#D87763'
             self.reqs_canvas.create_rectangle(
                 i * (width + padding), top, i * (width + padding) + width, padding + height,
                 outline=fill, fill=fill)
-    def draw_canvas_reqs(self):
-        pass
 
     def run(self):
         for num,url in enumerate(self.urls):
             res = req.get(url)
-            self.update_req_counters(res)
             self.reqs.append(res)
+            self.update_req_counters(res)
 
 
         self.stream_name_label['background'] = '#96DB33'
@@ -124,6 +125,7 @@ class ProxyStream:
             self.error_reqs_count += 1
 
         self._update_counters_tkk()
+        self._draw_canvas_reqs()
 
     def _update_counters_tkk(self):
         self.stream_progress_label['text'] = f'({self.reqs_count}/{len(self.urls)})'
@@ -152,7 +154,7 @@ class ProxyBar:
 
         self.kill_stream_btn = ttk.Button(self.frame, text=f'Kill proxy', )
         self.kill_stream_btn.pack()
-        self.streams = [ProxyStream(self, ['1' for _ in range(10)]) for _ in range(ProxyBar.STREAM_COUNT)]
+        self.streams = [ProxyStream(self, ['1' for _ in range(50)]) for _ in range(ProxyBar.STREAM_COUNT)]
         for proxy_stream in self.streams:
             thread = Thread(target=proxy_stream.run)
             thread.start()
