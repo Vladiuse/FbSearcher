@@ -18,7 +18,7 @@ HEADERS = {
     'Accept-Language': 'en-US,en;q=0.5'
 }
 
-groups = FbGroup.objects.filter(status='not_loaded')[:8]
+groups = FbGroup.objects.filter(status='not_loaded')[:800]
 proxy = ProxyMobile.objects.get(pk=1)
 
 
@@ -85,6 +85,7 @@ class ProxyStream:
         self.reqs = []
         self.groups = groups
         self.is_complete = False
+        self.is_pause = False
 
         # counters
         self.success_reqs_count = 0
@@ -105,8 +106,8 @@ class ProxyStream:
         self.stream_progress_label.grid(row=0, column=1, padx=5)
         self.progress_bar = ttk.Progressbar(self.progress_frame, maximum=len(self.groups), value=0, length=500, )
         self.progress_bar.grid(row=0, column=2)
-        self.kill_stream_btn = ttk.Button(self.progress_frame, text=f'Kill #{1}', )
-        self.kill_stream_btn.grid(row=0, column=3, padx=5, )
+        self.pause_stream_btn = ttk.Button(self.progress_frame, text=f'Pausej', command=self.click_pause)
+        self.pause_stream_btn.grid(row=0, column=3, padx=5, )
 
         self.status_frame = ttk.Frame(self.stream_frame, )
         self.status_frame.pack(padx=5, expand=True, fill=X)
@@ -121,10 +122,25 @@ class ProxyStream:
 
     def run(self):
         for num, group in enumerate(self.groups):
-            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            # req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            req_result = REQ_TEST.get('')
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
+            if self.is_pause:
+                self._wait_pause()
         self.set_complete()
+
+    def click_pause(self):
+        if self.is_pause:
+            self.is_pause = False
+            self.pause_stream_btn['text'] = 'Pause'
+        else:
+            self.is_pause = True
+            self.pause_stream_btn['text'] = 'Active'
+
+    def _wait_pause(self):
+        while self.is_pause:
+            sleep(1)
 
     def set_complete(self):
         self.is_complete = True
