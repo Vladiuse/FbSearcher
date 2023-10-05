@@ -18,8 +18,9 @@ HEADERS = {
     'Accept-Language': 'en-US,en;q=0.5'
 }
 
-groups = FbGroup.objects.filter(status='not_loaded')
+groups = FbGroup.objects.filter(status='not_loaded')[:8]
 proxy = ProxyMobile.objects.get(pk=1)
+
 
 class Response:
 
@@ -30,20 +31,30 @@ class Response:
 
 class Request:
 
+    # def get(self, url):
+    #     if r.randint(0, 8) == 8:
+    #         raise AttributeError
+    #     choices = [
+    #         Response(200, {'name': 'XXX', 'email': 'some@gmail.com'}),
+    #         Response(200, {'name': 'XXX', }),
+    #         Response(200, {}),
+    #         Response(300),
+    #     ]
+    #     sleep(r.uniform(0.5, 1.5))
+    #     return r.choice(choices)
+
     def get(self, url):
-        if r.randint(0, 8) == 8:
-            raise AttributeError
         choices = [
-            Response(200, {'name': 'XXX', 'email': 'some@gmail.com'}),
-            Response(200, {'name': 'XXX', }),
-            Response(200, {}),
-            Response(300),
+            {'status': True, 'result': {'name': 'name', 'email': 'some@com'}},
+            {'status': True, 'result': {'name': 'name', }},
+            {'status': True, 'result': {}},
+            {'status': False, },
         ]
         sleep(r.uniform(0.5, 1.5))
         return r.choice(choices)
 
 
-#req = Request()
+REQ_TEST = Request()
 
 
 def draw_proxy(num):
@@ -65,13 +76,15 @@ def draw_proxy(num):
 
 class ProxyStream:
     REQ_BAR_MAX_LEN = 35
+    REQ_TIMEOUT = 6
 
-    def __init__(self, stream_num,proxy_bar,proxy, groups):
+    def __init__(self, stream_num, proxy_bar, proxy, groups):
         self.stream_num = stream_num
         self.proxy_bar = proxy_bar
         self.proxy = proxy
         self.reqs = []
         self.groups = groups
+        self.is_complete = False
 
         # counters
         self.success_reqs_count = 0
@@ -108,37 +121,17 @@ class ProxyStream:
 
     def run(self):
         for num, group in enumerate(self.groups):
-            try:
-                res = req.get(
-                    group.url,
-                    headers=HEADERS,
-                    proxies={'https': self.proxy.url},
-                    timeout=6,
-                )
-                if res.status_code == 200:
-                    html = res.text
-                    page = FbGroupPageNoAuth(html)
-                    page()
-                    group.update(page.result)
-                    req_result = {
-                        'status': True,
-                        'result': page.result,
-                    }
-                else:
-                    req_result = {
-                        'status': False,
-                    }
-            except Exception as error:
-                # res = error
-                req_result = {
-                    'status': False,
-                }
+            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
+        self.set_complete()
 
+    def set_complete(self):
+        self.is_complete = True
         self.stream_name_label['background'] = '#96DB33'
+        self.proxy_bar.set_complete()
 
-    def update_req_counters(self, req_result:dict):
+    def update_req_counters(self, req_result: dict):
         self.reqs_count += 1
         if req_result['status']:
             self.success_reqs_count += 1
@@ -214,17 +207,20 @@ class ProxyBar:
         group_parts = devine_array(self.groups, ProxyBar.STREAM_COUNT)
         for stream_num in range(ProxyBar.STREAM_COUNT):
             groups_to_stream = group_parts[stream_num]
-            proxy_stream = ProxyStream(stream_num+1,self,self.proxy, groups_to_stream)
+            proxy_stream = ProxyStream(stream_num + 1, self, self.proxy, groups_to_stream)
             self.streams.append(proxy_stream)
-        # self.streams = [ProxyStream(self, ['1' for _ in range(50)]) for _ in range(ProxyBar.STREAM_COUNT)]
 
     def start_parse(self):
-        # print(self, 'ProxyBar', self.proxy.ip)
-        # for proxy_stream in self.streams:
-        #     print('Stream', proxy_stream, '\n',proxy_stream.groups)
+        threads = []
         for proxy_stream in self.streams:
             thread = Thread(target=proxy_stream.run)
+            threads.append(thread)
             thread.start()
+        self.set_complete()
+
+    def set_complete(self):
+        if all(stream.is_complete for stream in self.streams):
+            self.proxy_ip_label['background'] = '#96DB33'
 
     def up_req_count(self):
         self.total_reqs_count += 1
@@ -243,7 +239,7 @@ def start_parse():
 
 proxies_to_run = []
 proxies = [proxy, proxy]
-group_parts = devine_array(list(groups),2)
+group_parts = devine_array(list(groups), 2)
 
 # MAIN
 root = Tk()
@@ -253,9 +249,7 @@ groups_count_label.pack()
 start_btn = ttk.Button(text='Start', command=start_parse)
 start_btn.pack(pady=10)
 
-
-for proxy_num,proxy in enumerate(proxies):
-    proxies_to_run.append(ProxyBar(proxy_num + 1,proxy, group_parts[proxy_num]))
+for proxy_num, proxy in enumerate(proxies):
+    proxies_to_run.append(ProxyBar(proxy_num + 1, proxy, group_parts[proxy_num]))
 
 root.mainloop()
-
