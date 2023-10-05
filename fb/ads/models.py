@@ -13,6 +13,8 @@ from io import StringIO
 from django.db.models import Q
 import http.cookiejar
 import shutil
+from parsers import FbGroupPageNoAuth
+from requests.exceptions import ConnectTimeout, ProxyError
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -87,6 +89,7 @@ class FbGroup(models.Model):
 
     NOT_LOADED = 'not_loaded'
     NEED_LOGIN = 'need_login'
+    ERROR_REQ = 'error_req'
     COLLECTED = 'collected'
     STATUSES = (
         (NOT_LOADED, 'Не загружен'),
@@ -175,6 +178,46 @@ class FbGroup(models.Model):
         self.status = FbGroup.COLLECTED
         self.save()
 
+    def set_error_req(self):
+        self.status = self.ERROR_REQ
+        self.save()
+
+    def update_from_url(self, proxy, timeout=6, log=False):
+        try:
+            res = req.get(
+                self.url,
+                headers=headers,
+                timeout=timeout,
+                proxies={'https': proxy.url}
+            )
+        except ConnectTimeout as error:
+            req_result = {
+                'status': False,
+                'error': error,
+            }
+            self.status = self.ERROR_REQ
+            self.save()
+        else:
+            if log:
+                self.log_req_data(res.text)
+            if res.status_code == 200:
+                page = FbGroupPageNoAuth(res.text)
+                page()
+                parse_result = page.result
+                self.update(parse_result)
+                req_result = {
+                    'status': True,
+                    'result': parse_result,
+                }
+            else:
+                req_result = {
+                    'status': False,
+                    'error': 'Status code not 200',
+                }
+        return req_result
+
+
+
     def log_req_data(self, html):
         if self.req_html_data:
             remove_if_exists(self.req_html_data.path)
@@ -185,6 +228,8 @@ class FbGroup(models.Model):
     @staticmethod
     def clean_data():
         FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
+        path_with_html_logs = '/home/vlad/PycharmProjects/FbSearcher/fb/media/req_html_data'
+        shutil.rmtree(path_with_html_logs)
 
 
 
