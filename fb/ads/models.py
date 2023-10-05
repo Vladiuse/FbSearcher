@@ -40,6 +40,14 @@ class KeyWord(models.Model):
     def __str__(self):
         return self.word
 
+class MailService(models.Model):
+    name = models.CharField(max_length=50, blank=True)
+    pattern = models.CharField(max_length=30)
+
+    def __str__(self):
+        return self.name if self.name else self.pattern
+
+
 
 class ActualGroupManager(models.Manager):
     def get_queryset(self):

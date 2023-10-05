@@ -10,11 +10,18 @@ import os
 import random as r
 from time import sleep
 from requests.exceptions import ConnectTimeout
+from collections import Counter
 
+groups = FbGroup.objects.exclude(email='')
+unique = set()
+counter = Counter()
+for g in groups:
+    mail, mail_domain = g.email.split('@')
+    dom, last = mail_domain.split('.')
+    counter[last]+=1
 
-fb_group = FbPagExample.objects.get(pk=5)
-with open(fb_group.template.path) as file:
-    html = file.read()
-
-page = FbGroupPageNoAuth(html)
-print(page._get_name_from_code())
+for i in counter.most_common():
+    print(i)
+# with open('/home/vlad/all.txt', 'w') as file:
+#     for mail_domain in unique:
+#         file.write(mail_domain + '\n')
