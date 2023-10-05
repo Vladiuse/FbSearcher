@@ -12,12 +12,6 @@ from parsers import FbGroupPageNoAuth
 import requests as req
 from .devine_array import devine_array
 
-HEADERS = {
-    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
-    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-    'Accept-Language': 'en-US,en;q=0.5'
-}
-
 groups = FbGroup.objects.filter(status='not_loaded')[:800]
 proxy = ProxyMobile.objects.get(pk=1)
 
@@ -49,6 +43,7 @@ class Request:
             {'status': True, 'result': {'name': 'name', }},
             {'status': True, 'result': {}},
             {'status': False, },
+            {'status': False, 'error': 'status code not 200'},
         ]
         sleep(r.uniform(0.5, 1.5))
         return r.choice(choices)
@@ -57,24 +52,10 @@ class Request:
 REQ_TEST = Request()
 
 
-def draw_proxy(num):
-    frame = ttk.Frame(borderwidth=1, relief='solid', padding=[5, 10])
-    frame.pack(padx=5, pady=5, expand=True, anchor='nw', fill=X)
-    proxy_name = ttk.Label(frame, text=f'Proxy #{num}')
-    proxy_name.pack()
-    proxy_ip = ttk.Label(frame, text=f'Ip: 178.120.66.252')
-    proxy_ip.pack()
-    streams_frame = ttk.Frame(frame, borderwidth=1, relief='solid', padding=[5, 10], )
-    streams_frame.pack(padx=5, pady=5, expand=True, fill=X)
-    for r in range(0, 6, 2):
-        for stream_num in range(1, 4):
-            stream_name = ttk.Label(streams_frame, text=f'Thread #{stream_num}')
-            stream_name.grid(row=r, column=0)
-            progress_bar = ttk.Progressbar(streams_frame, maximum=100, value=10, length=500, )
-            progress_bar.grid(row=r, column=1)
-
-
 class ProxyStream:
+    """
+    Класс для потока прокси
+    """
     REQ_BAR_MAX_LEN = 35
     REQ_TIMEOUT = 6
 
@@ -106,7 +87,7 @@ class ProxyStream:
         self.stream_progress_label.grid(row=0, column=1, padx=5)
         self.progress_bar = ttk.Progressbar(self.progress_frame, maximum=len(self.groups), value=0, length=500, )
         self.progress_bar.grid(row=0, column=2)
-        self.pause_stream_btn = ttk.Button(self.progress_frame, text=f'Pausej', command=self.click_pause)
+        self.pause_stream_btn = ttk.Button(self.progress_frame, text=f'Pause', command=self.click_pause)
         self.pause_stream_btn.grid(row=0, column=3, padx=5, )
 
         self.status_frame = ttk.Frame(self.stream_frame, )
@@ -121,6 +102,7 @@ class ProxyStream:
         self.reqs_canvas.pack(side=LEFT, padx=5)
 
     def run(self):
+        """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
             # req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
             req_result = REQ_TEST.get('')
@@ -131,23 +113,40 @@ class ProxyStream:
         self.set_complete()
 
     def click_pause(self):
+        """ Событие при клике на кнопку "пауза" прокси"""
         if self.is_pause:
-            self.is_pause = False
-            self.pause_stream_btn['text'] = 'Pause'
+            self.activate()
         else:
-            self.is_pause = True
-            self.pause_stream_btn['text'] = 'Active'
+            self.pause()
+
+    def activate(self):
+        """Сделать поток активным - продолжит парсить"""
+        self.is_pause = False
+        self.pause_stream_btn['text'] = 'Pause'
+
+    def pause(self):
+        """Поставить поток на паузу"""
+        self.is_pause = True
+        self.pause_stream_btn['text'] = 'Active'
+
+    def _clean_old_req_data(self):
+        """Отчистить старые данные по запросам (они не будут отобрадатсья в баре)"""
+        pass
+        # TODO
 
     def _wait_pause(self):
+        """Ожидание окончания паузы"""
         while self.is_pause:
             sleep(1)
 
     def set_complete(self):
+        """Пометить поток как закончивший парсинг"""
         self.is_complete = True
         self.stream_name_label['background'] = '#96DB33'
         self.proxy_bar.set_complete()
 
     def update_req_counters(self, req_result: dict):
+        """обновить счетчики потока класса по результату потока"""
         self.reqs_count += 1
         if req_result['status']:
             self.success_reqs_count += 1
@@ -160,6 +159,7 @@ class ProxyStream:
         self._draw_canvas_reqs()
 
     def _draw_canvas_reqs(self):
+        """Отрисовать статусы запросов цветами"""
         ERROR_REQ_COLOR = '#dc0000'
         NO_DATA_COLOR = '#F1C830'
         NO_MAIL_COLOR = '#BFF130'
@@ -188,6 +188,7 @@ class ProxyStream:
                 outline=fill, fill=fill)
 
     def _update_counters_tkk(self):
+        """Обсновить счетчики запросов в графике"""
         self.stream_progress_label['text'] = f'({self.reqs_count}/{len(self.groups)})'
         self.progress_bar['value'] = self.reqs_count
         self.success_reqs_label['text'] = f'Success: {self.success_reqs_count}'
@@ -196,6 +197,9 @@ class ProxyStream:
 
 
 class ProxyBar:
+    """
+    Класс прокси
+    """
     STREAM_COUNT = 2
 
     def __init__(self, proxy_num, proxy, groups):
@@ -217,7 +221,7 @@ class ProxyBar:
         self.proxy_total_reqs_label = ttk.Label(self.proxy_info_frame, text=f'Total reqs: {self.total_reqs_count}')
         self.proxy_total_reqs_label.pack(side=LEFT, padx=5)
 
-        self.kill_stream_btn = ttk.Button(self.frame, text=f'Kill proxy', )
+        self.kill_stream_btn = ttk.Button(self.frame, text=f'Pause proxy', command=self.pause_all_streams)
         self.kill_stream_btn.pack()
 
         group_parts = devine_array(self.groups, ProxyBar.STREAM_COUNT)
@@ -226,7 +230,12 @@ class ProxyBar:
             proxy_stream = ProxyStream(stream_num + 1, self, self.proxy, groups_to_stream)
             self.streams.append(proxy_stream)
 
+    def pause_all_streams(self):
+        """Поставить на паузу все потоки"""
+        [stream.pause() for stream in self.streams]
+
     def start_parse(self):
+        """Начать парсинг в потоках"""
         threads = []
         for proxy_stream in self.streams:
             thread = Thread(target=proxy_stream.run)
@@ -235,14 +244,17 @@ class ProxyBar:
         self.set_complete()
 
     def set_complete(self):
+        """Проверитб все ли потоки закончили работу"""
         if all(stream.is_complete for stream in self.streams):
             self.proxy_ip_label['background'] = '#96DB33'
 
     def up_req_count(self):
+        """поднять счетчики запросов прокси"""
         self.total_reqs_count += 1
         self._update_counters()
 
     def _update_counters(self):
+        """Отрисовать новые значения счетчиков прокси"""
         self.proxy_total_reqs_label['text'] = f'Total reqs: {self.total_reqs_count}'
 
 
