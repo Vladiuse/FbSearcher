@@ -33,23 +33,20 @@ class CheckerClassTest(unittest.TestCase):
     def test_timeout(self):
         checker = CheckProxyApi64()
         with patch('requests.get', side_effect=Timeout) as mock:
-            checker.get_ip()
-            self.assertIsNotNone(checker.error)
-            self.assertTrue(isinstance(checker.error, Timeout))
+            with self.assertRaises(Timeout):
+                checker.get_ip()
 
     def test_proxy_error(self):
         checker = CheckProxyApi64()
         with patch('requests.get', side_effect=ProxyError) as mock:
-            checker.get_ip()
-            self.assertIsNotNone(checker.error)
-            self.assertTrue(isinstance(checker.error, ProxyError))
+            with self.assertRaises(ProxyError):
+                checker.get_ip()
 
     def test_request_error(self):
         checker = CheckProxyApi64()
         with patch('requests.get', side_effect=RequestException) as mock:
-            checker.get_ip()
-            self.assertIsNotNone(checker.error)
-            self.assertTrue(isinstance(checker.error, RequestException))
+            with self.assertRaises(RequestException):
+                checker.get_ip()
 
     def test_json_error(self):
         checker = CheckProxyApi64()

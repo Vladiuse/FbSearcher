@@ -36,8 +36,9 @@ class CheckProxy:
                 raise CodeNot200
             self.__ip = self._get_ip_from_response(res)
         except (Timeout, ProxyError, RequestException) as error:
-            self.error = error
-            self.error_text = str(error)
+            # self.error = error
+            # self.error_text = str(error)
+            raise error
         except CodeNot200 as error:
             self.error = error
             self.error_text = 'Not 200 status code'

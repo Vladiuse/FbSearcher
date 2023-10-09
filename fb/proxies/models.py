@@ -1,8 +1,14 @@
+from time import sleep
 from django.db import models
-from .check_proxies import CheckProxyApi64, CheckProxyHttpBin, CodeNot200
-from requests.exceptions import ConnectTimeout
+from .check_proxies import get_current_ip, check_proxy, get_proxy_ip, CheckerNotWorkError, ProxyIpNotChange, CodeNot200
+from requests.exceptions import ConnectTimeout, RequestException, ProxyError, Timeout
 from threading import Thread
+import requests as req
 
+class ProxyChangeIpUrlNotWork(Exception):
+    """Proxy url for change ip not work"""
+class ProxyNotChangeIpError(Exception):
+    pass
 
 class ProxyAbs(models.Model):
     WORK = True
@@ -24,10 +30,12 @@ class ProxyAbs(models.Model):
     ip = models.GenericIPAddressField()
     port = models.CharField(max_length=6)
     status = models.BooleanField(max_length=50, default=NOT_CHECKED, null=True)
-    error_text = models.CharField(max_length=255, blank=True)
     protocol = models.CharField(max_length=10, choices=PROTOCOLS, default=HTTP)
     created = models.DateField(auto_now_add=True)
     comment = models.CharField(max_length=255, blank=True, )
+    proxy_ip = models.CharField(max_length=20,blank=True)
+    error_type = models.CharField(max_length=50, blank=True)
+    error_text_full = models.TextField(blank=True)
 
     class Meta:
         abstract = True
@@ -40,58 +48,28 @@ class ProxyAbs(models.Model):
     def url(self):
         return f'{self.protocol}://{self.ip}:{self.port}/'
 
-    def check_proxy(self, *, no_proxy_ip):
+    def check_proxy(self):
+        self.status = self.NOT_CHECKED
         try:
-            checkers_result = []
-            for checker_class in (CheckProxyApi64, CheckProxyHttpBin):
-                proxy_checker = checker_class(self.url, no_proxy_ip=no_proxy_ip)
-                proxy_checker()
-                if proxy_checker.is_work:
-                    checkers_result.append(True)
-                else:
-                    checkers_result.append(False)
-            if all(checkers_result):
-                self.status = ProxyAbs.WORK
-                self.error_text = ''
-            elif any(checkers_result):
-                self.status = ProxyAbs.NOT_WORK
-                self.error_text = 'Айпи не поменялся'
-            else:
-                self.status = ProxyAbs.NOT_WORK
-                self.error_text = 'Diff checkers result'
-        except ConnectTimeout:
-            self.error_text = 'Time out error'
-            self.status = ProxyAbs.NOT_WORK
-        except CodeNot200:
-            self.error_text = 'Not 200 status code'
-            self.status = ProxyAbs.NOT_WORK
-        except Exception as error:
-            self.error_text = str(error)[:255]
-            self.status = ProxyAbs.NOT_WORK
-        finally:
-            self.save()
-
-    def new_check_proxy(self,*, no_proxy_ip):
-        checkers_classes = (CheckProxyApi64, CheckProxyHttpBin)
-        threads = []
-        checkers = []
-        for checker in checkers_classes:
-            proxy_checker = checker(self.url, no_proxy_ip=no_proxy_ip)
-            thread = Thread(target=proxy_checker)
-            threads.append(thread)
-            thread.start()
-            checkers.append(proxy_checker)
-        for thread in threads:
-            thread.join()
-
-
+            proxy_ip = check_proxy(self.url)
+            self.proxy_ip = proxy_ip
+        except CheckerNotWorkError as error:
+            self.error_type = 'CheckerNotWorkError'
+            self.error_text_full = 'Checkers not work'
+        except ProxyIpNotChange as error:
+            self.error_type = 'ProxyIpNotChange'
+            self.error_text_full = str(error)
+            self.status = self.NOT_WORK
+        except (Timeout, ProxyError, RequestException) as error:
+            self.error_type = type(error).__name__
+            self.status = self.NOT_WORK
+            self.error_text_full = str(error)
+        self.save()
 
     @staticmethod
     def check_proxies(qs):
-        no_proxy_ip = CheckProxyApi64.get_ip()
-        print('Текущий :', no_proxy_ip)
         for proxy_model in qs:
-            proxy_model.check_proxy(no_proxy_ip=no_proxy_ip)
+            proxy_model.check_proxy()
 
 class Proxy(ProxyAbs):
     pass
@@ -112,3 +90,22 @@ class ProxyMobile(ProxyAbs):
     @property
     def url(self):
         return f'{self.protocol}://{self.login}:{self.password}@{self.ip}:{self.port}/'
+
+    def change_ip(self):
+        no_proxy_ip = get_current_ip()
+        current_proxy_ip = get_proxy_ip(self.url)
+        try:
+            res = req.get(self.change_ip_url, timeout=10)
+            if res.status_code != 200:
+                raise CodeNot200
+        except (RequestException, CodeNot200) as error:
+            raise ProxyChangeIpUrlNotWork(str(error))
+        for _ in range(6):
+            sleep(5)
+            try:
+                proxy_ip = get_proxy_ip(self.url)
+                if proxy_ip != current_proxy_ip and proxy_ip != no_proxy_ip:
+                    return proxy_ip
+            except CheckerNotWorkError as error:
+                pass
+        raise ProxyNotChangeIpError
