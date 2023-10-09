@@ -7,7 +7,7 @@ import requests as req
 
 class ProxyChangeIpUrlNotWork(Exception):
     """Proxy url for change ip not work"""
-class ProxyNotChangeIpError(Exception):
+class ProxyChangeIpTimeOutError(Exception):
     pass
 
 class ProxyAbs(models.Model):
@@ -91,21 +91,25 @@ class ProxyMobile(ProxyAbs):
     def url(self):
         return f'{self.protocol}://{self.login}:{self.password}@{self.ip}:{self.port}/'
 
-    def change_ip(self):
-        no_proxy_ip = get_current_ip()
-        current_proxy_ip = get_proxy_ip(self.url)
+    def _click_change_ip_url(self):
+        """Перейти по ссылки для сменны ip прокси"""
         try:
             res = req.get(self.change_ip_url, timeout=10)
             if res.status_code != 200:
                 raise CodeNot200
         except (RequestException, CodeNot200) as error:
             raise ProxyChangeIpUrlNotWork(str(error))
-        for _ in range(6):
-            sleep(5)
+
+    def change_ip(self):
+        no_proxy_ip = get_current_ip()
+        old_proxy_ip = get_proxy_ip(self.url)
+        self._click_change_ip_url()
+        for _ in range(5):
             try:
-                proxy_ip = get_proxy_ip(self.url)
-                if proxy_ip != current_proxy_ip and proxy_ip != no_proxy_ip:
-                    return proxy_ip
+                new_proxy_ip = get_proxy_ip(self.url)
+                if new_proxy_ip != old_proxy_ip and new_proxy_ip != no_proxy_ip:
+                    return new_proxy_ip
             except CheckerNotWorkError as error:
                 pass
-        raise ProxyNotChangeIpError
+            sleep(5)
+        raise ProxyChangeIpTimeOutError
