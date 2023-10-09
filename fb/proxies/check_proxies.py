@@ -10,6 +10,9 @@ class CodeNot200(Exception):
 class CheckerNotWorkError(Exception):
     """Checker class not work"""
 
+class ProxyIpNotChange(Exception):
+    """proxy ip equal ip without proxy"""
+
 
 class CheckProxy:
     CHECK_TIMEOUT = 10
@@ -18,6 +21,7 @@ class CheckProxy:
     def __init__(self):
         self.__ip = None
         self.error = None
+        self.status_code = None
 
     def _get_ip(self, proxy_url=None):
         """Получить ip"""
@@ -28,6 +32,7 @@ class CheckProxy:
         try:
             res = req.get(self.GET_MY_IP, timeout=CheckProxy.CHECK_TIMEOUT, proxies=proxies)
             if not res.status_code == 200:
+                self.status_code = res.status_code
                 raise CodeNot200
             self.__ip = self._get_ip_from_response(res)
         except (Timeout, ProxyError, RequestException) as error:
@@ -113,7 +118,9 @@ def check_proxy(proxy_url):
     """Работает ли прокси - должны отличаться айпишники"""
     current_ip = get_current_ip()
     proxy_ip = get_proxy_ip(proxy_url)
-    return current_ip != proxy_ip
+    if current_ip == proxy_ip:
+        raise ProxyIpNotChange
+    return proxy_ip
 
 
 def _check_checkers():
@@ -131,8 +138,11 @@ def _check_checkers():
         assert len(set(ips)) == 1
         print(f'All checkers work! You api is {ips[0]}')
     else:
-        for checker, error in errors:
-            print(f'Checker {checker} not work, error - {error}')
+        if errors:
+            for checker, error in errors:
+                print(f'Checker {checker} not work, error - {error}')
+        if len(set(ips)) != 1:
+            print(f'Ips not equal {ips}')
 
 
 

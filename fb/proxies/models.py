@@ -1,6 +1,7 @@
 from django.db import models
 from .check_proxies import CheckProxyApi64, CheckProxyHttpBin, CodeNot200
 from requests.exceptions import ConnectTimeout
+from threading import Thread
 
 
 class ProxyAbs(models.Model):
@@ -69,6 +70,21 @@ class ProxyAbs(models.Model):
             self.status = ProxyAbs.NOT_WORK
         finally:
             self.save()
+
+    def new_check_proxy(self,*, no_proxy_ip):
+        checkers_classes = (CheckProxyApi64, CheckProxyHttpBin)
+        threads = []
+        checkers = []
+        for checker in checkers_classes:
+            proxy_checker = checker(self.url, no_proxy_ip=no_proxy_ip)
+            thread = Thread(target=proxy_checker)
+            threads.append(thread)
+            thread.start()
+            checkers.append(proxy_checker)
+        for thread in threads:
+            thread.join()
+
+
 
     @staticmethod
     def check_proxies(qs):
