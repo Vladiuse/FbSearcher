@@ -12,12 +12,13 @@ from parsers import FbGroupPageNoAuth
 import requests as req
 from .devine_array import devine_array
 
-groups = FbGroup.objects.filter(status='not_loaded')[:5000]
+groups = FbGroup.objects.exclude(status='collected')
 proxy = ProxyMobile.objects.get(pk=3)
 
 ERROR_REQ_COLOR = '#dc0000'
 NO_DATA_COLOR = '#F1C830'
 NO_MAIL_COLOR = '#BFF130'
+LOGIN_FORM = '#3082F1'
 FULL_DATA = '#39F130'
 
 class Response:
@@ -108,8 +109,8 @@ class ProxyStream:
     def run(self):
         """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
-            # req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
-            req_result = REQ_TEST.get('')
+            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            # req_result = REQ_TEST.get('')
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
             if self.is_pause:
@@ -281,6 +282,7 @@ legend_frame.pack()
 legend_data = [
     ('Ошибка запроса',ERROR_REQ_COLOR),
     ('Нет даты',NO_DATA_COLOR),
+    ('Форма входа', LOGIN_FORM),
     ('Нет почты',NO_MAIL_COLOR),
     ('Есть почта',FULL_DATA),
 ]

@@ -14,7 +14,7 @@ from django.db.models import Q
 import http.cookiejar
 import shutil
 from parsers import FbGroupPageNoAuth
-from requests.exceptions import ConnectTimeout, ProxyError
+from requests.exceptions import ConnectTimeout, ProxyError, ReadTimeout, ConnectionError, RequestException
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -190,7 +190,7 @@ class FbGroup(models.Model):
                 timeout=timeout,
                 proxies={'https': proxy.url}
             )
-        except ConnectTimeout as error:
+        except (ConnectTimeout, ReadTimeout, ConnectionError, RequestException) as error:
             req_result = {
                 'status': False,
                 'error': error,
