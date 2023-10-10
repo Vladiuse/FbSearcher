@@ -122,6 +122,10 @@ class FbGroup(models.Model):
     email = models.EmailField(
         blank=True,
     )
+    followers = models.CharField(
+        max_length=50,
+        blank=True,
+    )
     address = models.CharField(
         max_length=255,
         blank=True,
@@ -183,6 +187,7 @@ class FbGroup(models.Model):
         self.name = data.get('name', self.name)
         self.email = data.get('email', self.email)
         self.title = data.get('title', self.title)
+        self.followers = data.get('followers', self.followers)
         self.status = FbGroup.COLLECTED
         self.save()
 
@@ -232,10 +237,19 @@ class FbGroup(models.Model):
         self.req_html_data.save(file_name, file)
 
     @staticmethod
-    def clean_data():
+    def clean_all_data():
         FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
         path_with_html_logs = '/home/vlad/PycharmProjects/FbSearcher/fb/media/req_html_data'
-        shutil.rmtree(path_with_html_logs)
+        if os.path.exists(path_with_html_logs):
+            shutil.rmtree(path_with_html_logs)
+
+    def set_not_loaded(self):
+        self.name = ''
+        self.title=  ''
+        self.email = ''
+        self.req_html_data = ''
+        self.status=FbGroup.NOT_LOADED
+        self.save()
 
 
 class ThreadCounter(models.Model):

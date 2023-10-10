@@ -177,7 +177,80 @@ class FbGroupNoAuthTest(TestCase):
         with self.assertRaises(AttributeError):
             page.result
 
+class FbGroupNoAuthTestFollowers(TestCase):
 
+
+    def test_no_followers(self):
+        code = ""
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertIsNone(page.followers)
+
+    def test_get_followers_from_code(self):
+        code = ""
+        page = FbGroupPageNoAuth(code)
+        followers = page._get_followers_from_code()
+        self.assertIsNone(followers)
+
+    def test_get_followers(self):
+        code = ""
+        page = FbGroupPageNoAuth(code)
+        page.get_followers()
+        self.assertIsNone(page.followers)
+
+    def test_followers_exists_no_K(self):
+        code = """
+        "inline_style":"BOLD"}],"aggregated_ranges":[],"ranges":[],
+        "color_ranges":[],"text":"769 followers"},"uri":"https:\/\/www.facebook.com\/BarelyBrokeLA\/followers\/"}],
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.followers, '769')
+
+    def test_followers_K_exists(self):
+        code = """
+        "inline_style":"BOLD"}],"aggregated_ranges":[],"ranges":[],
+        "color_ranges":[],"text":"2.9K followers"},"uri":"https:\/\/www.facebook.com\/BarelyBrokeLA\/followers\/"}],
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.followers, '2.9K')
+
+    def test_followers_K_exists_no_point(self):
+        code = """
+        "inline_style":"BOLD"}],"aggregated_ranges":[],"ranges":[],
+        "color_ranges":[],"text":"29K followers"},"uri":"https:\/\/www.facebook.com\/BarelyBrokeLA\/followers\/"}],
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.followers, '29K')
+
+    def test_followers_K_exists_small(self):
+        code = """
+        "inline_style":"BOLD"}],"aggregated_ranges":[],"ranges":[],
+        "color_ranges":[],"text":"2.9k followers"},"uri":"https:\/\/www.facebook.com\/BarelyBrokeLA\/followers\/"}],
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.followers, '2.9k')
+
+
+    def test_followers_in_result(self):
+        code = """
+        "inline_style":"BOLD"}],"aggregated_ranges":[],"ranges":[],
+        "color_ranges":[],"text":"2.9k followers"},"uri":"https:\/\/www.facebook.com\/BarelyBrokeLA\/followers\/"}],
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        result = page.result
+        self.assertEqual(result['followers'], '2.9k')
+
+    def test_followers_not_in_result(self):
+        code = ""
+        page = FbGroupPageNoAuth(code)
+        page()
+        result = page.result
+        self.assertTrue('followers' not in result)
 
 
 

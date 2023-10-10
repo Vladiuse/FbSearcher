@@ -94,11 +94,13 @@ class FbGroupPageNoAuth:
         self.soup = BeautifulSoup(html, 'lxml')
         self.email = None
         self.name = None
+        self.followers = None
         self._title = None
 
     def __call__(self):
         self.name = self.get_name()
         self.email = self.get_email()
+        self.followers = self.get_followers()
         setattr(self,'_is_call', True)
 
     @property
@@ -110,6 +112,8 @@ class FbGroupPageNoAuth:
             res.update({ 'email': self.email})
         if self.name:
             res.update({'name': self.name})
+        if self.followers:
+            res.update({'followers': self.followers})
         if self._title:
             res.update({'title': self._title})
         return res
@@ -119,6 +123,9 @@ class FbGroupPageNoAuth:
 
     def get_name(self):
         return self._get_name_from_title()
+
+    def get_followers(self):
+        return self._get_followers_from_code()
 
     def _get_name_from_title(self):
         title = self.soup.find('title')
@@ -154,6 +161,15 @@ class FbGroupPageNoAuth:
                 group_name = group_name.replace('"name":"', '')
                 group_name = group_name.replace('"', '')
                 return group_name
+
+    def _get_followers_from_code(self):
+        res = re.search(r'"text":"[\d.]{1,6}[Kk]? followers"', self.html)
+        if res:
+            followers = res.group(0)
+            for string in ('"text":"', '"', 'followers'):
+                followers = followers.replace(string, '')
+            return followers.strip()
+
 
 
 if __name__ == '__main__':
