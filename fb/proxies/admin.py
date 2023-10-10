@@ -7,7 +7,7 @@ from .form import ProxyForm
 
 class ProxyAdmin(admin.ModelAdmin):
     actions = ['check_proxies']
-    list_display = ['pk', 'comment','ip','port', 'url', 'status', 'error_type', 'created', ]
+    list_display = ['pk', 'comment','ip','port', 'url', 'status', 'error_type', 'created', 'proxy_ip']
     list_display_links = ['pk', 'ip']
     search_fields = ['comment']
     form = ProxyForm

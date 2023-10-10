@@ -4,6 +4,7 @@ from .check_proxies import get_current_ip, check_proxy, get_proxy_ip, CheckerNot
 from requests.exceptions import ConnectTimeout, RequestException, ProxyError, Timeout
 from threading import Thread
 import requests as req
+import time
 
 class ProxyChangeIpUrlNotWork(Exception):
     """Proxy url for change ip not work"""
@@ -27,7 +28,7 @@ class ProxyAbs(models.Model):
         (HTTPS, HTTPS),
         (SOCKS5, SOCKS5),
     )
-    ip = models.GenericIPAddressField()
+    ip = models.CharField(max_length=30, verbose_name='ip/host')
     port = models.CharField(max_length=6)
     status = models.BooleanField(max_length=50, default=NOT_CHECKED, null=True)
     protocol = models.CharField(max_length=10, choices=PROTOCOLS, default=HTTP)
@@ -53,6 +54,9 @@ class ProxyAbs(models.Model):
         try:
             proxy_ip = check_proxy(self.url)
             self.proxy_ip = proxy_ip
+            self.status = self.WORK
+            self.error_type = ''
+            self.error_text_full = ''
         except CheckerNotWorkError as error:
             self.error_type = 'CheckerNotWorkError'
             self.error_text_full = 'Checkers not work'
@@ -111,5 +115,8 @@ class ProxyMobile(ProxyAbs):
                     return new_proxy_ip
             except CheckerNotWorkError as error:
                 pass
-            sleep(5)
-        raise ProxyChangeIpTimeOutError
+            time.sleep(5)
+        raise ProxyChangeIpTimeOutError(no_proxy_ip, old_proxy_ip,new_proxy_ip)
+
+    def test_sleep(self):
+        time.sleep(100)
