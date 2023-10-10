@@ -234,6 +234,60 @@ class FbGroupNoAuthTestFollowers(TestCase):
         page()
         self.assertEqual(page.followers, '2.9k')
 
+    def test_followers_M_exists_small(self):
+        code = """
+        "inline_style":"BOLD"}],"aggregated_ranges":[],"ranges":[],
+        "color_ranges":[],"text":"3.3m followers"},"uri":"https:\/\/www.facebook.com\/BarelyBrokeLA\/followers\/"}],
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.followers, '3.3m')
+
+    def test_followers_M_exists(self):
+        code = """
+        "inline_style":"BOLD"}],"aggregated_ranges":[],"ranges":[],
+        "color_ranges":[],"text":"3.3M followers"},"uri":"https:\/\/www.facebook.com\/BarelyBrokeLA\/followers\/"}],
+        """
+        page = FbGroupPageNoAuth(code)
+        page()
+        self.assertEqual(page.followers, '3.3M')
+
+    def test_bunch(self):
+        examples = [
+            '111',
+            '1k',
+            '2.2k',
+            '22.2k',
+            '222.2k',
+            '2.21k',
+            '2.213k',
+            #
+            '1K',
+            '2.2K',
+            '22.2K',
+            '222.2K',
+            '2.21K',
+            '2.212K',
+            #
+            '1m',
+            '2.2m',
+            '22.2m',
+            '222.2m',
+            '2.21m',
+            '2.212m',
+            #
+            '1M',
+            '2.2M',
+            '22.2M',
+            '222.2M',
+            '2.21M',
+            '2.212M',
+        ]
+        for i in examples:
+            code = f'"color_ranges":[],"text":"{i} followers","uri":"https:'
+            page = FbGroupPageNoAuth(code)
+            page()
+            self.assertEqual(page.followers, i)
 
     def test_followers_in_result(self):
         code = """

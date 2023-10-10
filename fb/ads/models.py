@@ -245,10 +245,14 @@ class FbGroup(models.Model):
 
     def set_not_loaded(self):
         self.name = ''
-        self.title=  ''
+        self.title = ''
         self.email = ''
         self.req_html_data = ''
-        self.status=FbGroup.NOT_LOADED
+        self.status = FbGroup.NOT_LOADED
+        self.save()
+
+    def mark_name(self):
+        self.name = 'xxx ' + self.name
         self.save()
 
 

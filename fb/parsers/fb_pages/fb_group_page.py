@@ -163,7 +163,7 @@ class FbGroupPageNoAuth:
                 return group_name
 
     def _get_followers_from_code(self):
-        res = re.search(r'"text":"[\d.]{1,6}[Kk]? followers"', self.html)
+        res = re.search(r'"text":"[\d.]{1,6}[KkMm]? followers"', self.html)
         if res:
             followers = res.group(0)
             for string in ('"text":"', '"', 'followers'):
