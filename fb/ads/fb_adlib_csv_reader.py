@@ -2,6 +2,11 @@ import csv
 from os import path
 from zipfile import ZipFile
 import io
+import sys
+
+
+
+csv.field_size_limit(sys.maxsize)
 
 # TODO write reader exception
 class FbLibStatCsvReader:

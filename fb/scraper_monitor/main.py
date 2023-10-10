@@ -12,9 +12,13 @@ from parsers import FbGroupPageNoAuth
 import requests as req
 from .devine_array import devine_array
 
-groups = FbGroup.objects.filter(status='not_loaded')[:800]
-proxy = ProxyMobile.objects.get(pk=1)
+groups = FbGroup.objects.filter(status='not_loaded')[:5000]
+proxy = ProxyMobile.objects.get(pk=3)
 
+ERROR_REQ_COLOR = '#dc0000'
+NO_DATA_COLOR = '#F1C830'
+NO_MAIL_COLOR = '#BFF130'
+FULL_DATA = '#39F130'
 
 class Response:
 
@@ -160,10 +164,6 @@ class ProxyStream:
 
     def _draw_canvas_reqs(self):
         """Отрисовать статусы запросов цветами"""
-        ERROR_REQ_COLOR = '#dc0000'
-        NO_DATA_COLOR = '#F1C830'
-        NO_MAIL_COLOR = '#BFF130'
-        FULL_DATA = '#39F130'
         self.reqs_canvas.delete('all')
         padding = 3
         height = 16
@@ -276,6 +276,17 @@ groups_count_label = ttk.Label(text=f'groups to parse: {len(groups)}')
 groups_count_label.pack()
 start_btn = ttk.Button(text='Start', command=start_parse)
 start_btn.pack(pady=10)
+legend_frame = ttk.Frame()
+legend_frame.pack()
+legend_data = [
+    ('Ошибка запроса',ERROR_REQ_COLOR),
+    ('Нет даты',NO_DATA_COLOR),
+    ('Нет почты',NO_MAIL_COLOR),
+    ('Есть почта',FULL_DATA),
+]
+for text, color in legend_data:
+    label = ttk.Label(legend_frame,text=text, background=color)
+    label.pack(side=LEFT, padx=3)
 
 for proxy_num, proxy in enumerate(proxies):
     proxies_to_run.append(ProxyBar(proxy_num + 1, proxy, group_parts[proxy_num]))
