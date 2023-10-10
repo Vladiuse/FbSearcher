@@ -22,6 +22,7 @@ headers = {
     'Accept-Language': 'en-US,en;q=0.5'
 }
 
+
 def remove_if_exists(path):
     if os.path.exists(path):
         os.remove(path)
@@ -42,6 +43,7 @@ class KeyWord(models.Model):
     def __str__(self):
         return self.word
 
+
 class MailService(models.Model):
     name = models.CharField(max_length=50, blank=True)
     pattern = models.CharField(max_length=30)
@@ -50,38 +52,44 @@ class MailService(models.Model):
         return self.name if self.name else self.pattern
 
 
-
 class ActualGroupManager(models.Manager):
     def get_queryset(self):
         qs = FbGroup.objects.exclude(Q(email='') | Q(name='')).filter(last_ad_date=timezone.now().date())
         return qs
 
 
-class FullFbGroupManager(models.Manager):
-
+class NotCollectedManager(models.Manager):
     def get_queryset(self):
-        qs = FbGroup.objects.exclude(Q(email='') | Q(name=''))
-        return qs
+        return super().get_queryset().exclude(status=FbGroup.COLLECTED)
 
 
-class EmptyGroupManager(models.Manager):
-
+class CollectedManager(models.Manager):
     def get_queryset(self):
-        qs = FbGroup.objects.filter(email='', name='')
-        return qs
+        return super().get_queryset().filter(status=FbGroup.COLLECTED)
 
 
-class NotLoadedGroupManager(models.Manager):
+class NoDataManager(CollectedManager):
     def get_queryset(self):
-        qs = FbGroup.objects.filter(status=FbGroup.NOT_LOADED)
-        return qs
+        return super().get_queryset().filter(email='').filter(name='')
+
+
+class NoMailManager(CollectedManager):
+    def get_queryset(self):
+        return super().get_queryset().filter(email='')
+
+
+class FullDataManager(CollectedManager):
+    def get_queryset(self):
+        return super().get_queryset().exclude(Q(email='') | Q(name=''))
 
 
 class FbGroup(models.Model):
     objects = models.Manager()
-    full_objects = FullFbGroupManager()
-    empty_objects = EmptyGroupManager()
-    not_loaded_objects = NotLoadedGroupManager()
+    not_collected_objects = NotCollectedManager()
+    collected_objects = CollectedManager()
+    collected_no_data_objects = NoDataManager()
+    collected_no_mail_objects = NoMailManager()
+    full_objects = FullDataManager()
     actual_objects = ActualGroupManager()
 
     FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
@@ -171,7 +179,7 @@ class FbGroup(models.Model):
         }
         return result
 
-    def update(self, data:dict):
+    def update(self, data: dict):
         self.name = data.get('name', self.name)
         self.email = data.get('email', self.email)
         self.title = data.get('title', self.title)
@@ -216,8 +224,6 @@ class FbGroup(models.Model):
                 }
         return req_result
 
-
-
     def log_req_data(self, html):
         if self.req_html_data:
             remove_if_exists(self.req_html_data.path)
@@ -232,18 +238,16 @@ class FbGroup(models.Model):
         shutil.rmtree(path_with_html_logs)
 
 
-
-
 class ThreadCounter(models.Model):
-    name = models.CharField(max_length=20,primary_key=True)
+    name = models.CharField(max_length=20, primary_key=True)
     count = models.IntegerField(default=0)
     created = models.DateTimeField(auto_now_add=True)
     last_update = models.DateTimeField(auto_now=True)
 
     def stat(self):
         delta = self.last_update - self.created
-        print(self, f'AVG: {round(int(self.count) / delta.total_seconds(),1)}Count:{self.count} start:{self.created} last:{self.last_update}', )
-
+        print(self,
+              f'AVG: {round(int(self.count) / delta.total_seconds(), 1)}Count:{self.count} start:{self.created} last:{self.last_update}', )
 
     @staticmethod
     def clean_counters():
@@ -251,7 +255,6 @@ class ThreadCounter(models.Model):
 
 
 class FbPagExample(models.Model):
-
     PAGES_TYPES = [
         ('fb_group', 'Группа'),
         ('fb_main', 'Главная'),

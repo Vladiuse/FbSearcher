@@ -135,7 +135,16 @@ class UpdateFbGroupFromZip(View):
             }
             return render(request, self.template_name, context=content)
 
-
+def groups_stat(request):
+    content = {
+        'not_collected_count': FbGroup.not_collected_objects.count(),
+        'collected_count': FbGroup.collected_objects.count(),
+        'with_mail_count': FbGroup.full_objects.count(),
+        'no_mail_count': FbGroup.collected_no_mail_objects.count(),
+        'no_data_count': FbGroup.collected_no_data_objects.count(),
+        'login_form_count': FbGroup.collected_objects.filter(name='FaceBook').count()
+    }
+    return render(request, 'ads/groups_stat.html', content)
 
 @csrf_exempt
 def sleep_10(request):

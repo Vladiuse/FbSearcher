@@ -1,0 +1,96 @@
+{%extends 'ads/base.html'%}
+
+{%block head_text%}
+Статистика групп
+{%endblock%}
+{%block content%}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <!-- <h3>Групп в базе</h3> -->
+            <canvas id="parserStat"></canvas>
+        </div>
+        <div class="col">
+            <!-- <h3>Собраные группы</h3> -->
+            <canvas id="ColectedStat"></canvas>
+        </div>
+    </div>
+</div>
+<script>
+    const parserStat = document.getElementById('parserStat');
+    const parserStatData = {
+        title: '123',
+        labels: [
+            'Not collected: {{not_collected_count}}',
+            'Colected: {{collected_count}}',
+        ],
+        datasets: [{
+            label: 'My First Dataset',
+            data: ['{{not_collected_count}}', '{{collected_count}}'],
+            backgroundColor: [
+                '#9D9D9D',
+                '#7AB759',
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    new Chart(parserStat, {
+        type: 'doughnut',
+        data: parserStatData,
+        options: {
+            plugins: {
+                legend: {
+                    position: 'left',
+                    align: 'center'
+                },
+                title: {
+                    display: true,
+                    text: 'Соотношение обработаних и нет групп',
+                }
+            }
+        }
+    });
+</script>
+
+<script>
+    const ColectedStat = document.getElementById('ColectedStat');
+    const ColectedStatData = {
+        labels: [
+            'With mail: {{with_mail_count}}',
+            'Title only: {{no_mail_count}}',
+            'Login form: {{login_form_count}}',
+            'Emtpy: {{no_data_count}}',
+        ],
+        datasets: [{
+            label: 'My First Dataset',
+            data: ['{{with_mail_count}}', '{{no_mail_count}}', '{{login_form_count}}', '{{no_data_count}}'],
+            backgroundColor: [
+                '#59B763',
+                '#ffd963',
+                '#3082F1',
+                '#ff6363'
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    new Chart(ColectedStat, {
+        type: 'doughnut',
+        data: ColectedStatData,
+        options: {
+            plugins: {
+                legend: {
+                    position: 'left',
+                    align: 'center'
+                },
+                title: {
+                    display: true,
+                    text: 'Статистика по обработанным группам',
+                }
+            }
+        }
+    });
+</script>
+{%endblock%}

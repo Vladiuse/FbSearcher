@@ -107,11 +107,15 @@ class ProxyMobile(ProxyAbs):
     def change_ip(self):
         no_proxy_ip = get_current_ip()
         old_proxy_ip = get_proxy_ip(self.url)
+        print('\nСмена IP')
+        print('Без прокси: ', no_proxy_ip)
+        print('Tекущий: ', old_proxy_ip)
         self._click_change_ip_url()
         for _ in range(5):
             try:
                 new_proxy_ip = get_proxy_ip(self.url)
                 if new_proxy_ip != old_proxy_ip and new_proxy_ip != no_proxy_ip:
+                    print('Новый: ', new_proxy_ip)
                     return new_proxy_ip
             except CheckerNotWorkError as error:
                 pass

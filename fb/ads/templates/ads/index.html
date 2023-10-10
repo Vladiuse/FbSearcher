@@ -4,8 +4,51 @@
 Main
 {%endblock%}
 {%block content%}
+<style>
+    .card i{
+        font-size: 150px;
+        text-align: center;
+        margin: 10px 0;
+        color: rgb(58 108 224);
+    }
+</style>
 <div class="container">
-    <a href="{%url 'update-from-csv' %}">Загузить группы из файла csv</a><br>
-    <a href="{%url 'update-from-zip' %}">Загузить группы из файла Zip</a>
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+          <div class="card text-center">
+            <a href="{%url 'update-from-zip' %}">
+                <i class="fa-regular fa-file-zipper"></i>
+            </a>
+            <div class="card-body">
+              <h5 class="card-title">Zip</h5>
+              <p class="card-text">Загузить группы из файла Zip</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card text-center">
+            <a href="{%url 'update-from-csv' %}">
+                <i class="fa-solid fa-file-csv"></i>
+            </a>
+            <div class="card-body">
+              <h5 class="card-title">CSV</h5>
+              <p class="card-text">Загузить группы из файла csv</p>
+            </div>
+          </div>
+        </div>
+        <div class="col">
+            <div class="card text-center">
+                <a href="{%url 'groups_stat'%}">
+                    <i class="fa-solid fa-chart-column"></i>
+                </a>
+              <div class="card-body">
+                <h5 class="card-title">Статистика</h5>
+                <p class="card-text">Статистика по группам</p>
+              </div>
+            </div>
+          </div>
+      </div>
 </div>
+
+
 {%endblock%}
