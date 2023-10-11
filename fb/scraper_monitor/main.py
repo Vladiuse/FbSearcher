@@ -79,8 +79,8 @@ class ProxyStream:
     def run(self):
         """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
-            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
-            #req_result = REQ_TEST.get('')  # FAKE
+            #req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            req_result = REQ_TEST.get('')  # FAKE
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
             if self.is_pause:
@@ -171,7 +171,13 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 6
+    STREAM_COUNT = 2
+
+    # auto ip change
+    REQ_COUNT_CHANGE_IP = 30
+    WAIT_AFTER_ERROR_IP_CHANGE = 5
+    AUTO_CHANGE_IP = True
+    MAX_TRY_IP_CHANGE_ERROR = 5
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -179,6 +185,9 @@ class ProxyBar:
         self.total_reqs_count = 0
         self.streams = []
         self._is_paused = False
+        self.ip_change_count = 0
+        self.cur_ip_req_count = 0
+        self._change_ip_error_count = 0
 
         # ttk
         self.frame = ttk.Frame(borderwidth=1, relief='solid', padding=[5, 10])
@@ -189,8 +198,6 @@ class ProxyBar:
         # proxy info frame
         self.proxy_info_frame = ttk.Frame(self.frame)
         self.proxy_info_frame.pack()
-        self.proxy_status_label = ttk.Label(self.proxy_info_frame, text=f'Status: work')
-        self.proxy_status_label.pack(side=LEFT, padx=5)
         self.proxy_ip_label = ttk.Label(self.proxy_info_frame, text=f'Ip: {self.proxy.ip}')
         self.proxy_ip_label.pack(side=LEFT, padx=5)
         self.proxy_total_reqs_label = ttk.Label(self.proxy_info_frame, text=f'Total reqs: {self.total_reqs_count}')
@@ -198,10 +205,16 @@ class ProxyBar:
         self.proxy_arg_req_time_label = ttk.Label(self.proxy_info_frame, text='Avg Req: 0')
         self.proxy_arg_req_time_label.pack(side=LEFT, padx=5)
         # proxy actions buttons
-        self.pause_stream_btn = ttk.Button(self.frame, text=f'Pause proxy', command=self.pause_streams_btn_click)
-        self.pause_stream_btn.pack()
-        self.change_ip_btn = ttk.Button(self.frame, text=f'Change Ip', command=self.change_ip_bnt_click)
-        self.change_ip_btn.pack()
+        self.proxy_status_label = ttk.Label(self.frame, text=f'Status: work')
+        self.proxy_status_label.pack()
+
+        # Actions buttons frame
+        self.btn_actions_frame = ttk.Frame(self.frame)
+        self.btn_actions_frame.pack()
+        self.pause_stream_btn = ttk.Button(self.btn_actions_frame, text=f'Pause proxy', command=self.pause_streams_btn_click)
+        self.pause_stream_btn.pack(side=LEFT, padx=5)
+        self.change_ip_btn = ttk.Button(self.btn_actions_frame, text=f'Change Ip', command=self.change_ip_bnt_click)
+        self.change_ip_btn.pack(side=LEFT, padx=5)
 
         group_parts = devine_array(self.groups, ProxyBar.STREAM_COUNT)
         for stream_num in range(ProxyBar.STREAM_COUNT):
@@ -212,27 +225,37 @@ class ProxyBar:
     def change_ip_bnt_click(self):
         self.pause_stream_btn['state'] = ["disabled"]
         self.proxy_status_label['text'] = 'Status: wait stream pause'
+        self.pause_all_streams()
+        sleep(ProxyStream.REQ_TIMEOUT)  # wait streams continue requests
         thread = Thread(target=self.change_proxy_ip)
         thread.start()
 
     def change_proxy_ip(self):
         """Сменить айпи прокси"""
-        self.pause_all_streams()
-        sleep(ProxyStream.REQ_TIMEOUT)  # wait streams continue requests
         self.proxy_status_label['text'] = 'Status: change ip'
         try:
             new_ip = self.proxy.change_ip()
         except (ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError, RequestException) as error:
+            self._change_ip_error_count += 1
             self.proxy_status_label['text'] = f'Status: Error({type(error).__name__})'
             self.proxy_ip_label['text'] = f'Ip: no ip'
             self.proxy_status_label['background'] = 'red'
             self.change_ip_btn['text'] = 'Change Ip Again'
+            # if auto
+            if self._change_ip_error_count >= ProxyBar.MAX_TRY_IP_CHANGE_ERROR:
+                self.proxy_status_label['text'] = f'Status: Error(Max try to change ip)'
+                return
+            if ProxyBar.AUTO_CHANGE_IP:
+                sleep(ProxyBar.WAIT_AFTER_ERROR_IP_CHANGE)
+                self.change_proxy_ip()
         else:
             self.proxy_status_label['text'] = f'Status: work'
             self.proxy_ip_label['text'] = f'Ip: {new_ip}'
             self.proxy_status_label['background'] = ''
             sleep(1)
             self.activate_all_streams()
+            self.ip_change_count += 1
+            self._change_ip_error_count = 0
         finally:
             self.pause_stream_btn['state'] = []
 
@@ -280,11 +303,18 @@ class ProxyBar:
         avg = self._get_streams_avg_req_time()
         self.proxy_arg_req_time_label['text'] = f'Avg Req: {round(avg,1)}'
 
+    def _auto_change_ip(self):
+        if self.cur_ip_req_count > ProxyBar.REQ_COUNT_CHANGE_IP:
+            self.cur_ip_req_count = 0
+            self.change_ip_bnt_click()
+
     def up_req_count(self):
         """поднять счетчики запросов прокси"""
         self.total_reqs_count += 1
+        self.cur_ip_req_count += 1
         self._update_counters()
         self._update_avg_req_time()
+        self._auto_change_ip()
 
     def _update_counters(self):
         """Отрисовать новые значения счетчиков прокси"""
@@ -299,9 +329,9 @@ def start_parse():
 
 
 proxies_to_run = []
-proxies = [proxy, proxy]
-proxies = [proxy]
-#proxies = [ProxyFake(),ProxyFake(),ProxyFake()]  # FAKE
+# proxies = [proxy, proxy]
+# proxies = [proxy]
+proxies = [ProxyFake(),ProxyFake(),ProxyFake()]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 
 # MAIN

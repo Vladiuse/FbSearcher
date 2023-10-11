@@ -53,7 +53,9 @@ class ProxyFake:
         return self.ip
 
     def change_ip(self):
+        print('Change Ip')
         sleep(r.randint(3, 6))
+        self._raise_change_ip_error()
         choices = [
             self._set_new_ip,
             self._raise_change_ip_error,
