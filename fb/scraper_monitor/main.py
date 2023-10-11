@@ -12,6 +12,7 @@ from parsers import FbGroupPageNoAuth
 import requests as req
 from .devine_array import devine_array
 from .fake_objects import ResponseFake, RequestFake, ProxyFake
+from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
 groups = FbGroup.objects.exclude(status='collected')
 proxy = ProxyMobile.objects.get(pk=3)
 
@@ -184,15 +185,20 @@ class ProxyBar:
         self.proxy_name_label = ttk.Label(self.frame, text=f'Proxy #{proxy_num}')
         self.proxy_name_label.pack()
 
+        # proxy info frame
         self.proxy_info_frame = ttk.Frame(self.frame)
         self.proxy_info_frame.pack()
+        self.proxy_status_label = ttk.Label(self.proxy_info_frame, text=f'Status: work')
+        self.proxy_status_label.pack(side=LEFT, padx=5)
         self.proxy_ip_label = ttk.Label(self.proxy_info_frame, text=f'Ip: {self.proxy.ip}')
         self.proxy_ip_label.pack(side=LEFT, padx=5)
         self.proxy_total_reqs_label = ttk.Label(self.proxy_info_frame, text=f'Total reqs: {self.total_reqs_count}')
         self.proxy_total_reqs_label.pack(side=LEFT, padx=5)
-
-        self.kill_stream_btn = ttk.Button(self.frame, text=f'Pause proxy', command=self.pause_streams_btn_click)
-        self.kill_stream_btn.pack()
+        # proxy actions buttons
+        self.pause_stream_btn = ttk.Button(self.frame, text=f'Pause proxy', command=self.pause_streams_btn_click)
+        self.pause_stream_btn.pack()
+        self.change_ip_btn = ttk.Button(self.frame, text=f'Change Ip', command=self.change_ip_bnt_click)
+        self.change_ip_btn.pack()
 
         group_parts = devine_array(self.groups, ProxyBar.STREAM_COUNT)
         for stream_num in range(ProxyBar.STREAM_COUNT):
@@ -200,7 +206,36 @@ class ProxyBar:
             proxy_stream = ProxyStream(stream_num + 1, self, self.proxy, groups_to_stream)
             self.streams.append(proxy_stream)
 
+    def change_ip_bnt_click(self):
+        self.pause_stream_btn['state'] = ["disabled"]
+        self.proxy_status_label['text'] = 'Status: wait stream pause'
+        thread = Thread(target=self.change_proxy_ip)
+        thread.start()
+
+
+    def change_proxy_ip(self):
+        """Сменить айпи прокси"""
+        self.pause_all_streams()
+        sleep(3)  # wait streams continue requests
+        self.proxy_status_label['text'] = 'Status: change ip'
+        try:
+            new_ip = self.proxy.change_ip()
+        except (ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError) as error:
+            self.proxy_status_label['text'] = f'Status: Error({type(error).__name__})'
+            self.proxy_ip_label['text'] = f'Ip: no ip'
+            self.proxy_status_label['background'] = 'red'
+            self.change_ip_btn['text'] = 'Change Ip Again'
+        else:
+            self.proxy_status_label['text'] = f'Status: work'
+            self.proxy_ip_label['text'] = f'Ip: {new_ip}'
+            self.proxy_status_label['background'] = ''
+            sleep(1)
+            self.activate_all_streams()
+        finally:
+            self.pause_stream_btn['state'] = []
+
     def pause_streams_btn_click(self):
+        """Действие при клике на кнопку Паузы прокси"""
         if self._is_paused:
             self.activate_all_streams()
         else:
@@ -208,12 +243,12 @@ class ProxyBar:
 
     def pause_all_streams(self):
         """Поставить на паузу все потоки"""
-        self.kill_stream_btn['text'] = 'Activate'
+        self.pause_stream_btn['text'] = 'Activate'
         self._is_paused = True
         [stream.pause() for stream in self.streams]
 
     def activate_all_streams(self):
-        self.kill_stream_btn['text'] = 'Pause'
+        self.pause_stream_btn['text'] = 'Pause'
         self._is_paused = False
         [stream.activate() for stream in self.streams]
 
@@ -221,7 +256,7 @@ class ProxyBar:
         """Начать парсинг в потоках"""
         threads = []
         for proxy_stream in self.streams:
-            thread = Thread(target=proxy_stream.run)
+            thread = Thread(target=proxy_stream.run, daemon=True)
             threads.append(thread)
             thread.start()
         self.set_complete()

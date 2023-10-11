@@ -58,6 +58,7 @@ class ProxyFake:
         ]
         var = r.choice(choices)
         var()
+        return self.ip
 
     def _raise_change_ip_error(self):
         choices = [
