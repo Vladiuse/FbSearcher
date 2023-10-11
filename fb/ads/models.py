@@ -151,8 +151,8 @@ class FbGroup(models.Model):
         print('All:', FbGroup.objects.count())
         print('Actual:', FbGroup.actual_objects.count())
         print('Full:', FbGroup.full_objects.count())
-        print('Empty:', FbGroup.empty_objects.count())
-        print('Not loaded:', FbGroup.not_loaded_objects.count())
+        print('Empty:', FbGroup.collected_no_data_objects.count())
+        print('Not loaded:', FbGroup.not_collected_objects.count())
 
     @staticmethod
     def fb_group_url_to_id(url):
@@ -237,11 +237,12 @@ class FbGroup(models.Model):
         self.req_html_data.save(file_name, file)
 
     @staticmethod
-    def clean_all_data():
-        FbGroup.objects.all().update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
-        path_with_html_logs = '/home/vlad/PycharmProjects/FbSearcher/fb/media/req_html_data'
-        if os.path.exists(path_with_html_logs):
-            shutil.rmtree(path_with_html_logs)
+    def clean_all_data(qs=None):
+        if not qs:
+            qs = FbGroup.objects.all()
+        qs.update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
+        if os.path.exists(FbGroupPage.REQ_HTML_DIR):
+            shutil.rmtree(FbGroupPage.REQ_HTML_DIR)
 
     def set_not_loaded(self):
         self.name = ''
