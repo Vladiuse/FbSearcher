@@ -11,20 +11,39 @@
 <style>
     h1{
         color: white;
-        background-color: rgb(58 108 224);
         padding: 10px 0;
         text-align: center;
+        width: 100%;
     }
     label{
         margin-top:15px  !important;
         margin-bottom:10px  !important;
     }
+    .header{
+        background-color: rgb(58 108 224);
+        display: flex;
+        align-items: center;
+    }
+    .header #home-logo{
+        font-size: 30px;
+        color: white;
+        margin: 20px;
+        cursor: pointer;
+    }
+    .header #home-logo:hover{
+        scale: 1.1;
+        transition: all 0.5s ease-out;
+    }
 </style>
 <body>
-<h1>
-    {%block head_text%}
-    {%endblock%}
-</h1>
+    <div class="header">
+        <a href="{%url 'index'%}"><i id="home-logo" class="fa-solid fa-house"></i></a>
+        <h1>
+            {%block head_text%}
+            {%endblock%}
+        </h1>
+    </div>
+
 {%block content%}
 {%endblock%}
 </body>
