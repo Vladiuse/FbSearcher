@@ -3,8 +3,8 @@ import random as r
 from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
 from faker import Faker
 
-
 f = Faker()
+
 
 class ResponseFake:
 
@@ -28,30 +28,32 @@ class RequestFake:
     #     return r.choice(choices)
 
     def get(self, url):
+        req_time = r.uniform(0.5, 1.5)
         choices = [
-            {'status': True, 'result': {'name': 'name', 'email': 'some@com'}},
-            {'status': True, 'result': {'name': 'name', }},
-            {'status': True, 'result': {}},
-            {'status': False, },
-            {'status': False, 'error': 'status code not 200'},
+            {'status': True, 'spend_time': req_time, 'result': {'name': 'name', 'email': 'some@com'}},
+            {'status': True, 'spend_time': req_time, 'result': {'name': 'name', }},
+            {'status': True, 'spend_time': req_time, 'result': {}},
+            {'status': False, 'spend_time': req_time, },
+            {'status': False, 'spend_time': req_time, 'error': 'status code not 200'},
         ]
-        sleep(r.uniform(0.5, 1.5))
+        sleep(req_time)
         return r.choice(choices)
+
 
 class ProxyFake:
 
     def __init__(self):
         self.url = 'xxx'
-        self.pk = r.randint(1,100)
+        self.pk = r.randint(1, 100)
         self.ip = f.ipv4()
 
     @property
     def current_ip(self):
-        sleep(r.randint(1,3))
+        sleep(r.randint(1, 3))
         return self.ip
 
     def change_ip(self):
-        sleep(r.randint(3,6))
+        sleep(r.randint(3, 6))
         choices = [
             self._set_new_ip,
             self._raise_change_ip_error,

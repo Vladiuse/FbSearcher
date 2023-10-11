@@ -13,6 +13,7 @@ from io import StringIO
 from django.db.models import Q
 import http.cookiejar
 import shutil
+import time
 from parsers import FbGroupPageNoAuth
 from requests.exceptions import ConnectTimeout, ProxyError, ReadTimeout, ConnectionError, RequestException
 
@@ -205,6 +206,7 @@ class FbGroup(models.Model):
 
     def update_from_url(self, proxy, timeout=6, log=False):
         """Обновить данные по группе спарсив ссылку под прокси"""
+        start = time.time()
         try:
             res = req.get(
                 self.url,
@@ -212,13 +214,18 @@ class FbGroup(models.Model):
                 timeout=timeout,
                 proxies={'https': proxy.url}
             )
+            spend_time = res.elapsed.total_seconds()
         except (ConnectTimeout, ReadTimeout, ConnectionError, RequestException) as error:
+            end = time.time()
+            spend_time = end - start
             req_result = {
                 'status': False,
                 'error': error,
+                'spend_time': spend_time,
             }
             self.status = self.ERROR_REQ
             self.save()
+
         else:
             if log:
                 self.log_req_data(res.text)
@@ -230,11 +237,13 @@ class FbGroup(models.Model):
                 req_result = {
                     'status': True,
                     'result': parse_result,
+                    'spend_time': spend_time,
                 }
             else:
                 req_result = {
                     'status': False,
                     'error': 'Status code not 200',
+                    'spend_time': spend_time,
                 }
         return req_result
 

@@ -195,6 +195,8 @@ class ProxyBar:
         self.proxy_ip_label.pack(side=LEFT, padx=5)
         self.proxy_total_reqs_label = ttk.Label(self.proxy_info_frame, text=f'Total reqs: {self.total_reqs_count}')
         self.proxy_total_reqs_label.pack(side=LEFT, padx=5)
+        self.proxy_arg_req_time_label = ttk.Label(self.proxy_info_frame, text='Avg Req: 0')
+        self.proxy_arg_req_time_label.pack(side=LEFT, padx=5)
         # proxy actions buttons
         self.pause_stream_btn = ttk.Button(self.frame, text=f'Pause proxy', command=self.pause_streams_btn_click)
         self.pause_stream_btn.pack()
@@ -266,10 +268,23 @@ class ProxyBar:
         if all(stream.is_complete for stream in self.streams):
             self.proxy_ip_label['background'] = '#96DB33'
 
+    def _get_streams_avg_req_time(self):
+        avg_streams = []
+        for stream in self.streams:
+            if stream.reqs:
+                avg = sum(req_data['spend_time'] for req_data in stream.reqs) / len(stream.reqs)
+                avg_streams.append(avg)
+        return sum(avg_streams) / len(avg_streams)
+
+    def _update_avg_req_time(self):
+        avg = self._get_streams_avg_req_time()
+        self.proxy_arg_req_time_label['text'] = f'Avg Req: {round(avg,1)}'
+
     def up_req_count(self):
         """поднять счетчики запросов прокси"""
         self.total_reqs_count += 1
         self._update_counters()
+        self._update_avg_req_time()
 
     def _update_counters(self):
         """Отрисовать новые значения счетчиков прокси"""
