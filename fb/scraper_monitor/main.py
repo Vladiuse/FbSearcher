@@ -77,8 +77,8 @@ class ProxyStream:
     def run(self):
         """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
-            # req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
-            req_result = REQ_TEST.get('')
+            #req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            req_result = REQ_TEST.get('')  # FAKE
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
             if self.is_pause:
@@ -176,6 +176,7 @@ class ProxyBar:
         self.groups = groups
         self.total_reqs_count = 0
         self.streams = []
+        self._is_paused = False
 
         # ttk
         self.frame = ttk.Frame(borderwidth=1, relief='solid', padding=[5, 10])
@@ -190,7 +191,7 @@ class ProxyBar:
         self.proxy_total_reqs_label = ttk.Label(self.proxy_info_frame, text=f'Total reqs: {self.total_reqs_count}')
         self.proxy_total_reqs_label.pack(side=LEFT, padx=5)
 
-        self.kill_stream_btn = ttk.Button(self.frame, text=f'Pause proxy', command=self.pause_all_streams)
+        self.kill_stream_btn = ttk.Button(self.frame, text=f'Pause proxy', command=self.pause_streams_btn_click)
         self.kill_stream_btn.pack()
 
         group_parts = devine_array(self.groups, ProxyBar.STREAM_COUNT)
@@ -199,9 +200,22 @@ class ProxyBar:
             proxy_stream = ProxyStream(stream_num + 1, self, self.proxy, groups_to_stream)
             self.streams.append(proxy_stream)
 
+    def pause_streams_btn_click(self):
+        if self._is_paused:
+            self.activate_all_streams()
+        else:
+            self.pause_all_streams()
+
     def pause_all_streams(self):
         """Поставить на паузу все потоки"""
+        self.kill_stream_btn['text'] = 'Activate'
+        self._is_paused = True
         [stream.pause() for stream in self.streams]
+
+    def activate_all_streams(self):
+        self.kill_stream_btn['text'] = 'Pause'
+        self._is_paused = False
+        [stream.activate() for stream in self.streams]
 
     def start_parse(self):
         """Начать парсинг в потоках"""
@@ -235,9 +249,9 @@ def start_parse():
 
 
 proxies_to_run = []
-#proxies = [proxy, proxy]
-proxies = [ProxyFake(),ProxyFake(),ProxyFake()]
-group_parts = devine_array(list(groups), 2)
+proxies = [proxy, proxy]
+proxies = [ProxyFake(),ProxyFake(),ProxyFake()]  # FAKE
+group_parts = devine_array(list(groups), len(proxies))
 
 # MAIN
 root = Tk()
