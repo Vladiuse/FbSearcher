@@ -13,6 +13,7 @@ import requests as req
 from .devine_array import devine_array
 from .fake_objects import ResponseFake, RequestFake, ProxyFake
 from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
+from requests.exceptions import RequestException
 groups = FbGroup.objects.exclude(status='collected')
 proxy = ProxyMobile.objects.get(pk=3)
 
@@ -78,8 +79,8 @@ class ProxyStream:
     def run(self):
         """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
-            #req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
-            req_result = REQ_TEST.get('')  # FAKE
+            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            #req_result = REQ_TEST.get('')  # FAKE
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
             if self.is_pause:
@@ -170,7 +171,7 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 2
+    STREAM_COUNT = 6
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -212,15 +213,14 @@ class ProxyBar:
         thread = Thread(target=self.change_proxy_ip)
         thread.start()
 
-
     def change_proxy_ip(self):
         """Сменить айпи прокси"""
         self.pause_all_streams()
-        sleep(3)  # wait streams continue requests
+        sleep(ProxyStream.REQ_TIMEOUT)  # wait streams continue requests
         self.proxy_status_label['text'] = 'Status: change ip'
         try:
             new_ip = self.proxy.change_ip()
-        except (ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError) as error:
+        except (ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError, RequestException) as error:
             self.proxy_status_label['text'] = f'Status: Error({type(error).__name__})'
             self.proxy_ip_label['text'] = f'Ip: no ip'
             self.proxy_status_label['background'] = 'red'
@@ -285,7 +285,8 @@ def start_parse():
 
 proxies_to_run = []
 proxies = [proxy, proxy]
-proxies = [ProxyFake(),ProxyFake(),ProxyFake()]  # FAKE
+proxies = [proxy]
+#proxies = [ProxyFake(),ProxyFake(),ProxyFake()]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 
 # MAIN

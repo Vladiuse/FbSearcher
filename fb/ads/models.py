@@ -60,8 +60,12 @@ class ActualGroupManager(models.Manager):
 
 class NotCollectedManager(models.Manager):
     def get_queryset(self):
-        return super().get_queryset().exclude(status=FbGroup.COLLECTED)
+        return super().get_queryset().filter(status=FbGroup.NOT_LOADED)
 
+
+class ErrorReqManager(models.Manager):
+    def get_queryset(self):
+        return super().get_queryset().filter(status=FbGroup.ERROR_REQ)
 
 class CollectedManager(models.Manager):
     def get_queryset(self):
@@ -86,6 +90,7 @@ class FullDataManager(CollectedManager):
 class FbGroup(models.Model):
     objects = models.Manager()
     not_collected_objects = NotCollectedManager()
+    error_req_objects = ErrorReqManager()
     collected_objects = CollectedManager()
     collected_no_data_objects = NoDataManager()
     collected_no_mail_objects = NoMailManager()
@@ -102,6 +107,7 @@ class FbGroup(models.Model):
     STATUSES = (
         (NOT_LOADED, 'Не загружен'),
         (NEED_LOGIN, 'Нужен вход'),
+        (ERROR_REQ, 'Ошибка запроса'),
         (COLLECTED, 'Cобран'),
     )
 

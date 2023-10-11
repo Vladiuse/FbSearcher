@@ -139,6 +139,7 @@ def groups_stat(request):
     content = {
         'not_collected_count': FbGroup.not_collected_objects.count(),
         'collected_count': FbGroup.collected_objects.count(),
+        'error_req_count': FbGroup.error_req_objects.count(),
         'with_mail_count': FbGroup.full_objects.count(),
         'no_mail_count': FbGroup.collected_no_mail_objects.count(),
         'no_data_count': FbGroup.collected_no_data_objects.count(),
