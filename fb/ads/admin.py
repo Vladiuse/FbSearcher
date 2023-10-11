@@ -35,6 +35,7 @@ class FbGroupAdmin(admin.ModelAdmin):
     list_display_links = ['pk']
     list_filter = ['status', FbGroupDataFilter]
     search_fields = ['pk', 'title', 'name', 'email']
+    actions = ['clean_all_data', 'mark_names']
 
     def url_link(self, obj):
         return mark_safe(f'<a target="_blank" href="{obj.url}">Open group<a/>')
@@ -43,6 +44,17 @@ class FbGroupAdmin(admin.ModelAdmin):
         if obj.req_html_data and os.path.exists(obj.req_html_data.path):
             return mark_safe(f'<a target="_blank" href="{obj.req_html_data.url}">{obj.pk}<a/>')
         return '-'
+
+    @admin.action(description='Сбросить данные')
+    def clean_all_data(self, request, queryset):
+        print('Сбросить данные')
+        FbGroup.clean_all_data(queryset)
+
+    @admin.action(description='Пометить группы')
+    def mark_names(self, request, qs):
+        for group in qs:
+            group.mark_name()
+
 class FbPageExampleAdmin(admin.ModelAdmin):
     list_display = ['pk', 'type', 'desc', 'name','is_auth']
     list_display_links = ['pk', 'name']

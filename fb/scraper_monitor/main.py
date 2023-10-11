@@ -11,7 +11,7 @@ from proxies.models import ProxyMobile
 from parsers import FbGroupPageNoAuth
 import requests as req
 from .devine_array import devine_array
-from .fake_objects import Response, Request
+from .fake_objects import ResponseFake, RequestFake, ProxyFake
 groups = FbGroup.objects.exclude(status='collected')
 proxy = ProxyMobile.objects.get(pk=3)
 
@@ -22,7 +22,7 @@ LOGIN_FORM = '#3082F1'
 FULL_DATA = '#39F130'
 
 
-REQ_TEST = Request()
+REQ_TEST = RequestFake()
 
 
 class ProxyStream:
@@ -77,8 +77,8 @@ class ProxyStream:
     def run(self):
         """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
-            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
-            # req_result = REQ_TEST.get('')
+            # req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            req_result = REQ_TEST.get('')
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
             if self.is_pause:
@@ -235,7 +235,8 @@ def start_parse():
 
 
 proxies_to_run = []
-proxies = [proxy, proxy]
+#proxies = [proxy, proxy]
+proxies = [ProxyFake(),ProxyFake(),ProxyFake()]
 group_parts = devine_array(list(groups), 2)
 
 # MAIN

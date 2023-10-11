@@ -184,6 +184,7 @@ class FbGroup(models.Model):
         return result
 
     def update(self, data: dict):
+        """Обновить группу из словаря"""
         self.name = data.get('name', self.name)
         self.email = data.get('email', self.email)
         self.title = data.get('title', self.title)
@@ -192,10 +193,12 @@ class FbGroup(models.Model):
         self.save()
 
     def set_error_req(self):
+        """Пометить группу ошибкой запроса"""
         self.status = self.ERROR_REQ
         self.save()
 
     def update_from_url(self, proxy, timeout=6, log=False):
+        """Обновить данные по группе спарсив ссылку под прокси"""
         try:
             res = req.get(
                 self.url,
@@ -230,6 +233,7 @@ class FbGroup(models.Model):
         return req_result
 
     def log_req_data(self, html):
+        """Залогировать полученый html от запроса"""
         if self.req_html_data:
             remove_if_exists(self.req_html_data.path)
         file = ContentFile(html)
@@ -238,13 +242,15 @@ class FbGroup(models.Model):
 
     @staticmethod
     def clean_all_data(qs=None):
+        """Сбросить данные по группам"""
         if not qs:
             qs = FbGroup.objects.all()
         qs.update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
-        if os.path.exists(FbGroupPage.REQ_HTML_DIR):
-            shutil.rmtree(FbGroupPage.REQ_HTML_DIR)
+        if os.path.exists(FbGroup.REQ_HTML_DIR):
+            shutil.rmtree(FbGroup.REQ_HTML_DIR)
 
     def set_not_loaded(self):
+        """Сбросить данные по группе"""
         self.name = ''
         self.title = ''
         self.email = ''
@@ -253,6 +259,7 @@ class FbGroup(models.Model):
         self.save()
 
     def mark_name(self):
+        """Поменить группу маркером (для поиска в админ)"""
         self.name = 'xxx ' + self.name
         self.save()
 

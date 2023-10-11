@@ -2,8 +2,10 @@ from pprint import pprint
 
 
 def devine_array(array, parts_count):
-    if parts_count <= 1 or parts_count > len(array):
-        raise TypeError('invalid param')
+    if parts_count <= 1:
+        raise TypeError('parts_count must be more than 1')
+    if parts_count > len(array):
+        raise TypeError(f'parts_count must be more array len: array({len(array)}), parts_count ({parts_count})')
     result_len = len(array) // parts_count
     fix_num = len(array) % parts_count
     parts = []

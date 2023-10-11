@@ -6,14 +6,14 @@ from faker import Faker
 
 f = Faker()
 
-class Response:
+class ResponseFake:
 
     def __init__(self, status_code, text=None):
         self.status_code = status_code
         self.text = text
 
 
-class Request:
+class RequestFake:
 
     # def get(self, url):
     #     if r.randint(0, 8) == 8:
@@ -38,7 +38,7 @@ class Request:
         sleep(r.uniform(0.5, 1.5))
         return r.choice(choices)
 
-class Proxy:
+class ProxyFake:
 
     def __init__(self):
         self.url = 'xxx'
@@ -47,9 +47,11 @@ class Proxy:
 
     @property
     def current_ip(self):
+        sleep(r.randint(1,3))
         return self.ip
 
     def change_ip(self):
+        sleep(r.randint(3,6))
         choices = [
             self._set_new_ip,
             self._raise_change_ip_error,
