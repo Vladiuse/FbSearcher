@@ -75,6 +75,10 @@ class ProxyAbs(models.Model):
         for proxy_model in qs:
             proxy_model.check_proxy()
 
+    @property
+    def current_ip(self):
+        return get_proxy_ip(self.url)
+
 class Proxy(ProxyAbs):
     pass
 
@@ -111,6 +115,7 @@ class ProxyMobile(ProxyAbs):
         print('Без прокси: ', no_proxy_ip)
         print('Tекущий: ', old_proxy_ip)
         self._click_change_ip_url()
+        new_proxy_ip = 'не получен'
         for _ in range(5):
             try:
                 new_proxy_ip = get_proxy_ip(self.url)

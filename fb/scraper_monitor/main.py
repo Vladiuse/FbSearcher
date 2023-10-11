@@ -11,7 +11,7 @@ from proxies.models import ProxyMobile
 from parsers import FbGroupPageNoAuth
 import requests as req
 from .devine_array import devine_array
-
+from .fake_objects import Response, Request
 groups = FbGroup.objects.exclude(status='collected')
 proxy = ProxyMobile.objects.get(pk=3)
 
@@ -20,38 +20,6 @@ NO_DATA_COLOR = '#F1C830'
 NO_MAIL_COLOR = '#BFF130'
 LOGIN_FORM = '#3082F1'
 FULL_DATA = '#39F130'
-
-class Response:
-
-    def __init__(self, status_code, text=None):
-        self.status_code = status_code
-        self.text = text
-
-
-class Request:
-
-    # def get(self, url):
-    #     if r.randint(0, 8) == 8:
-    #         raise AttributeError
-    #     choices = [
-    #         Response(200, {'name': 'XXX', 'email': 'some@gmail.com'}),
-    #         Response(200, {'name': 'XXX', }),
-    #         Response(200, {}),
-    #         Response(300),
-    #     ]
-    #     sleep(r.uniform(0.5, 1.5))
-    #     return r.choice(choices)
-
-    def get(self, url):
-        choices = [
-            {'status': True, 'result': {'name': 'name', 'email': 'some@com'}},
-            {'status': True, 'result': {'name': 'name', }},
-            {'status': True, 'result': {}},
-            {'status': False, },
-            {'status': False, 'error': 'status code not 200'},
-        ]
-        sleep(r.uniform(0.5, 1.5))
-        return r.choice(choices)
 
 
 REQ_TEST = Request()
