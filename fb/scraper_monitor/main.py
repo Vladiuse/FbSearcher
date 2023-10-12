@@ -14,15 +14,16 @@ from .devine_array import devine_array
 from .fake_objects import ResponseFake, RequestFake, ProxyFake
 from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
 from requests.exceptions import RequestException
-groups = FbGroup.objects.exclude(status='collected')
-proxy = ProxyMobile.objects.get(pk=3)
+
+groups = FbGroup.objects.exclude(status='collected')[:20000]
+proxy_4 = ProxyMobile.objects.get(pk=4)
+proxy_3 = ProxyMobile.objects.get(pk=3)
 
 ERROR_REQ_COLOR = '#dc0000'
 NO_DATA_COLOR = '#F1C830'
 NO_MAIL_COLOR = '#BFF130'
 LOGIN_FORM = '#3082F1'
 FULL_DATA = '#39F130'
-
 
 REQ_TEST = RequestFake()
 
@@ -79,8 +80,8 @@ class ProxyStream:
     def run(self):
         """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
-            #req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
-            req_result = REQ_TEST.get('')  # FAKE
+            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            # req_result = REQ_TEST.get('')  # FAKE
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
             if self.is_pause:
@@ -171,13 +172,13 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 2
+    STREAM_COUNT = 5
 
     # auto ip change
-    REQ_COUNT_CHANGE_IP = 30
-    WAIT_AFTER_ERROR_IP_CHANGE = 5
+    REQ_COUNT_CHANGE_IP = 2 * 1000
+    WAIT_AFTER_ERROR_IP_CHANGE = 20
     AUTO_CHANGE_IP = True
-    MAX_TRY_IP_CHANGE_ERROR = 5
+    MAX_TRY_IP_CHANGE_ERROR = 5  # not change
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -198,12 +199,14 @@ class ProxyBar:
         # proxy info frame
         self.proxy_info_frame = ttk.Frame(self.frame)
         self.proxy_info_frame.pack()
-        self.proxy_ip_label = ttk.Label(self.proxy_info_frame, text=f'Ip: {self.proxy.ip}')
+        self.proxy_ip_label = ttk.Label(self.proxy_info_frame, text=f'Ip: {self.proxy.ip}:{self.proxy.port}')
         self.proxy_ip_label.pack(side=LEFT, padx=5)
         self.proxy_total_reqs_label = ttk.Label(self.proxy_info_frame, text=f'Total reqs: {self.total_reqs_count}')
         self.proxy_total_reqs_label.pack(side=LEFT, padx=5)
         self.proxy_arg_req_time_label = ttk.Label(self.proxy_info_frame, text='Avg Req: 0')
         self.proxy_arg_req_time_label.pack(side=LEFT, padx=5)
+        self.proxy_change_ip_count_label = ttk.Label(self.proxy_info_frame, text=f'Change ip: {self.ip_change_count}')
+        self.proxy_change_ip_count_label.pack(side=LEFT, padx=5)
         # proxy actions buttons
         self.proxy_status_label = ttk.Label(self.frame, text=f'Status: work')
         self.proxy_status_label.pack()
@@ -211,7 +214,8 @@ class ProxyBar:
         # Actions buttons frame
         self.btn_actions_frame = ttk.Frame(self.frame)
         self.btn_actions_frame.pack()
-        self.pause_stream_btn = ttk.Button(self.btn_actions_frame, text=f'Pause proxy', command=self.pause_streams_btn_click)
+        self.pause_stream_btn = ttk.Button(self.btn_actions_frame, text=f'Pause proxy',
+                                           command=self.pause_streams_btn_click)
         self.pause_stream_btn.pack(side=LEFT, padx=5)
         self.change_ip_btn = ttk.Button(self.btn_actions_frame, text=f'Change Ip', command=self.change_ip_bnt_click)
         self.change_ip_btn.pack(side=LEFT, padx=5)
@@ -256,6 +260,7 @@ class ProxyBar:
             self.activate_all_streams()
             self.ip_change_count += 1
             self._change_ip_error_count = 0
+            self._update_ip_change_counter()
         finally:
             self.pause_stream_btn['state'] = []
 
@@ -299,9 +304,9 @@ class ProxyBar:
                 avg_streams.append(avg)
         return sum(avg_streams) / len(avg_streams)
 
-    def _update_avg_req_time(self):
+    def _update_avg_req_time(self): # TODO update not on all requests
         avg = self._get_streams_avg_req_time()
-        self.proxy_arg_req_time_label['text'] = f'Avg Req: {round(avg,1)}'
+        self.proxy_arg_req_time_label['text'] = f'Avg Req: {round(avg, 1)}'
 
     def _auto_change_ip(self):
         if self.cur_ip_req_count > ProxyBar.REQ_COUNT_CHANGE_IP:
@@ -315,6 +320,9 @@ class ProxyBar:
         self._update_counters()
         self._update_avg_req_time()
         self._auto_change_ip()
+
+    def _update_ip_change_counter(self):
+        self.proxy_change_ip_count_label['text'] = f'Change ip: {self.ip_change_count}'
 
     def _update_counters(self):
         """Отрисовать новые значения счетчиков прокси"""
@@ -330,8 +338,8 @@ def start_parse():
 
 proxies_to_run = []
 # proxies = [proxy, proxy]
-# proxies = [proxy]
-proxies = [ProxyFake(),ProxyFake(),ProxyFake()]  # FAKE
+proxies = [proxy_3, proxy_4]
+# proxies = [ProxyFake(),ProxyFake()]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 
 # MAIN
@@ -344,14 +352,14 @@ start_btn.pack(pady=10)
 legend_frame = ttk.Frame()
 legend_frame.pack()
 legend_data = [
-    ('Ошибка запроса',ERROR_REQ_COLOR),
-    ('Нет даты',NO_DATA_COLOR),
+    ('Ошибка запроса', ERROR_REQ_COLOR),
+    ('Нет даты', NO_DATA_COLOR),
     ('Форма входа', LOGIN_FORM),
-    ('Нет почты',NO_MAIL_COLOR),
-    ('Есть почта',FULL_DATA),
+    ('Нет почты', NO_MAIL_COLOR),
+    ('Есть почта', FULL_DATA),
 ]
 for text, color in legend_data:
-    label = ttk.Label(legend_frame,text=text, background=color)
+    label = ttk.Label(legend_frame, text=text, background=color)
     label.pack(side=LEFT, padx=3)
 
 for proxy_num, proxy in enumerate(proxies):

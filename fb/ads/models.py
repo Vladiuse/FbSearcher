@@ -16,6 +16,7 @@ import shutil
 import time
 from parsers import FbGroupPageNoAuth
 from requests.exceptions import ConnectTimeout, ProxyError, ReadTimeout, ConnectionError, RequestException
+from django.db.utils import OperationalError
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -197,7 +198,12 @@ class FbGroup(models.Model):
         self.title = data.get('title', self.title)
         self.followers = data.get('followers', self.followers)
         self.status = FbGroup.COLLECTED
-        self.save()
+        try:
+            self.save()
+        except OperationalError as error:
+            print(error)
+            print(self)
+            print(data)
 
     def set_error_req(self):
         """Пометить группу ошибкой запроса"""
