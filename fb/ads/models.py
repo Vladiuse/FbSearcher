@@ -47,11 +47,12 @@ class KeyWord(models.Model):
 
 
 class MailService(models.Model):
-    name = models.CharField(max_length=50, blank=True)
+    name = models.CharField(max_length=50, primary_key=True)
     pattern = models.CharField(max_length=30)
+    examples = models.TextField(blank=True)
 
     def __str__(self):
-        return self.name if self.name else self.pattern
+        return self.name
 
 
 class ActualGroupManager(models.Manager):
@@ -130,6 +131,12 @@ class FbGroup(models.Model):
     email = models.EmailField(
         blank=True,
     )
+    email_service = models.ForeignKey(
+        to=MailService,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+    )
     followers = models.CharField(
         max_length=50,
         blank=True,
@@ -153,6 +160,17 @@ class FbGroup(models.Model):
     def url(self):
         return f'https://www.facebook.com/profile.php?id={self.pk}'
         # return f'https://facebook.com/{self.pk}/'
+
+    @staticmethod
+    def mark_mail_services():
+        mail_services = MailService.objects.all()
+        groups = FbGroup.full_objects.only('email', 'email_service').filter(email_service__isnull=True)
+        for group in groups:
+            for service in mail_services:
+                if re.match('.+@' + service.pattern, group.email):
+                    group.email_service = service
+                    group.save()
+
 
     @staticmethod
     def global_stat():
@@ -283,6 +301,8 @@ class FbGroup(models.Model):
         """Поменить группу маркером (для поиска в админ)"""
         self.name = 'xxx ' + self.name
         self.save()
+
+
 
 
 class ThreadCounter(models.Model):

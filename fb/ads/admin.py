@@ -31,7 +31,7 @@ class FbGroupDataFilter(admin.SimpleListFilter):
             return queryset.exclude(name='').exclude(email='')
 
 class FbGroupAdmin(admin.ModelAdmin):
-    list_display = ['pk', 'status','name' ,'title','email', 'followers','url_link', 'req_log_file']
+    list_display = ['pk', 'status','name' ,'title','email','email_service', 'followers','url_link', 'req_log_file']
     list_display_links = ['pk']
     list_filter = ['status', FbGroupDataFilter]
     search_fields = ['pk', 'title', 'name', 'email']
@@ -59,6 +59,9 @@ class FbPageExampleAdmin(admin.ModelAdmin):
     list_display = ['pk', 'type', 'desc', 'name','is_auth']
     list_display_links = ['pk', 'name']
 
+class MaiServiceAdmin(admin.ModelAdmin):
+    list_display = ['name', 'pattern']
+
 admin.site.register(FbGroup, FbGroupAdmin)
 admin.site.register(FbPagExample, FbPageExampleAdmin)
-admin.site.register(MailService)
+admin.site.register(MailService, MaiServiceAdmin)

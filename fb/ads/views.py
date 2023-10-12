@@ -12,7 +12,7 @@ from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from .models import ThreadCounter
 from django.core.files.uploadedfile import InMemoryUploadedFile
-
+from django.db.models import Count
 
 
 def index(request):
@@ -143,7 +143,8 @@ def groups_stat(request):
         'with_mail_count': FbGroup.full_objects.count(),
         'no_mail_count': FbGroup.collected_no_mail_objects.count(),
         'no_data_count': FbGroup.collected_no_data_objects.count(),
-        'login_form_count': FbGroup.collected_objects.filter(name='FaceBook').count()
+        'login_form_count': FbGroup.collected_objects.filter(name='FaceBook').count(),
+        'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service')
     }
     return render(request, 'ads/groups_stat.html', content)
 

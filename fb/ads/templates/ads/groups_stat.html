@@ -15,6 +15,15 @@
             <!-- <h3>Собраные группы</h3> -->
             <canvas id="ColectedStat"></canvas>
         </div>
+
+    </div>
+    <div class="row">
+        <div class="col-2"></div>
+        <div class="col-8">
+            <!-- <h3>Собраные группы</h3> -->
+            <canvas id="mailServiceStat"></canvas>
+        </div>
+        <div class="col-2"></div>
     </div>
 </div>
 <script>
@@ -90,6 +99,61 @@
                 title: {
                     display: true,
                     text: 'Статистика по обработанным группам',
+                }
+            }
+        }
+    });
+</script>
+<script>
+    const mailServiceStat = document.getElementById('mailServiceStat');
+    const mailServiceStatData = {
+        labels : [
+            //!!! {%for item in mails_service_stat%}
+            '{{item.email_service}}: {{item.count}}',
+            //!!! {%endfor%}
+        ],
+        // labels: [
+        //     'With mail: {{with_mail_count}}',
+        //     'Title only: {{no_mail_count}}',
+        //     'Login form: {{login_form_count}}',
+        //     'Emtpy: {{no_data_count}}',
+        // ],
+        datasets: [{
+            label: 'My First Dataset',
+            data: [
+            //!!! {%for item in mails_service_stat%}
+            '{{item.count}}',
+            //!!! {%endfor%}
+            ],
+            backgroundColor: [
+                '#c2c2c2',
+                '#59B763',
+                '#ffd963',
+                '#3082F1',
+                '#ff6363',
+                '#8963ff',
+                '#ff6363',
+                '#30cf7d',
+                '#30cfc5',
+                '#3046cf',
+                '#eb9e0f',
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    new Chart(mailServiceStat, {
+        type: 'doughnut',
+        data: mailServiceStatData,
+        options: {
+            plugins: {
+                legend: {
+                    position: 'left',
+                    align: 'center'
+                },
+                title: {
+                    display: true,
+                    text: 'Статистика по сервисам',
                 }
             }
         }
