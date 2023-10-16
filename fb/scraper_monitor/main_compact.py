@@ -158,6 +158,15 @@ class ProxyStream:
         self.mails_count_label['text'] = f'Mails: {self.emails_count}'
         self.errors_count_label['text'] = f'Errors: {self.error_reqs_count}'
 
+    @property
+    def is_error_row(self):
+        """Проверка последних запросов  - все ли с ошибкой"""
+        if self.reqs_count >= ProxyBar.MISTAKES_IN_ROW:
+            last_reqs = self.reqs[-ProxyBar.MISTAKES_IN_ROW:]
+            return not any([req['status'] for req in last_reqs])
+        return False
+
+
 
 class ProxyBar:
     """
@@ -170,6 +179,8 @@ class ProxyBar:
     WAIT_AFTER_ERROR_IP_CHANGE = 20
     AUTO_CHANGE_IP = True
     MAX_TRY_IP_CHANGE_ERROR = 5  # not change
+    MISTAKES_IN_ROW = 2
+    MISTAKES_IN_ROW_TIME = 10
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -318,6 +329,7 @@ class ProxyBar:
         self.proxy_arg_req_time_label['text'] = f'Avg Req: {round(avg, 1)}'
 
     def _auto_change_ip(self):
+        """Автоматическая смена айпи по количекству запросов"""
         if self.cur_ip_req_count > ProxyBar.REQ_COUNT_CHANGE_IP:
             self.cur_ip_req_count = 0  # чтоб не допустить вызова йункции более одного раза
             self.change_ip_bnt_click()
@@ -328,10 +340,30 @@ class ProxyBar:
         self.cur_ip_req_count += 1
         self._update_req_count_progress_bar()
         self._update_avg_req_time()
-        self._auto_change_ip()
+        if not self._is_paused:
+            self._auto_change_ip()
+            self._detect_proxy_error()
 
     def _update_ip_change_counter(self):
         self.proxy_change_ip_count_label['text'] = f'Change ip: {self.ip_change_count}'
+
+    def pause_all_in_thread(self):
+        """Поставить прокси в одидание (в потоке)"""
+        self.pause_streams_btn_click()
+        self.proxy_status_label['text'] = f'Status: Pause(detect errors)'
+        self.proxy_status_label['background'] = NO_DATA_COLOR
+        sleep(self.MISTAKES_IN_ROW_TIME)
+        self.proxy_status_label['text'] = f'Status: work'
+        self.proxy_status_label['background'] = ''
+        self.pause_streams_btn_click()
+
+    def _detect_proxy_error(self):
+        """Проверить потоки на наличие ошибок подлят"""
+        if all(proxy_stream.is_error_row for proxy_stream in self.streams):
+            thread = Thread(target=self.pause_all_in_thread)
+            thread.start()
+
+
 
 
 def start_parse():

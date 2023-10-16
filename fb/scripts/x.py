@@ -35,7 +35,7 @@ country = 'US'
 url = f'https://www.facebook.com/ads/library/?active_status=active&ad_type=political_and_issue_ads&country={country}&q={q}&publisher_platforms[0]=facebook&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&start_date[min]={start_date}&start_date[max]=&search_type=keyword_unordered&media_type=all'
 
 print(url)
-keys = KeyWord.objects.filter(ads_count_all__isnull=True).order_by(Length('word').asc())
+keys = KeyWord.objects.filter(ads_count_policy__isnull=True).order_by(Length('word').asc())
 # keys = KeyWord.objects.filter(ads_count_all__isnull=True)
 page = FbLibPage(q='', start_date=start_date, country=country)
 for q in keys:

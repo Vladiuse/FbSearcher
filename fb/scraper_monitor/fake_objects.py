@@ -35,6 +35,11 @@ class RequestFake:
             {'status': True, 'spend_time': req_time, 'result': {}},
             {'status': False, 'spend_time': req_time, },
             {'status': False, 'spend_time': req_time, 'error': 'status code not 200'},
+
+            # {'status': False, 'spend_time': req_time, },
+            # {'status': False, 'spend_time': req_time, 'error': 'status code not 200'},
+            # {'status': False, 'spend_time': req_time, },
+            # {'status': False, 'spend_time': req_time, 'error': 'status code not 200'},
         ]
         sleep(req_time)
         return r.choice(choices)
