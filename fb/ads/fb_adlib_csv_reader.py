@@ -42,8 +42,9 @@ class FbLibStatCsvReader:
 
 class FbLibStatZipReader:
     """Читает zip с отчетом из AdsLib"""
-    def __init__(self, path, file_name=None):
+    def __init__(self, path, add_low_spend=False,file_name=None):
         self.path = path
+        self.add_low_spend = add_low_spend
         self._file_name = file_name
         self.unique_group_ids = list()
         self.total = 0
@@ -78,8 +79,9 @@ class FbLibStatZipReader:
 
 class Fb7DaysZipReader:
     """Читает zip с отчетом за 7 дней"""
-    def __init__(self, path, file_name=None):
+    def __init__(self, path,add_low_spend=False, file_name=None):
         self.path = path
+        self.add_low_spend = add_low_spend
         self._file_name = file_name
         self.unique_group_ids = list()
         self.total = 0
@@ -105,9 +107,11 @@ class Fb7DaysZipReader:
                 for line in table:
                     self.total += 1
                     page_id, spend = line[0], line[3]
-                    # if self.is_big_spend(spend):
-                    #     unique_pages_ids.add(page_id)
-                    unique_pages_ids.add(page_id)
+                    if self.add_low_spend:
+                        unique_pages_ids.add(page_id)
+                    else:
+                        if self.is_big_spend(spend):
+                            unique_pages_ids.add(page_id)
                 self.unique_group_ids.extend(unique_pages_ids)
 
 

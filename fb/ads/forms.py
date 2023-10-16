@@ -29,3 +29,4 @@ class FbLibZipForm(forms.Form):
         widget=forms.FileInput(
             attrs={'class': "form-control"})
     )
+    add_low_spend = forms.BooleanField(required=False)

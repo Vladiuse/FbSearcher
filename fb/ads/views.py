@@ -116,9 +116,9 @@ class UpdateFbGroupFromZip(View):
             files = request.FILES.getlist('zip_files')
             for file in files:
                 if isinstance(file, InMemoryUploadedFile):
-                    reader = reader_class(file, file_name=file.name)
+                    reader = reader_class(file, file_name=file.name, add_low_spend=form.cleaned_data['add_low_spend'])
                 else:
-                    reader = reader_class(file.temporary_file_path(), file_name=file.name)
+                    reader = reader_class(file.temporary_file_path(), file_name=file.name, add_low_spend=form.cleaned_data['add_low_spend'])
                 reader.read()
                 update_result = FbGroup.update_db_by_group_ids(reader)
                 readers_n_results.append([reader,update_result])
