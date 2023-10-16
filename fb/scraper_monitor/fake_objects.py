@@ -46,6 +46,7 @@ class ProxyFake:
         self.url = 'xxx'
         self.pk = r.randint(1, 100)
         self.ip = f.ipv4()
+        self.port = '00000'
 
     @property
     def current_ip(self):
