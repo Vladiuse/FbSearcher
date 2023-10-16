@@ -60,7 +60,7 @@ class FbPageExampleAdmin(admin.ModelAdmin):
     list_display_links = ['pk', 'name']
 
 class MaiServiceAdmin(admin.ModelAdmin):
-    list_display = ['name', 'pattern']
+    list_display = ['name', 'pattern', 'ignore']
 class KeyWordAdmin(admin.ModelAdmin):
     list_display = ['word', 'ads_count_policy', 'ads_count_all']
 
