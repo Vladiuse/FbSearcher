@@ -1,0 +1,17 @@
+{%extends 'ads/base.html'%}
+
+{%block head_text%}
+Key words
+{%endblock%}
+{%block content%}
+<style>
+    input{
+        margin-right: 10px;
+    }
+</style>
+<div class="container">
+    {%for key_word in key_words%}
+<input type="checkbox"><a href="{{key_word.url}}" target="_blank">{{key_word}} - {{key_word.ads_count}}</a><br>
+{%endfor%}
+</div>
+{%endblock%}

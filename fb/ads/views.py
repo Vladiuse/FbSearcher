@@ -6,7 +6,7 @@ from .serializers import FbGroupCreateSerializer
 from rest_framework.response import Response
 from .forms import FbLibCsvForm, FbLibZipForm
 from .fb_adlib_csv_reader import FbLibStatCsvReader, FbLibStatZipReader, Fb7DaysZipReader
-from .models import FbGroup
+from .models import FbGroup, KeyWord
 from django.views import View
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -147,6 +147,18 @@ def groups_stat(request):
         'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service')
     }
     return render(request, 'ads/groups_stat.html', content)
+
+def key_words(request):
+    key_words = KeyWord.objects.all()
+    content = {'key_words': key_words}
+    return render(request, 'ads/key_words.html', content)
+
+
+def load_actual_mails(request):
+    path = FbGroup.create_file()
+    with open(path, 'rb') as fh:
+        response = HttpResponse(fh.read(), content_type="text/csv")
+        return response
 
 @csrf_exempt
 def sleep_10(request):

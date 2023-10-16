@@ -17,6 +17,8 @@ import time
 from parsers import FbGroupPageNoAuth
 from requests.exceptions import ConnectTimeout, ProxyError, ReadTimeout, ConnectionError, RequestException
 from django.db.utils import OperationalError
+from requests.models import PreparedRequest
+from datetime import datetime, timedelta
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -37,13 +39,52 @@ def load_netscape_cookies(cookie_file):
 
 
 class KeyWord(models.Model):
+    FB_LIB_URL = 'https://www.facebook.com/ads/library/'
+    URL_PARAMS = {'active_status': 'all',
+                  # 'ad_type': 'political_and_issue_ads',
+                  'ad_type': 'all',
+                  'country': None,
+                  'q': None,
+                  'sort_data[direction]': 'desc',
+                  'sort_data[mode]': 'relevancy_monthly_grouped',
+                  'search_type': 'keyword_unordered',
+                  'media_type': 'all',
+                  'start_date[min]': None,
+                  'start_date[max]': '',
+                  'publisher_platforms[0]': 'facebook',
+                  }
+
     word = models.CharField(
         max_length=30,
         unique=True,
-        validators=[RegexValidator(regex='([A-Za-z]){3,30}', message='Incorrect eng key word')])
+        validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')])
+    ads_count_policy = models.PositiveIntegerField(blank=True, null=True)
+    ads_count_all = models.PositiveIntegerField(blank=True, null=True)
+
+    class Meta:
+        ordering = ['-ads_count_all', '-ads_count_policy']
 
     def __str__(self):
         return self.word
+
+    def _get_params(self):
+        params = self.URL_PARAMS
+        params['q'] = str(self.word)
+        params['country'] = 'US'
+        days_ago = 1
+        params['start_date[min]'] =  str(datetime.now().date() - timedelta(days=days_ago))
+        return params
+
+    def _prepare_url(self):
+        prepare = PreparedRequest()
+        prepare.prepare_url(self.FB_LIB_URL, self._get_params())
+        return prepare.url
+
+    @property
+    def url(self):
+        # return f'https://www.facebook.com/ads/library/?active_status=active&ad_type=political_and_issue_ads&country=US&q={self.word}&publisher_platforms[0]=facebook&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&start_date[min]=2023-10-06&start_date[max]=&search_type=keyword_unordered&media_type=all'
+        return self._prepare_url()
+
 
 
 class MailService(models.Model):
@@ -284,6 +325,7 @@ class FbGroup(models.Model):
         """Сбросить данные по группам"""
         if not qs:
             qs = FbGroup.objects.all()
+            input('Are you whant to remove all? type y?n: ')
         qs.update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
         if os.path.exists(FbGroup.REQ_HTML_DIR):
             shutil.rmtree(FbGroup.REQ_HTML_DIR)
@@ -302,6 +344,16 @@ class FbGroup(models.Model):
         self.name = 'xxx ' + self.name
         self.save()
 
+    @staticmethod
+    def create_file():
+        qs = FbGroup.full_objects.all()
+        path = './media/all.csv'
+        with open(path, 'w') as file:
+            for group in qs:
+                line = f'"{group.name}",{group.email}\n'
+                file.write(line)
+
+        return path
 
 
 

@@ -6,6 +6,10 @@
 {%block content%}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <div class="container">
+    {%if with_mail_count%}
+    <br>
+    <a href="{%url 'load_actual_mails' %}" class="btn btn-primary" role="button">Скачать</a>
+    {%endif%}
     <div class="row">
         <div class="col">
             <!-- <h3>Групп в базе</h3> -->
@@ -25,6 +29,8 @@
         </div>
         <div class="col-2"></div>
     </div>
+
+
 </div>
 <script>
     const parserStat = document.getElementById('parserStat');

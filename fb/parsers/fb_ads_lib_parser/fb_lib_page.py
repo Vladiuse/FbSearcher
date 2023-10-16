@@ -8,6 +8,7 @@ from time import time
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from .cards_class import CardSearch, Cards
+from datetime import datetime, timedelta
 
 
 class MaxWaitNewPageTimeError(Exception):
@@ -16,7 +17,8 @@ class MaxWaitNewPageTimeError(Exception):
 
 class FbLibPage:
     URL_PARAMS = {'active_status': 'active',
-                  'ad_type': 'all',
+                  'ad_type': 'political_and_issue_ads',
+                  # 'ad_type': 'all',
                   'country': None,
                   'q': None,
                   'sort_data[direction]': 'desc',
@@ -27,6 +29,9 @@ class FbLibPage:
                   'start_date[max]': '',
                   'publisher_platforms[0]': 'facebook',
                   }
+
+    # url = f'https://www.facebook.com/ads/library/?active_status=active&ad_type=political_and_issue_ads&country={country}&q={q}&publisher_platforms[0]=facebook&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&start_date[min]={start_date}&start_date[max]=&search_type=keyword_unordered&media_type=all'
+
     FB_LIB_URL = 'https://www.facebook.com/ads/library/'
     WINDOW_SIZE = (1200, 800)
     CARDS_LOAD_COUNT = 30
@@ -43,7 +48,7 @@ class FbLibPage:
         self.start_date = start_date
         self.country = country
         self.browser = webdriver.Chrome()
-        self.browser.set_window_size(*FbLibPage.WINDOW_SIZE)
+        # self.browser.set_window_size(*FbLibPage.WINDOW_SIZE)
         self.page_height = 0
         # self.no_height_change_count = 0
         self.current_page = 0
@@ -154,6 +159,7 @@ if __name__ == '__main__':
         try:
             fb_page = FbLibPage(q=key_word, start_date='2023-09-10', country='BY')
             fb_page.open()
+            print(key_word, fb_page.pages_count)
             for page in fb_page:
                 card_searcher = CardSearch(page)
                 find_cards = card_searcher()

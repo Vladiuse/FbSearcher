@@ -1,7 +1,7 @@
 import os.path
 
 from django.contrib import admin
-from .models import FbGroup, FbPagExample, MailService
+from .models import FbGroup, FbPagExample, MailService, KeyWord
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
@@ -61,7 +61,10 @@ class FbPageExampleAdmin(admin.ModelAdmin):
 
 class MaiServiceAdmin(admin.ModelAdmin):
     list_display = ['name', 'pattern']
+class KeyWordAdmin(admin.ModelAdmin):
+    list_display = ['word', 'ads_count_policy', 'ads_count_all']
 
 admin.site.register(FbGroup, FbGroupAdmin)
 admin.site.register(FbPagExample, FbPageExampleAdmin)
 admin.site.register(MailService, MaiServiceAdmin)
+admin.site.register(KeyWord, KeyWordAdmin)

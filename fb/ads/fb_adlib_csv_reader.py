@@ -105,8 +105,9 @@ class Fb7DaysZipReader:
                 for line in table:
                     self.total += 1
                     page_id, spend = line[0], line[3]
-                    if self.is_big_spend(spend):
-                        unique_pages_ids.add(page_id)
+                    # if self.is_big_spend(spend):
+                    #     unique_pages_ids.add(page_id)
+                    unique_pages_ids.add(page_id)
                 self.unique_group_ids.extend(unique_pages_ids)
 
 
