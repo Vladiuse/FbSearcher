@@ -13,42 +13,42 @@ from time import sleep
 import base64
 import json
 
-#
-# proxy = Proxy.objects.get(pk=35)
-# options = {
-# 	'proxy': {
-#         'https': proxy.url,
-# 	}
-# }
-#
-# driver = webdriver.Chrome( seleniumwire_options=options)
-#
-# groups = FbGroup.objects.filter(name="", email="")
-# print(groups.count)
-# driver.get('https:facebook.com/')
-# cookies = pickle.load(open("cookies.pkl", "rb"))
-# for cookie in cookies:
-# 	driver.add_cookie(cookie)
-# input('start: ')
-# start = time.time()
-# for num, group in enumerate(groups):
-# 	driver.get(group.url)
-# 	html = driver.page_source
-# 	page = FbGroupPage(html)
-# 	page()
-# 	fbgroup_parse_res = page.result
-# 	print(num,group, page.is_auth, fbgroup_parse_res)
-# 	group.name = fbgroup_parse_res.get('group_name', '')
-# 	group.email = fbgroup_parse_res.get('group_email', '')
-# 	group.status = 'need_login'
-# 	group.save()
-# end = time.time()
-# # pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
-# print(groups.count(), end- start, )
-# print(groups.count()/ end- start)
-# time.sleep(800)
-#
-# driver.quit()
+
+proxy = Proxy.objects.get(pk=35)
+options = {
+	'proxy': {
+        'https': proxy.url,
+	}
+}
+
+driver = webdriver.Chrome( seleniumwire_options=options)
+
+groups = FbGroup.objects.filter(name="", email="")
+print(groups.count)
+driver.get('https:facebook.com/')
+cookies = pickle.load(open("cookies.pkl", "rb"))
+for cookie in cookies:
+	driver.add_cookie(cookie)
+input('start: ')
+start = time.time()
+for num, group in enumerate(groups):
+	driver.get(group.url)
+	html = driver.page_source
+	page = FbGroupPage(html)
+	page()
+	fbgroup_parse_res = page.result
+	print(num,group, page.is_auth, fbgroup_parse_res)
+	group.name = fbgroup_parse_res.get('group_name', '')
+	group.email = fbgroup_parse_res.get('group_email', '')
+	group.status = 'need_login'
+	group.save()
+end = time.time()
+# pickle.dump(driver.get_cookies(), open("cookies.pkl", "wb"))
+print(groups.count(), end- start, )
+print(groups.count()/ end- start)
+time.sleep(800)
+
+driver.quit()
 
 account = FbAccount.objects.get(pk=11)
 groups = FbGroup.objects.all()[:10]
