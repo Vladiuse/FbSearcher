@@ -71,6 +71,13 @@ var load_new_button = document.querySelector('a._8n_3')
 load_new_button.click()
         """)
 
+    def hide_cards_media(self):
+        DRIVER.execute_script("""
+const styleNoMedia = document.createElement("style")
+styleNoMedia.textContent = "div.xrvj5dj.xdq2opy.xexx8yu.xbxaen2.x18d9i69.xbbxn1n.xdoe023.xbumo9q.x143o31f.x7sq92a.x1crum5w > div.xh8yej3  ._7jyg._7jyh{display:none;}"
+document.head.appendChild(styleNoMedia)
+        """)
+
     def cards_count(self):
         cards = DRIVER.find_elements(By.CSS_SELECTOR, 'div.xrvj5dj.xdq2opy.xexx8yu.xbxaen2.x18d9i69.xbbxn1n.xdoe023.xbumo9q.x143o31f.x7sq92a.x1crum5w > div.xh8yej3')
         return len(cards)
@@ -81,6 +88,7 @@ load_new_button.click()
         return cards_searcher.links
 
     def run(self):
+        self.hide_cards_media()
         input('Start main?')
         for _ in range(10):
             print('Cards count on page', self.cards_count())
