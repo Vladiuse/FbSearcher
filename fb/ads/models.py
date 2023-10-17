@@ -348,14 +348,21 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
+        # qs = FbGroup.full_objects.all()
+        # path = './media/all.csv'
+        # with open(path, 'w') as file:
+        #     for group in qs:
+        #         line = f'"{group.name}",{group.email}\n'
+        #         file.write(line)
+        #
+        # return path
         qs = FbGroup.full_objects.all()
-        path = './media/all.csv'
-        with open(path, 'w') as file:
+        with open('/home/vlad/all.csv', 'w', newline='\n') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',', quotechar='"')
+            # writer.writerow(['Some text and " dasd', 'email.com'])
             for group in qs:
-                line = f'"{group.name}",{group.email}\n'
-                file.write(line)
-
-        return path
+                writer.writerow([group.name, group.email])
+        return '/home/vlad/all.csv'
 
 
 

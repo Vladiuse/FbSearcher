@@ -3,6 +3,8 @@ from requests.models import PreparedRequest
 from time import sleep
 from selenium.webdriver.common.by import By
 from cards import CardSearch
+import time
+from selenium.common.exceptions import NoSuchElementException
 
 def log_links(links):
     with open('/home/vlad/links.txt', 'a') as file:
@@ -30,7 +32,7 @@ class FbLibPage:
 
 
     WAIT_AFTER_LOADING = 5
-    MAX_WAIT_TIME_NEW_PAGE = 20
+    MAX_WAIT_TIME_CARDS_LOAD = 20
     TIME_FOR_CARDS_LOADING = 3
     MAX_PAGE_ITERATION = 150
     BLOCK_CLASS_NAME = 'xxx'
@@ -64,12 +66,28 @@ for (let i=0; i < cards.length; i++){
     card.remove()
 };
 """)
-
-    def click_load_new_cards(self):
-        DRIVER.execute_script(""" 
+    def click_load_new_js(self):
+        DRIVER.execute_script("""
 var load_new_button = document.querySelector('a._8n_3')
 load_new_button.click()
-        """)
+                """)
+
+    def click_load_new_cards(self):
+
+        for _ in range(10):
+            print('wait load new button')
+            sleep(1)
+            try:
+                button = DRIVER.find_element(By.CSS_SELECTOR, 'a._8n_3')
+                print('Button found')
+                sleep(1)
+                if button:
+                    self.click_load_new_js()
+                    # button.click()
+                    return
+            except NoSuchElementException as error:
+                pass
+        raise ZeroDivisionError('no click button')
 
     def hide_cards_media(self):
         DRIVER.execute_script("""
@@ -88,19 +106,33 @@ document.head.appendChild(styleNoMedia)
         return cards_searcher.links
 
     def run(self):
-        self.hide_cards_media()
+        # self.hide_cards_media()
         input('Start main?')
-        for _ in range(10):
-            print('Cards count on page', self.cards_count())
+        for _ in range(20):
+            self._wait_cards_load()
             links = self.get_links()
             log_links(links)
-            print('Links', links)
-            sleep(1)
-            self.remove_all_cards()
-            sleep(0.5)
-            self.click_load_new_cards()
-            input('Go next iteration?')
+            print('Links count:', len(links))
             sleep(3)
+            self.remove_all_cards()
+            self.click_load_new_cards()
+
+    def _wait_cards_load(self):
+        print('Start wait cards')
+        start = time.time()
+        while True:
+            cards_count = self.cards_count()
+            print('Cards on page', cards_count)
+            if cards_count:
+                break
+            else:
+                if time.time() - start > self.MAX_WAIT_TIME_CARDS_LOAD:
+                    raise ZeroDivisionError
+                else:
+                    sleep(1)
+                    continue
+
+
 
 
 WINDOW_SIZE = (1200, 800)
@@ -108,6 +140,6 @@ DRIVER = webdriver.Chrome()
 DRIVER.set_window_size(*WINDOW_SIZE)
 
 
-fb_lib_page = FbLibPage(q='home', country='US', start_date='2023-10-16')
+fb_lib_page = FbLibPage(q='main', country='US', start_date='2023-10-16')
 DRIVER.get(fb_lib_page.url)
 fb_lib_page.run()

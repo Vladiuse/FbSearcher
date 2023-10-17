@@ -81,13 +81,10 @@ class CardSearch:
         for card_soup in cards:
             card = Card(card_soup)
             cards_class.append(card)
-        print('Cards found', len(cards_class))
         return cards_class
 
     @property
     def links(self):
-        for card in self.cards:
-            card.print()
         return [card.org_link for card in self.cards]
 
 
