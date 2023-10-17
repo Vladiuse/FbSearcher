@@ -15,9 +15,12 @@ from .fake_objects import ResponseFake, RequestFake, ProxyFake
 from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
 from requests.exceptions import RequestException
 
-groups = FbGroup.objects.exclude(status='collected')[:20000]
+groups = FbGroup.objects.filter(status__in=['not_loaded','error_req'])
 proxy_4 = ProxyMobile.objects.get(pk=4)
 proxy_3 = ProxyMobile.objects.get(pk=3)
+proxy_5 = ProxyMobile.objects.get(pk=5)
+proxy_6 = ProxyMobile.objects.get(pk=6)
+proxy_7 = ProxyMobile.objects.get(pk=7)
 
 ERROR_REQ_COLOR = '#dc0000'
 NO_DATA_COLOR = '#F1C830'
@@ -72,8 +75,8 @@ class ProxyStream:
     def run(self):
         """Главный цикл потока, перебирает ссылки и парсит"""
         for num, group in enumerate(self.groups):
-            # req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
-            req_result = REQ_TEST.get('')  # FAKE
+            req_result = group.update_from_url(proxy=self.proxy, timeout=self.REQ_TIMEOUT)
+            # req_result = REQ_TEST.get('')  # FAKE
             self.reqs.append(req_result)
             self.update_req_counters(req_result)
             if self.is_pause:
@@ -172,15 +175,15 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 3
+    STREAM_COUNT = 6
 
     # auto ip change
-    REQ_COUNT_CHANGE_IP = 50  # 2 * 1000
+    REQ_COUNT_CHANGE_IP = 1.5 * 1000
     WAIT_AFTER_ERROR_IP_CHANGE = 20
     AUTO_CHANGE_IP = True
     MAX_TRY_IP_CHANGE_ERROR = 5  # not change
     MISTAKES_IN_ROW = 2
-    MISTAKES_IN_ROW_TIME = 10
+    MISTAKES_IN_ROW_TIME = 15
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -375,8 +378,8 @@ def start_parse():
 
 proxies_to_run = []
 # proxies = [proxy, proxy]
-# proxies = [proxy_3, proxy_4]
-proxies = [ProxyFake(), ProxyFake(), ProxyFake(), ]  # FAKE
+proxies = [ proxy_4,]
+#proxies = [ProxyFake(), ProxyFake(), ProxyFake(), ]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 
 # MAIN

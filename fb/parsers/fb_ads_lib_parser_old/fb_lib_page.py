@@ -17,8 +17,8 @@ class MaxWaitNewPageTimeError(Exception):
 
 class FbLibPage:
     URL_PARAMS = {'active_status': 'active',
-                  'ad_type': 'political_and_issue_ads',
-                  # 'ad_type': 'all',
+                  # 'ad_type': 'political_and_issue_ads',
+                  'ad_type': 'all',
                   'country': None,
                   'q': None,
                   'sort_data[direction]': 'desc',
@@ -40,7 +40,7 @@ class FbLibPage:
     WAIT_AFTER_LOADING = 5
     MAX_WAIT_TIME_NEW_PAGE = 20
     TIME_FOR_CARDS_LOADING = 3
-    MAX_PAGE_ITERATION = 15
+    MAX_PAGE_ITERATION = 150
     BLOCK_CLASS_NAME = 'xxx'
 
     def __init__(self, *, q, start_date, country):
@@ -152,12 +152,14 @@ element.classList.add('xxx')
 if __name__ == '__main__':
     KEY_WORDS_RU = [
         # 'косметика', 'еда', 'животные', 'дом',
-                    'стройка', 'игрушки', 'развлечения', 'отдых', 'вечеринки',
+                    'people', 'игрушки', 'развлечения', 'отдых', 'вечеринки',
                  'ресторан', 'спорт', 'юрист', 'репетитор', 'курорт', 'развлечения', 'мебель', 'учеба', 'жизнь', 'электротехника']
     cards = Cards()
+    fb_page = FbLibPage(q='', start_date='2023-10-16', country='US')
+    input('Wait some: ')
     for key_word in KEY_WORDS_RU:
         try:
-            fb_page = FbLibPage(q=key_word, start_date='2023-09-10', country='BY')
+            fb_page.q = key_word
             fb_page.open()
             print(key_word, fb_page.pages_count)
             for page in fb_page:

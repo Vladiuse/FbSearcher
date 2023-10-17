@@ -1,5 +1,5 @@
 import os.path
-
+import csv
 from django.db import models
 from urllib.parse import urlparse
 from django.core.validators import RegexValidator
@@ -200,8 +200,9 @@ class FbGroup(models.Model):
 
     @property
     def url(self):
-        return f'https://www.facebook.com/profile.php?id={self.pk}'
-        # return f'https://facebook.com/{self.pk}/'
+        if self.pk.isdigit():
+            return f'https://www.facebook.com/profile.php?id={self.pk}'
+        return f'https://facebook.com/{self.pk}/'
 
     @staticmethod
     def mark_mail_services():
