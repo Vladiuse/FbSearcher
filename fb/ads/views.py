@@ -148,6 +148,14 @@ def groups_stat(request):
     }
     return render(request, 'ads/groups_stat.html', content)
 
+def download_page(request):
+    content = {
+        'with_mail_count': FbGroup.full_objects.count(),
+        'ignored_services_group': FbGroup.objects.select_related('email_service').filter(email_service__ignore=True),
+        'ignored_by_name': FbGroup.ignored_by_name(),
+    }
+    return render(request, 'ads/download_page.html', content)
+
 def mark_mail_services(request):
     FbGroup.mark_mail_services()
     return redirect('groups_stat')

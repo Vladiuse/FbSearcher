@@ -1,0 +1,39 @@
+{%extends 'ads/base.html'%}
+
+{%block head_text%}
+Скачать данные
+{%endblock%}
+{%block content%}
+<style>
+    .load-wrapper {
+        width: 100%;
+        text-align: center;
+        display: flex;
+        justify-content: space-around;
+        
+    }
+    .container{
+        margin-top: 20px;
+    }
+</style>
+<div class="container alerts-wrapper">
+    {%if ignored_services_group%}
+    <div class="alert alert-danger" role="alert">
+        Есть группы с игнорируемыми email сервисами!
+      </div>
+    {%endif%}
+    {%if ignored_by_name%}
+    <div class="alert alert-danger" role="alert">
+        Есть группы со стоп словами!
+      </div>
+    {%endif%}
+</div>
+<div class="container load-wrapper">
+        {%if with_mail_count%}
+        <h4>Доступно для скачивания: {{with_mail_count}}</h4>
+        <a href="{%url 'load_actual_mails' %}" class="btn btn-primary" role="button">Скачать csv</a>
+        {%else%}
+        <h4>Нет данных для скачивания</h4>
+        {%endif%}
+</div>
+{%endblock%}

@@ -39,16 +39,43 @@ Main
         </div>
         <div class="col">
             <div class="card text-center">
-                <a href="{%url 'groups_stat'%}">
-                    <i class="fa-solid fa-chart-column"></i>
+                <a href="">
+                  <i class="fa-regular fa-file-lines"></i>
                 </a>
               <div class="card-body">
-                <h5 class="card-title">Статистика</h5>
-                <p class="card-text">Статистика по группам</p>
+                <h5 class="card-title">TXT</h5>
+                <p class="card-text">Загузить группы из файла TXT</p>
               </div>
             </div>
           </div>
       </div>
+</div>
+<br>
+<div class="container">
+  <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="col">
+      <div class="card text-center">
+          <a href="{%url 'groups_stat'%}">
+              <i class="fa-solid fa-chart-column"></i>
+          </a>
+        <div class="card-body">
+          <h5 class="card-title">Статистика</h5>
+          <p class="card-text">Статистика по группам</p>
+        </div>
+      </div>
+    </div>
+    <div class="col">
+      <div class="card text-center">
+          <a href="{%url 'download_page' %}">
+            <i class="fa-solid fa-cloud-arrow-down"></i>
+          </a>
+        <div class="card-body">
+          <h5 class="card-title">Скачать</h5>
+          <p class="card-text">Скачать результаты</p>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>
 
 {%endblock%}
