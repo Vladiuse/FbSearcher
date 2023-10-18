@@ -1,11 +1,12 @@
 from selenium import webdriver
-from seleniumwire import webdriver
+#from seleniumwire import webdriver
 from requests.models import PreparedRequest
 from time import sleep
 from selenium.webdriver.common.by import By
-from cards import CardSearch
+from .cards import CardSearch
 import time
 from selenium.common.exceptions import NoSuchElementException
+from datetime import datetime
 
 
 
@@ -118,7 +119,8 @@ document.head.appendChild(styleNoMedia)
             self._wait_cards_load()
             links = self.get_links()
             log_links(links)
-            # print('Links count:', len(links))
+            current_time = datetime.now().strftime('%H:%M:%S')
+            print('Links count:', len(links), self.q, current_time)
             #sleep(1)
             self.remove_all_cards()
             # sleep(0.5)  # 3 is old value
@@ -148,25 +150,39 @@ options = {
 }
 
 WINDOW_SIZE = (1200, 800)
+options = webdriver.ChromeOptions()
+options.add_argument('--headless')
 DRIVER = webdriver.Chrome(
+    options=options,
     #seleniumwire_options=options
 )
+
 DRIVER.set_window_size(*WINDOW_SIZE)
-keys = [
-    # 'when', 'price', 'mobile', 'when', 'game',
-    # 'come', 'fix', 'internet', 'fire', 'live','over',
-    #'night', 'like', 'woman'
-    #'most',
-    'see', 'only', 'way', 'many', 'his', 'give',
-     'call', 'send', 'meet','time', 'day', 'summer',
-    'and', 'free', 'home', 'pass', 'than', 'size', 'baby', 'star', 'wife', 'game',
-]
-# DRIVER.get('https://google.com/')
-# input('Start?')
-for key in keys:
-    try:
-        fb_lib_page = FbLibPage(q=key, country='US', start_date='2023-10-16')
-        DRIVER.get(fb_lib_page.url)
-        fb_lib_page.run()
-    except Exception as error:
-        print(error, key)
+
+
+def parse_by_keys(keys):
+    for key in keys:
+        try:
+            fb_lib_page = FbLibPage(q=key, country='US', start_date='2023-10-18')
+            DRIVER.get(fb_lib_page.url)
+            fb_lib_page.run()
+        except Exception as error:
+            print('*'*40+'\n')
+            print(error, key)
+
+
+if __name__ == '__main__':
+    keys = [
+
+        # 'come', 'fix', 'internet', 'fire', 'live','over',
+        #'night', 'like', 'woman'
+        #'most',
+        #'see', 'only', 'way', 'many', 'his', 'give',
+        # 'call', 'send', 'meet','time', 'day', 'summer',
+        #'and', 'free', 'home', 'pass',
+        'than', 'size', 'baby', 'star', 'wife', 'game',
+        'when', 'price', 'mobile', 'when', 'game',
+    ]
+    # DRIVER.get('https://google.com/')
+    # input('Start?')
+    parse_by_keys(keys)
