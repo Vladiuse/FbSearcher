@@ -1,7 +1,7 @@
 import os.path
 
 from django.contrib import admin
-from .models import FbGroup, FbPagExample, MailService, KeyWord
+from .models import FbGroup, FbPagExample, MailService, KeyWord, IgnoredMailGeo, IgnoreGroupWord
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 from django.db.models import Q
@@ -68,3 +68,5 @@ admin.site.register(FbGroup, FbGroupAdmin)
 admin.site.register(FbPagExample, FbPageExampleAdmin)
 admin.site.register(MailService, MaiServiceAdmin)
 admin.site.register(KeyWord, KeyWordAdmin)
+admin.site.register(IgnoredMailGeo)
+admin.site.register(IgnoreGroupWord)
