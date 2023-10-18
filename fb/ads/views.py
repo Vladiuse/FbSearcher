@@ -4,8 +4,8 @@ from rest_framework.views import APIView
 from django.shortcuts import render, redirect
 from .serializers import FbGroupCreateSerializer
 from rest_framework.response import Response
-from .forms import FbLibCsvForm, FbLibZipForm
-from .fb_adlib_csv_reader import FbLibStatCsvReader, FbLibStatZipReader, Fb7DaysZipReader
+from .forms import FbLibCsvForm, FbLibZipForm, TxtFileForm
+from .fb_adlib_csv_reader import FbLibStatCsvReader, FbLibStatZipReader, Fb7DaysZipReader, TxtFileReader
 from .models import FbGroup, KeyWord
 from django.views import View
 from django.http import HttpResponse
@@ -102,7 +102,6 @@ class UpdateFbGroupFromZip(View):
         return render(request, self.template_name, context=content)
 
     def post(self, request):
-        print(request.POST)
         form = FbLibZipForm(request.POST, request.FILES)
         if form.is_valid():
             print('VALID')
@@ -125,11 +124,59 @@ class UpdateFbGroupFromZip(View):
             content = {
                 'form': FbLibZipForm(),
                 'readers_n_results': readers_n_results,
-                'total_result': None,
+                'total_result': None,  # TODO remove??
                 'new_groups_created': FbGroup.objects.count() - start_groups_count,
             }
             return render(request, self.template_name, context=content)
         else:
+            content = {
+                'form': form,
+            }
+            return render(request, self.template_name, context=content)
+
+
+class UpdateFbGroupFromTxt(View):
+    """Обновить БД фб групп из txt"""
+
+    template_name = 'ads/txt_load/index.html'
+
+    def get(self, request):
+        form = TxtFileForm()
+        content = {
+            'form': form,
+        }
+        return render(request, self.template_name, content)
+
+    def post(self, request):
+        print(request.POST)
+        form = TxtFileForm(request.POST, request.FILES)
+        if form.is_valid():
+            files = request.FILES.getlist('txt_files')
+            reader_class = TxtFileReader
+            start_groups_count = FbGroup.objects.count()
+            readers_n_results = []
+            for file in files:
+                if isinstance(file, InMemoryUploadedFile):
+                    reader = reader_class(file, file_name=file.name,)
+                else:
+                    reader = reader_class(file.temporary_file_path(), file_name=file.name,)
+                reader.read()
+                #update_result = FbGroup.update_db_by_group_ids(reader)
+                update_result = {
+                    'new': 10,
+                    'updated': 100,
+                }
+                readers_n_results.append([reader,update_result])
+            content = {
+                'form': TxtFileForm(),
+                'readers_n_results': readers_n_results,
+                'total_result': None, # TODO remove??
+                'new_groups_created': FbGroup.objects.count() - start_groups_count,
+            }
+            return render(request, self.template_name, context=content)
+
+        else:
+            print(form.errors)
             content = {
                 'form': form,
             }

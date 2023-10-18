@@ -126,6 +126,33 @@ class Fb7DaysZipReader:
         return self.unique_group_ids[item]
 
 
+class TxtFileReader:
+    """Читает txt файл с группами"""
+    def __init__(self, path, file_name=None):
+        self.path = path
+        self._file_name = file_name
+        self.unique_group_ids = list()
+        self.total = 0
+
+    @property
+    def file_name(self):
+        if self._file_name:
+            return self._file_name
+        return path.basename(self.path)
+
+    def read(self):
+        with io.TextIOWrapper(self.path, encoding='utf-8') as file:
+            for line in file:
+                print(line)
+
+    def __len__(self):
+        return len(self.unique_group_ids)
+
+    def __getitem__(self, item):
+        return self.unique_group_ids[item]
+
+
+
 if __name__ == '__main__':
     pass
     # zip_path = '/home/vlad/PycharmProjects/FbSearcher/_csv_examples/FacebookAdLibraryReport_2023-08-24_SA_last_7_days.zip'

@@ -30,3 +30,11 @@ class FbLibZipForm(forms.Form):
             attrs={'class': "form-control"})
     )
     add_low_spend = forms.BooleanField(required=False)
+
+
+class TxtFileForm(forms.Form):
+    txt_files = forms.FileField(
+        validators=[FileExtensionValidator(allowed_extensions=['txt']), ],
+        widget=forms.FileInput(
+            attrs={'class': "form-control"})
+    )
