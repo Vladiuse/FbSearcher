@@ -1,7 +1,7 @@
 import random as r
 from time import sleep, time
 from rest_framework.views import APIView
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 from .serializers import FbGroupCreateSerializer
 from rest_framework.response import Response
 from .forms import FbLibCsvForm, FbLibZipForm
@@ -147,6 +147,10 @@ def groups_stat(request):
         'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service')
     }
     return render(request, 'ads/groups_stat.html', content)
+
+def mark_mail_services(request):
+    FbGroup.mark_mail_services()
+    return redirect('groups_stat')
 
 def key_words(request):
     key_words = KeyWord.objects.all()

@@ -198,7 +198,7 @@ class ProxyBar:
         # ttk
         self.frame = ttk.Frame(borderwidth=1, relief='solid', padding=[1, 5])
         self.frame.pack(padx=1, pady=1, expand=True, anchor='nw', fill=X)
-        self.proxy_name_label = ttk.Label(self.frame, text=f'Proxy #{proxy_num}')
+        self.proxy_name_label = ttk.Label(self.frame, text=f'Proxy #{self.proxy.pk}')
         self.proxy_name_label.pack()
 
         # proxy info frame
@@ -378,7 +378,7 @@ def start_parse():
 
 proxies_to_run = []
 # proxies = [proxy, proxy]
-proxies = [ proxy_4,]
+proxies = ProxyMobile.objects.filter(pk__in=[4,5,6,7])[:2]
 #proxies = [ProxyFake(), ProxyFake(), ProxyFake(), ]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 

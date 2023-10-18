@@ -31,7 +31,7 @@ class FbLibPage:
 
     FB_LIB_URL = 'https://www.facebook.com/ads/library/'
 
-    PAGES_FOR_KEY_WORK = 40
+    PAGES_FOR_KEY_WORK = 60
 
 
     MAX_WAIT_TIME_CARDS_LOAD = 30
@@ -75,15 +75,18 @@ load_new_button.click()
                 """)
 
     def click_load_new_cards(self):
-
         for _ in range(20):
             # print('wait load new button')
             sleep(1) # 1 is old value
+            if self.cards_count():  # не кликать кнопку - если карточки стали загружаться автоматически
+                return
             try:
                 button = DRIVER.find_element(By.CSS_SELECTOR, 'a._8n_3')
                 # print('Button found')
-                sleep(1) # 1 is old value
+                sleep(0.5) # 1 is old value
                 if button:
+                    if self.cards_count():  # не кликать кнопку - если карточки стали загружаться автоматически
+                        return
                     self.click_load_new_js()
                     # button.click()
                     return
@@ -116,8 +119,9 @@ document.head.appendChild(styleNoMedia)
             links = self.get_links()
             log_links(links)
             # print('Links count:', len(links))
+            #sleep(1)
             self.remove_all_cards()
-            sleep(2)  # 3 is old value
+            # sleep(0.5)  # 3 is old value
             self.click_load_new_cards()
 
     def _wait_cards_load(self):
@@ -132,7 +136,7 @@ document.head.appendChild(styleNoMedia)
                 if time.time() - start > self.MAX_WAIT_TIME_CARDS_LOAD:
                     raise ZeroDivisionError('MAX_WAIT_TIME_CARDS_LOAD')
                 else:
-                    sleep(1)
+                    sleep(0.2)
                     continue
 
 
@@ -144,14 +148,18 @@ options = {
 }
 
 WINDOW_SIZE = (1200, 800)
-DRIVER = webdriver.Chrome( seleniumwire_options=options)
+DRIVER = webdriver.Chrome(
+    #seleniumwire_options=options
+)
 DRIVER.set_window_size(*WINDOW_SIZE)
 keys = [
-    # 'cool', 'when', 'price', 'mobile', 'when', 'game',
-    #'come', 'fix', 'internet', 'fire', 'live','over',
-    # 'name', 'like', 'woman'
-    # 'most', 'see', 'only', 'way', 'many', 'his', 'give',
-     'add', 'down', 'read','call', 'send', 'meet',
+    # 'when', 'price', 'mobile', 'when', 'game',
+    # 'come', 'fix', 'internet', 'fire', 'live','over',
+    #'night', 'like', 'woman'
+    #'most',
+    'see', 'only', 'way', 'many', 'his', 'give',
+     'call', 'send', 'meet','time', 'day', 'summer',
+    'and', 'free', 'home', 'pass', 'than', 'size', 'baby', 'star', 'wife', 'game',
 ]
 # DRIVER.get('https://google.com/')
 # input('Start?')
