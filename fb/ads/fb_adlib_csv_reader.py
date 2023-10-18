@@ -3,6 +3,7 @@ from os import path
 from zipfile import ZipFile
 import io
 import sys
+from .fbgroup_link_parser import get_fbgroup_id_from_url
 
 
 
@@ -133,6 +134,7 @@ class TxtFileReader:
         self._file_name = file_name
         self.unique_group_ids = list()
         self.total = 0
+        self.incorrect_lines = set()
 
     @property
     def file_name(self):
@@ -141,9 +143,18 @@ class TxtFileReader:
         return path.basename(self.path)
 
     def read(self):
+        groups_urls = set()
         with io.TextIOWrapper(self.path, encoding='utf-8') as file:
             for line in file:
-                print(line)
+                url = get_fbgroup_id_from_url(line)
+                if url:
+                    groups_urls.add(url)
+                else:
+                    self.incorrect_lines.add(line)
+                self.total += 1
+            self.unique_group_ids = list(groups_urls)
+        if ' ' in self.incorrect_lines:
+            self.incorrect_lines.remove(' ')
 
     def __len__(self):
         return len(self.unique_group_ids)

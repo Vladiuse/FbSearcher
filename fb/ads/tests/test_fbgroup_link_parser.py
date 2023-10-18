@@ -105,3 +105,26 @@ class FbGroupUrlParserTest(unittest.TestCase):
         for url in urls:
             result = get_fbgroup_id_from_url(url)
             self.assertEqual(result, '')
+
+    def test_remove_space(self):
+        urls = [
+            ' http://fb.com/page-123123123123',
+            'https://fb.com/page-123123123123 ',
+
+            ' http://fb.com/page-1231 23123123/',
+            'https://fb.com/ page-123123123123/ ',
+
+            ' http://www. fb.com/page-123123123123/',
+            'https://www.fb.com/page-123123123123/ ',
+
+            '   http://w ww.fb. com/page-1231231 23123  ',
+            '    https://www.fb.com/page-1231 23123123'
+        ]
+        for url in urls:
+            result = get_fbgroup_id_from_url(url)
+            self.assertEqual(result, '123123123123')
+
+    def test_with_new_line_char(self):
+        url = 'https://facebook.com/61550548926689\n'
+        result= get_fbgroup_id_from_url(url)
+        self.assertEqual(result, '61550548926689')

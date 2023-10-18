@@ -1,6 +1,9 @@
 import re
 
 def get_fbgroup_id_from_url(url:str) -> str:
+    url = url.strip()
+    url = url.replace(' ', '')
+    url = url.replace('\n', '')
     url = url.replace('http://', 'https://')
     url = url.replace('://www.','://' )
     if not url.endswith('/'):

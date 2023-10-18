@@ -114,7 +114,7 @@ document.head.appendChild(styleNoMedia)
     def run(self):
         self.hide_cards_media()
         # input('Start main?')
-        sleep(5)
+        #sleep(5)
         for _ in range(self.PAGES_FOR_KEY_WORK):
             self._wait_cards_load()
             links = self.get_links()
@@ -133,12 +133,13 @@ document.head.appendChild(styleNoMedia)
             cards_count = self.cards_count()
             # print('Cards on page', cards_count)
             if cards_count:
+                sleep(0.5)
                 break
             else:
                 if time.time() - start > self.MAX_WAIT_TIME_CARDS_LOAD:
                     raise ZeroDivisionError('MAX_WAIT_TIME_CARDS_LOAD')
                 else:
-                    sleep(0.2)
+                    sleep(0.1)
                     continue
 
 
@@ -163,6 +164,7 @@ DRIVER.set_window_size(*WINDOW_SIZE)
 def parse_by_keys(keys):
     for key in keys:
         try:
+            print('Start KEY:', key)
             fb_lib_page = FbLibPage(q=key, country='US', start_date='2023-10-18')
             DRIVER.get(fb_lib_page.url)
             fb_lib_page.run()

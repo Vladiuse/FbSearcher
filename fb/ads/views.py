@@ -161,11 +161,11 @@ class UpdateFbGroupFromTxt(View):
                 else:
                     reader = reader_class(file.temporary_file_path(), file_name=file.name,)
                 reader.read()
-                #update_result = FbGroup.update_db_by_group_ids(reader)
                 update_result = {
                     'new': 10,
                     'updated': 100,
                 }
+                update_result = FbGroup.update_db_by_group_ids(reader)
                 readers_n_results.append([reader,update_result])
             content = {
                 'form': TxtFileForm(),
