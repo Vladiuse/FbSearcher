@@ -96,6 +96,19 @@ class MailService(models.Model):
     def __str__(self):
         return self.name
 
+class IgnoredMailGeo(models.Model):
+    domain = models.CharField(max_length=3, primary_key=True)
+
+    def __str__(self):
+        return self.domain
+
+
+class IgnoreGroupWord(models.Model):
+    word = models.CharField(max_length=20, unique=True)
+
+    def __str__(self):
+        return self.word
+
 
 class ActualGroupManager(models.Manager):
     def get_queryset(self):
@@ -213,6 +226,14 @@ class FbGroup(models.Model):
                 if re.match('.+@' + service.pattern, group.email):
                     group.email_service = service
                     group.save()
+
+    @staticmethod
+    def ignored_by_name():
+        words = IgnoreGroupWord.objects.all()
+        regex_words = ['.{0,255}' + word.word + '.{0,255}' for word in words]
+        regex = '|'.join(regex_words)
+        groups = FbGroup.objects.filter(name__iregex=regex)
+        return groups
 
 
     @staticmethod
