@@ -54,16 +54,21 @@ class KeyWord(models.Model):
                   'start_date[max]': '',
                   'publisher_platforms[0]': 'facebook',
                   }
-
+    number_in_dict = models.IntegerField(default=0)
     word = models.CharField(
         max_length=30,
-        unique=True,
+        primary_key=True,
         validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')])
+    ru_word = models.CharField(
+        max_length=100,
+        blank=True,
+    )
     ads_count_policy = models.PositiveIntegerField(blank=True, null=True)
     ads_count_all = models.PositiveIntegerField(blank=True, null=True)
+    is_collected = models.BooleanField(default=False)
 
     class Meta:
-        ordering = ['-ads_count_all', '-ads_count_policy']
+        ordering = ['number_in_dict', ]
 
     def __str__(self):
         return self.word
@@ -108,6 +113,11 @@ class IgnoreGroupWord(models.Model):
 
     def __str__(self):
         return self.word
+
+    def save(self, **kwargs):
+        if not self.pk:
+            self.word = self.word.lower()
+        super().save(**kwargs)
 
 
 class ActualGroupManager(models.Manager):
@@ -192,8 +202,8 @@ class FbGroup(models.Model):
         null=True,
         blank=True,
     )
-    # is_main_service_mark = models.BooleanField(default=False)
-    # is_ignore_word_mark = models.BooleanField(default=False)
+    is_main_service_mark = models.BooleanField(default=False)
+    is_ignore_word = models.BooleanField(blank=True, null=True)
     followers = models.CharField(
         max_length=50,
         blank=True,
@@ -234,21 +244,26 @@ class FbGroup(models.Model):
     def mark_mail_services():
         """Отметить какой email сервис"""
         mail_services = MailService.objects.all()
-        groups = FbGroup.full_objects.only('email', 'email_service').filter(email_service__isnull=True)
+        # TODO make in transaction
+        FbGroup.collected_objects.filter(email='').filter(is_main_service_mark=False).update(is_main_service_mark=True)
+        groups = FbGroup.full_objects.only('email', 'email_service').filter(is_main_service_mark=False)
         for group in groups:
             for service in mail_services:
-                if re.match('.+@' + service.pattern, group.email):
+                if re.match('.+@' + service.pattern, group.email.lower()):
                     group.email_service = service
-                    group.save()
+            group.is_main_service_mark = True
+            group.save()
 
     @staticmethod
-    def ignored_by_name():
-        """QS групп со стоп словами"""
+    def mark_ignored_name():
+        """Пометить группы со стоп словами"""
         words = IgnoreGroupWord.objects.all()
         regex_words = ['.{0,255}' + word.word + '.{0,255}' for word in words]
         regex = '|'.join(regex_words)
-        groups = FbGroup.objects.filter(name__iregex=regex)
-        return groups
+        # TODO make in transaction
+        FbGroup.collected_objects.update(is_ignore_word=False)
+        groups = FbGroup.collected_objects.filter(name__iregex=regex)
+        groups.update(is_ignore_word=True)
 
 
     @staticmethod
