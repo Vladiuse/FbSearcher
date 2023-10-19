@@ -55,6 +55,7 @@ class FbGroupAdmin(admin.ModelAdmin):
         for group in qs:
             group.mark_name()
 
+
 class FbPageExampleAdmin(admin.ModelAdmin):
     list_display = ['pk', 'type', 'desc', 'name','is_auth']
     list_display_links = ['pk', 'name']

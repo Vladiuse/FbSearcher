@@ -6,15 +6,21 @@ from .form import ProxyForm
 
 
 class ProxyAdmin(admin.ModelAdmin):
-    actions = ['check_proxies']
+    actions = ['check_proxies', 'change_proxies_ip']
     list_display = ['pk', 'comment','ip','port', 'url', 'status', 'error_type', 'created', 'proxy_ip']
     list_display_links = ['pk', 'ip']
     search_fields = ['comment']
     form = ProxyForm
+
     @admin.action(description='Проверить прокси')
     def check_proxies(self, request, queryset):
         queryset.update(status=Proxy.NOT_CHECKED)
         Proxy.check_proxies(qs=queryset)
+
+    @admin.action(description='Сменить IP')
+    def change_proxies_ip(self, request, queryset):
+        for proxy in queryset:
+            proxy.change_ip()
 
     def error_text_short(self, obj):
         if obj.error_text:

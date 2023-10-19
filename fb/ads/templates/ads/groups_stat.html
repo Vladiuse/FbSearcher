@@ -5,23 +5,26 @@
 {%endblock%}
 {%block content%}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div class="container">
+<div class="container-fluid">
 
     <div class="row">
         <div class="col">
-            <!-- <h3>Групп в базе</h3> -->
             <canvas id="parserStat"></canvas>
         </div>
         <div class="col">
-            <!-- <h3>Собраные группы</h3> -->
             <canvas id="ColectedStat"></canvas>
         </div>
-
+        <div class="col">
+            <canvas id="mailServiceStat"></canvas>
+            <div style="width: 100%;text-align: center;">
+                <br>
+                <a href="{%url 'mark_mail_services' %}" class="btn btn-primary" role="button">Определить сервис</a>
+            </div>
+        </div>
     </div>
-    <div class="row">
+    <!-- <div class="row">
         <div class="col-2"></div>
         <div class="col-8">
-            <!-- <h3>Собраные группы</h3> -->
             <canvas id="mailServiceStat"></canvas>
             <div style="width: 100%;text-align: center;">
                 <br>
@@ -29,7 +32,7 @@
             </div>
         </div>
         <div class="col-2"></div>
-    </div>
+    </div> -->
 
 
 </div>

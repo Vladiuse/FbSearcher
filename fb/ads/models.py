@@ -19,6 +19,7 @@ from requests.exceptions import ConnectTimeout, ProxyError, ReadTimeout, Connect
 from django.db.utils import OperationalError
 from requests.models import PreparedRequest
 from datetime import datetime, timedelta
+from django.conf import settings
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -82,9 +83,8 @@ class KeyWord(models.Model):
 
     @property
     def url(self):
-        # return f'https://www.facebook.com/ads/library/?active_status=active&ad_type=political_and_issue_ads&country=US&q={self.word}&publisher_platforms[0]=facebook&sort_data[direction]=desc&sort_data[mode]=relevancy_monthly_grouped&start_date[min]=2023-10-06&start_date[max]=&search_type=keyword_unordered&media_type=all'
+        """Получить ссылку ads library с поиском по выбраному ключу"""
         return self._prepare_url()
-
 
 
 class MailService(models.Model):
@@ -192,6 +192,8 @@ class FbGroup(models.Model):
         null=True,
         blank=True,
     )
+    # is_main_service_mark = models.BooleanField(default=False)
+    # is_ignore_word_mark = models.BooleanField(default=False)
     followers = models.CharField(
         max_length=50,
         blank=True,
@@ -211,6 +213,17 @@ class FbGroup(models.Model):
     def __str__(self):
         return f'<FbGroup> {self.url}'
 
+    @staticmethod
+    def log_all_data():
+        log_dir_path = 'fb_groups_logs'
+        file_name = str(datetime.now().date()) + '.csv'
+        file_path = os.path.join(settings.MEDIA_ROOT,log_dir_path, file_name)
+        qs = FbGroup.full_objects.all()
+        with open(file_path, 'w', newline='\n', encoding='utf-8') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',', quotechar='"')
+            for group in qs:
+                writer.writerow([group.pk,group.name, group.email])
+
     @property
     def url(self):
         if self.pk.isdigit():
@@ -219,6 +232,7 @@ class FbGroup(models.Model):
 
     @staticmethod
     def mark_mail_services():
+        """Отметить какой email сервис"""
         mail_services = MailService.objects.all()
         groups = FbGroup.full_objects.only('email', 'email_service').filter(email_service__isnull=True)
         for group in groups:
@@ -229,6 +243,7 @@ class FbGroup(models.Model):
 
     @staticmethod
     def ignored_by_name():
+        """QS групп со стоп словами"""
         words = IgnoreGroupWord.objects.all()
         regex_words = ['.{0,255}' + word.word + '.{0,255}' for word in words]
         regex = '|'.join(regex_words)
@@ -245,17 +260,8 @@ class FbGroup(models.Model):
         print('Not loaded:', FbGroup.not_collected_objects.count())
 
     @staticmethod
-    def fb_group_url_to_id(url):
-        url = urlparse(url).path
-        if url.startswith('/'):
-            url = url[1:]
-        if url.endswith('/'):
-            url = url[:-1]
-        return url
-
-    @staticmethod
     def update_db_by_group_ids(ids: iter) -> dict:
-        print('update_db_by_group_ids')
+        """Обновить базу групп со списка (айди групп)"""
         new_count = 0
         updated = 0
         for group_id in ids:
