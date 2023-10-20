@@ -198,8 +198,8 @@ def groups_stat(request):
 def download_page(request):
     content = {
         'with_mail_count': FbGroup.full_objects.count(),
-        'ignored_services_group': FbGroup.objects.select_related('email_service').filter(email_service__ignore=True),
-        'ignored_by_name': FbGroup.ignored_by_name(),
+        'ignored_services_group': FbGroup.collected_objects.select_related('email_service').filter(email_service__ignore=True).count(),
+        'ignored_by_name': FbGroup.collected_objects.filter(is_ignore_word=True).count(),
     }
     return render(request, 'ads/download_page.html', content)
 
