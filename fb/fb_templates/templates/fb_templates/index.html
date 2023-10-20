@@ -5,17 +5,23 @@
 {%endblock%}
 {%block content%}
 <div class="container">
-    <div class="row row-cols-1 row-cols-md-3 g-4">
+    <div class="row row-cols-1 row-cols-md-4 g-4">
+        {%for fb_template in fb_templates%}
         <div class="col">
-          <div class="card">
-            <img src="https://i.imgur.com/B9pZMyq.png" class="card-img-top" alt="https://i.imgur.com/B9pZMyq.png">
+          <div class="card text-center">
+            {%if fb_template.prev%}
+            <img src="{{fb_template.prev}}" class="card-img-top" alt="">
+            {%else%}
+            <img src="https://t4.ftcdn.net/jpg/04/00/24/31/360_F_400243185_BOxON3h9avMUX10RsDkt3pJ8iQx72kS3.jpg" class="card-img-top" alt="">
+            {%endif%}
             <div class="card-body">
-              <h5 class="card-title">Card title</h5>
-              <p class="card-text">This is a longer card with supporting text below as a natural lead-in to additional content. This content is a little bit longer.</p>
-              <a href="#" class="btn btn-primary">Go somewhere</a>
+              <!-- <h5 class="card-title">Card title</h5> -->
+              <p class="card-text">{{fb_template.desc}}</p>
+              <a href="#" class="btn btn-secondary">Go somewhere</a>
             </div>
           </div>
         </div>
+        {%endfor%}
       </div>
 </div>
 {%endblock%}
