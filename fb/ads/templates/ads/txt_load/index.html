@@ -1,0 +1,148 @@
+{%extends 'ads/base.html'%}
+
+{%block head_text%}
+Обновить группы из Txt файла
+{%endblock%}
+{%block content%}
+<style>
+    .wrapper{
+        
+    }
+    .wrapper.center{
+        display: flex;
+        justify-content: center;
+    }
+    form{
+        margin: 20px 0;
+    }
+    form button{
+        margin-top: 15px;
+        width: 100%;
+        text-align: center;
+    }
+    form{
+        max-width: 700px;
+    }
+    table{
+        max-width: 400px;
+    }
+    .incorrect-line{
+        margin: 0;
+    }
+    .btn-group{
+        width: 100%;
+    }
+    .accordion{
+        width: 800px;
+    }
+</style>
+<div class="container">
+    <div class="wrapper center">
+        
+        <form method="POST"  enctype="multipart/form-data" >
+            <div class="btn-group">
+                <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
+                    Допустимые форматы ссылок:
+                </button>
+                <ul class="dropdown-menu dropdown-menu-lg-end">
+                  <li><button class="dropdown-item" type="button">http[s]://facebook.com/цифры</button></li>
+                  <li><button class="dropdown-item" type="button">http[s]://www.facebook.com/цифры</button></li>
+                  <li><button class="dropdown-item" type="button">http[s]://facebook.com/буквы</button></li>
+                  <li><button class="dropdown-item" type="button">http[s]://www.facebook.com/буквы</button></li>
+                  <li><button class="dropdown-item" type="button">http[s]://fb.com/page-цифры</button></li>
+                  <li><button class="dropdown-item" type="button">http[s]://www.fb.com/page-цифры</button></li>
+                </ul>
+              </div>
+              <br>
+            {%csrf_token%}
+            {{ form.txt_files.errors }}
+            <label for="" class="form-label">Выберите txt файлы</label>
+            <input class="form-control" name="txt_files" type="file" id="formFileMultiple" multiple required>
+            <button class="btn btn-primary" type="submit">
+                <div class="spinner-grow spinner-grow-sm" role="status" style="display: none;">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                <span>Загузить</span>
+            </button>
+        </form>
+    </div>
+    {%if readers_n_results%}
+    <div class="wrapper center">
+        <h4>Файлов обработано: {{readers_n_results|length}}, Создано новых групп: {{new_groups_created}}</h4>
+    </div>
+    {%for reader, update_result in readers_n_results%}
+    <div class="wrapper center">
+            <table class="table">
+                <thead class="table-primary">
+                <tr>
+                    <td colspan="2">Файл {{reader.file_name}}</td>
+                </tr>
+
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Групп в файле</td>
+                    <td>{{reader.total}}</td>
+                </tr>
+                <tr>
+                    <td>Уникальных</td>
+                    <td>{{reader|length}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table">
+                <thead class="table-primary">
+                <tr>
+                    <td colspan="2">БД</td>
+                </tr>
+
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Новых</td>
+                    <td> {{update_result.new}}</td>
+                </tr>
+                <tr>
+                    <td>Обновлено</td>
+                    <td>{{update_result.updated}}</td>
+                </tr>
+                </tbody>
+            </table>
+       
+    </div>
+    <!-- INCORRECT LINES -->
+    {%if reader.incorrect_lines%}
+    <div class="wrapper center"> 
+        <div class="accordion" id="accordionExample">
+            <div class="accordion-item">
+            <h2 class="accordion-header" id="headingOne">
+                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                Некоректные строки ({{reader.incorrect_lines|length}})
+                </button>
+            </h2>
+            <div id="collapseOne" class="accordion-collapse collapse" aria-labelledby="headingOne" data-bs-parent="#accordionExample">
+                <div class="accordion-body">
+                {%for incirrect_line in reader.incorrect_lines%}
+                    <p class="incorrect-line">{{incirrect_line}}</p>
+                    {%endfor%} 
+                </div>
+            </div>
+            </div>
+        </div>
+    </div>
+    {%endif%}
+    <!-- INCORRECT LINES -->
+    {%endfor%}
+    {%endif%}
+
+</div>
+<script>
+    $('form').submit(function(){
+        console.log('123')
+        $('#load-result').empty()
+    $('form button').attr('disabled', true)
+    $('form button .spinner-grow').show()
+    $('form button span').text('Загружаеться')
+    })
+</script>
+{%endblock%}
