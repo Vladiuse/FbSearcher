@@ -61,6 +61,7 @@ INSTALLED_APPS = [
     'ads.apps.AdsConfig',
     'accounts.apps.AccountsConfig',
     'proxies.apps.ProxiesConfig',
+    'fb_templates.apps.FbTemplatesConfig',
 ]
 
 MIDDLEWARE = [

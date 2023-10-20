@@ -23,6 +23,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('ads/', include('ads.urls'),),
+    path('fb_templates/', include('fb_templates.urls'), ),
 ]
 
 # Serving the media files in development mode
