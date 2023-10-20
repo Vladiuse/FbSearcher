@@ -66,6 +66,7 @@ class KeyWord(models.Model):
     ads_count_policy = models.PositiveIntegerField(blank=True, null=True)
     ads_count_all = models.PositiveIntegerField(blank=True, null=True)
     is_collected = models.BooleanField(default=False)
+    # TODO cards_count_average - add count of showing cards average by day
 
     class Meta:
         ordering = ['number_in_dict', ]
@@ -78,7 +79,7 @@ class KeyWord(models.Model):
         params['q'] = str(self.word)
         params['country'] = 'US'
         days_ago = 1
-        params['start_date[min]'] =  str(datetime.now().date() - timedelta(days=days_ago))
+        params['start_date[min]'] = str(datetime.now().date() - timedelta(days=days_ago))
         return params
 
     def _prepare_url(self):
@@ -90,6 +91,21 @@ class KeyWord(models.Model):
     def url(self):
         """Получить ссылку ads library с поиском по выбраному ключу"""
         return self._prepare_url()
+
+    @staticmethod
+    def get_bunch(length=20, k=2):
+        if k < 1 or k >= 10:  # TODO set 10 as CONST
+            raise ValueError('K must be more than 1 and less than 10')
+        if length <= 0 or length >= 1000:
+            raise ValueError('"count" must be more than zero or less than 1000')
+        qs = KeyWord.objects.filter(number_in_dict__range=[(k-1)*1000 + 1, k*1000])\
+                 .filter(is_collected=False).only('word')[:length]
+        if not qs.exists():
+            raise KeyWord.DoesNotExist # TODO
+        to_update_words = [key.word for key in qs]
+        KeyWord.objects.filter(word__in=to_update_words).update(is_collected=True)
+        return qs
+
 
 
 class MailService(models.Model):
