@@ -12,3 +12,8 @@ class FbTemplate(models.Model):
     prev = models.URLField(
         blank=True,
     )
+
+    @property
+    def html(self):
+        with open(self.file.path, encoding='utf-8') as file:
+            return file.read()
