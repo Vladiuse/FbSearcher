@@ -157,9 +157,10 @@ class UpdateFbGroupFromTxt(View):
             readers_n_results = []
             for file in files:
                 if isinstance(file, InMemoryUploadedFile):
-                    reader = reader_class(file, file_name=file.name,)
+                    reader = reader_class(file, file_name=file.name,is_big=False)
                 else:
-                    reader = reader_class(file.temporary_file_path(), file_name=file.name,)
+                    reader = reader_class(file.temporary_file_path(),is_big=True, file_name=file.name,)
+                    # return HttpResponse('temporary')
                 reader.read()
                 update_result = {
                     'new': 10,

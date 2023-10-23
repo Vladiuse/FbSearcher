@@ -129,8 +129,9 @@ class Fb7DaysZipReader:
 
 class TxtFileReader:
     """Читает txt файл с группами"""
-    def __init__(self, path, file_name=None):
+    def __init__(self, path, is_big,file_name=None):
         self.path = path
+        self.is_big = is_big
         self._file_name = file_name
         self.unique_group_ids = list()
         self.total = 0
@@ -144,7 +145,12 @@ class TxtFileReader:
 
     def read(self):
         groups_urls = set()
-        with io.TextIOWrapper(self.path, encoding='utf-8') as file:
+        # with io.TextIOWrapper(self.path, encoding='utf-8') as file:
+        if self.is_big:
+            _class = open
+        else:
+            _class = io.TextIOWrapper
+        with _class(self.path, encoding='utf-8') as file:
             for line in file:
                 url = get_fbgroup_id_from_url(line)
                 if url:
