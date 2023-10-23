@@ -3,7 +3,10 @@ import os
 from time import sleep
 from bs4 import BeautifulSoup
 from selenium.common.exceptions import TimeoutException
+from datetime import datetime
+import pickle
 
+COOKIE_PATH = 'cookies_adheart.pkl'
 driver = webdriver.Chrome()
 
 # dir_path = '/home/vlad/PycharmProjects/FbSearcher/adheart'
@@ -16,7 +19,7 @@ driver = webdriver.Chrome()
 #     with open(file_path, 'w') as file:
 #         file.write(html)
 LOG_DIR = '/home/vlad/PycharmProjects/FbSearcher/adheart'
-LOG_FILE = '/home/vlad/all.txt'
+LOG_FILE = '/home/vlad/links_heart.txt'
 def get_links(html):
     links = []
     soup = BeautifulSoup(html, 'lxml')
@@ -37,19 +40,32 @@ def log_html(page_num, html):
     with open(file_path, 'w') as file:
         file.write(html)
 
-input('LOGIN: ')
-# driver.set_page_load_timeout(2)
-# for i in range(1,400):
-#     print(i)
-#     url = f'https://adheart.me/teasers/?platforms[]=facebook&geos[]=US&last_active_at=1&categories=Array&use_blacklist=false&page={i}'
-#     try:
-#         driver.get(url)
-#     except TimeoutException:
-#         print('TimeOut')
-#     html = driver.execute_script("return document.body.innerHTML")
-#     log_html(i,html)
-#     links = get_links(html)
-#     with open(LOG_FILE, 'a') as file:
-#         for link in links:
-#             file.write(link + '\n')
+
+driver.get('https://adheart.me/ru/dashboard')
+if os.path.exists(COOKIE_PATH):
+    cookies = pickle.load(open(COOKIE_PATH, "rb"))
+    for cookie in cookies:
+        driver.add_cookie(cookie)
+driver.get('https://adheart.me/ru/dashboard')
+input('LOGIN ? ')
+pickle.dump(driver.get_cookies(), open(COOKIE_PATH, "wb"))
+driver.set_page_load_timeout(10)
+DAYS = 7
+GEO = 'CA'
+PAGES = 200
+for i in range(1,PAGES):
+    print(i)
+    url = f'https://adheart.me/teasers/?platforms[]=facebook&geos[]={GEO}&last_active_at={DAYS}&categories=Array&use_blacklist=false&page={i}'
+    try:
+        driver.get(url)
+    except TimeoutException:
+        print('TimeOut')
+    html = driver.execute_script("return document.body.innerHTML")
+    # log_html(i,html)
+    links = get_links(html)
+    current_time = datetime.now().strftime('%H:%M:%S')
+    print('Links: ',len(links), current_time)
+    with open(LOG_FILE, 'a') as file:
+        for link in links:
+            file.write(link + '\n')
 
