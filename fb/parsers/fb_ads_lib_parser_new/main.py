@@ -6,7 +6,7 @@ from selenium.webdriver.common.by import By
 from .cards import CardSearch
 import time
 from selenium.common.exceptions import NoSuchElementException
-from datetime import datetime
+from datetime import datetime, timedelta
 
 
 
@@ -44,6 +44,7 @@ class FbLibPage:
         self.q = q
         self.start_date = start_date
         self.country = country
+        self.days_ago = str(datetime.now().date() - timedelta(days=1))
 
     def _get_params(self):
         params = self.URL_PARAMS
@@ -78,6 +79,7 @@ load_new_button.click()
     def click_load_new_cards(self):
         for _ in range(20):
             # print('wait load new button')
+            self._is_fb_block_loading()
             sleep(1) # 1 is old value
             if self.cards_count():  # не кликать кнопку - если карточки стали загружаться автоматически
                 return
@@ -130,6 +132,7 @@ document.head.appendChild(styleNoMedia)
         # print('Start wait cards')
         start = time.time()
         while True:
+            self._is_fb_block_loading()
             cards_count = self.cards_count()
             # print('Cards on page', cards_count)
             if cards_count:
@@ -142,6 +145,20 @@ document.head.appendChild(styleNoMedia)
                     sleep(0.1)
                     continue
 
+    def _is_fb_block_loading(self):
+        """Проверить не поялился ли блок 'Слишком много запросов' """
+        try:
+            info_block = DRIVER.find_element(By.CSS_SELECTOR, 'div.x11408do.xr1yuqi.xkrivgy.x4ii5y1.x1gryazu.xw5ewwj.xh8yej3.x2b8uid')
+            print('BLOCK BLOCk', info_block)
+            if info_block:
+                print('Fb block requests!')
+                sleep(10)
+                DRIVER.quit()
+                exit()
+        except NoSuchElementException:
+            pass
+
+
 
 PROXY = 'http://MeHeS7:Eb1Empua4ES6@nproxy.site:14569/'
 options = {
@@ -152,7 +169,7 @@ options = {
 
 WINDOW_SIZE = (1200, 800)
 options = webdriver.ChromeOptions()
-options.add_argument('--headless')
+# options.add_argument('--headless')
 DRIVER = webdriver.Chrome(
     options=options,
     #seleniumwire_options=options
@@ -165,12 +182,13 @@ def parse_by_keys(keys):
     for key in keys:
         try:
             print('Start KEY:', key)
-            fb_lib_page = FbLibPage(q=key, country='US', start_date='2023-10-18')
-            DRIVER.get(fb_lib_page.url)
+            fb_lib_page = FbLibPage(q=key, country='US', start_date='2023-10-21')
+            DRIVER.get(fb_lib_page.url) # todo add timeout and check status code
             fb_lib_page.run()
         except Exception as error:
             print('*'*40+'\n')
             print(error, key)
+    DRIVER.quit()
 
 
 if __name__ == '__main__':
