@@ -106,6 +106,10 @@ class KeyWord(models.Model):
         KeyWord.objects.filter(word__in=to_update_words).update(is_collected=True)
         return qs
 
+    @staticmethod
+    def set_all_not_collected():
+        KeyWord.objects.update(is_collected=False)
+
 
 
 class MailService(models.Model):
@@ -235,6 +239,7 @@ class FbGroup(models.Model):
     )
     last_ad_date = models.DateField(default=timezone.now)
     req_html_data = models.FileField(upload_to='req_html_data', blank=True)
+    is_used = models.BooleanField(default=False)
 
     def __str__(self):
         return f'<FbGroup> {self.url}'
@@ -414,12 +419,14 @@ class FbGroup(models.Model):
         #         file.write(line)
         #
         # return path
-        qs = FbGroup.full_objects.all()
-        with open('/home/vlad/all.csv', 'w', newline='\n') as csv_file:
+        qs = FbGroup.full_objects.all()[15000:20000]
+        with open('/home/vlad/4.csv', 'w', newline='\n') as csv_file:
             writer = csv.writer(csv_file, delimiter=',', quotechar='"')
             # writer.writerow(['Some text and " dasd', 'email.com'])
             for group in qs:
                 writer.writerow([group.name, group.email])
+                group.is_used = True
+                group.save()
         return '/home/vlad/all.csv'
 
 

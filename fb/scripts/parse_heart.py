@@ -48,11 +48,12 @@ if os.path.exists(COOKIE_PATH):
         driver.add_cookie(cookie)
 driver.get('https://adheart.me/ru/dashboard')
 input('LOGIN ? ')
+pages_count = input('Enter pages count')
 pickle.dump(driver.get_cookies(), open(COOKIE_PATH, "wb"))
 driver.set_page_load_timeout(10)
 DAYS = 7
-GEO = 'CA'
-PAGES = 200
+GEO = 'GB'
+PAGES = pages_count
 for i in range(1,PAGES):
     print(i)
     url = f'https://adheart.me/teasers/?platforms[]=facebook&geos[]={GEO}&last_active_at={DAYS}&categories=Array&use_blacklist=false&page={i}'

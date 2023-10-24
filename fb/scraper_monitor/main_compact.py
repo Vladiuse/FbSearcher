@@ -15,7 +15,10 @@ from .fake_objects import ResponseFake, RequestFake, ProxyFake
 from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
 from requests.exceptions import RequestException
 
-groups = FbGroup.objects.filter(status__in=['not_loaded','error_req'])
+groups = FbGroup.objects.filter(status__in=[
+    'not_loaded',
+    #'error_req',
+])[:30000]
 proxy_4 = ProxyMobile.objects.get(pk=4)
 proxy_3 = ProxyMobile.objects.get(pk=3)
 proxy_5 = ProxyMobile.objects.get(pk=5)
@@ -36,7 +39,7 @@ class ProxyStream:
     Класс для потока прокси
     """
     REQ_BAR_MAX_LEN = 35
-    REQ_TIMEOUT = 6
+    REQ_TIMEOUT = 5
 
     def __init__(self, stream_num, proxy_bar, proxy, groups):
         self.stream_num = stream_num
@@ -175,10 +178,10 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 6
+    STREAM_COUNT = 5
 
     # auto ip change
-    REQ_COUNT_CHANGE_IP = 1.5 * 1000
+    REQ_COUNT_CHANGE_IP = 3 * 1000
     WAIT_AFTER_ERROR_IP_CHANGE = 20
     AUTO_CHANGE_IP = True
     MAX_TRY_IP_CHANGE_ERROR = 5  # not change
@@ -378,7 +381,7 @@ def start_parse():
 
 proxies_to_run = []
 # proxies = [proxy, proxy]
-proxies = ProxyMobile.objects.filter(pk__in=[4,5,6,7])[:2]
+proxies = ProxyMobile.objects.filter(pk__in=[5,])
 #proxies = [ProxyFake(), ProxyFake(), ProxyFake(), ]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 
