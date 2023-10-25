@@ -51,17 +51,18 @@ input('LOGIN ? ')
 pages_count = input('Enter pages count')
 pickle.dump(driver.get_cookies(), open(COOKIE_PATH, "wb"))
 driver.set_page_load_timeout(10)
-DAYS = 7
-GEO = 'GB'
+DAYS = 3
+GEO = 'AU'
 PAGES = pages_count
-for i in range(1,PAGES):
+for i in range(1,int(PAGES)):
     print(i)
     url = f'https://adheart.me/teasers/?platforms[]=facebook&geos[]={GEO}&last_active_at={DAYS}&categories=Array&use_blacklist=false&page={i}'
     try:
         driver.get(url)
     except TimeoutException:
         print('TimeOut')
-    html = driver.execute_script("return document.body.innerHTML")
+    #html = driver.execute_script("return document.body.innerHTML")
+    html = driver.page_source
     # log_html(i,html)
     links = get_links(html)
     current_time = datetime.now().strftime('%H:%M:%S')

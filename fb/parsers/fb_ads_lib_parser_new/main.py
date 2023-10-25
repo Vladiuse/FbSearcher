@@ -179,10 +179,13 @@ DRIVER.set_window_size(*WINDOW_SIZE)
 
 
 def parse_by_keys(keys):
+    COUNTRY = 'US'
+    DAYS_AGO = 1
+    start_date = str(datetime.now().date() - timedelta(days=DAYS_AGO))
     for key in keys:
         try:
             print('Start KEY:', key)
-            fb_lib_page = FbLibPage(q=key, country='US', start_date='2023-10-21')
+            fb_lib_page = FbLibPage(q=key, country=COUNTRY, start_date=start_date)
             DRIVER.get(fb_lib_page.url) # todo add timeout and check status code
             fb_lib_page.run()
         except Exception as error:

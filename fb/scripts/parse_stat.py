@@ -33,8 +33,8 @@ def get_file_stat(file_path):
 
 
 fb_parser_file = '/home/vlad/links.txt'
-adhear_parser_file = '/home/vlad/links_heart.txt'
+adheart_parser_file = '/home/vlad/links_heart.txt'
 
 print('Current Time: ', datetime.now().strftime('%H:%M:%S'))
-for file_path in fb_parser_file, adhear_parser_file:
+for file_path in fb_parser_file, adheart_parser_file:
     get_file_stat(file_path)
