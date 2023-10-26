@@ -15,12 +15,19 @@
             <canvas id="ColectedStat"></canvas>
         </div>
         <div class="col">
+            <canvas id="UsedMails"></canvas>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col"></div>
+        <div class="col">
             <canvas id="mailServiceStat"></canvas>
             <div style="width: 100%;text-align: center;">
                 <br>
                 <a href="{%url 'mark_mail_services' %}" class="btn btn-primary" role="button">Определить сервис</a>
             </div>
         </div>
+        <div class="col"></div>
     </div>
 </div>
 <script>
@@ -96,6 +103,42 @@
                 title: {
                     display: true,
                     text: 'Статистика по обработанным группам',
+                }
+            }
+        }
+    });
+</script>
+
+<script>
+    const UsedStat = document.getElementById('UsedMails');
+    const UsedStatData = {
+        labels: [
+            'Used: {{mails_used}}',
+            'Not used: {{mails_not_used}}',
+        ],
+        datasets: [{
+            label: 'My First Dataset',
+            data: ['{{mails_used}}', '{{mails_not_used}}',],
+            backgroundColor: [
+                '#ff6363',
+                '#7AB759',
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    new Chart(UsedStat, {
+        type: 'doughnut',
+        data: UsedStatData,
+        options: {
+            plugins: {
+                legend: {
+                    position: 'left',
+                    align: 'center'
+                },
+                title: {
+                    display: true,
+                    text: 'Статистика по использованым',
                 }
             }
         }

@@ -192,7 +192,9 @@ def groups_stat(request):
         'no_mail_count': FbGroup.collected_no_mail_objects.count(),
         'no_data_count': FbGroup.collected_no_data_objects.count(),
         'login_form_count': FbGroup.collected_objects.filter(name='FaceBook').count(),
-        'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service')
+        'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service'),
+        'mails_not_used': FbGroup.full_objects.filter(is_used=False).count(),
+        'mails_used': FbGroup.full_objects.filter(is_used=True).count(),
     }
     return render(request, 'ads/groups_stat.html', content)
 
