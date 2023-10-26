@@ -10,6 +10,8 @@ from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime, timedelta
 from playsound import playsound
 from pathlib import Path
+from print_color import print as cprint
+from .messages import *
 
 
 class FbBlockLibError(Exception):
@@ -197,23 +199,22 @@ def parse_by_keys(keys, country):
     GLOBAL_ERRORS_LIMIT = 2
     for key in keys:
         try:
-            print('Start KEY:', key)
+            cprint(NEXT_KEY, color='green')
             fb_lib_page = FbLibPage(q=key, country=country, start_date=start_date)
             DRIVER.get(fb_lib_page.url)  # todo add timeout and check status code
             fb_lib_page.run()
         except FbBlockLibError as error:
-            print('Fb block requests!')
+            cprint(FB_LIB_BLOCK, color='red')
             playsound(fb_block_media_path)
             sleep(15)
             DRIVER.quit()
             exit()
         except (MaxWaitCardLoadError, NoLoadCardBtnError) as error:
-            print('*' * 40 + '\n')
             print(key, '\n', error)
-            pass
+            cprint(NOT_CRITICAL_ERROR, color='yellow')
         except Exception as error:
-            print('*' * 40 + '\n')
             print(key, '\n', error)
+            cprint(UNKNOWN_ERROR, color='red')
             global_errors_count += 1
             playsound(error_media_path)
             if global_errors_count >= GLOBAL_ERRORS_LIMIT:
@@ -237,4 +238,4 @@ if __name__ == '__main__':
     ]
     # DRIVER.get('https://google.com/')
     # input('Start?')
-    parse_by_keys(keys)
+    # parse_by_keys(keys)
