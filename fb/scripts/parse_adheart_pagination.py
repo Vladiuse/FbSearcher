@@ -9,17 +9,9 @@ import pickle
 COOKIE_PATH = 'cookies_adheart.pkl'
 driver = webdriver.Chrome()
 
-# dir_path = '/home/vlad/PycharmProjects/FbSearcher/adheart'
-# while True:
-#     res = input('Enter file name or exit: ')
-#     if res == 'exit':
-#         driver.quit()
-#     file_path = os.path.join(dir_path, res)
-#     html = driver.execute_script("return document.body.innerHTML")
-#     with open(file_path, 'w') as file:
-#         file.write(html)
 LOG_DIR = '/home/vlad/PycharmProjects/FbSearcher/adheart'
 LOG_FILE = '/home/vlad/links_heart.txt'
+
 def get_links(html):
     links = []
     soup = BeautifulSoup(html, 'lxml')
@@ -48,15 +40,15 @@ if os.path.exists(COOKIE_PATH):
         driver.add_cookie(cookie)
 driver.get('https://adheart.me/ru/dashboard')
 input('LOGIN ? ')
-pages_count = input('Enter pages count')
+pages_count = 10 * 1000
 pickle.dump(driver.get_cookies(), open(COOKIE_PATH, "wb"))
-driver.set_page_load_timeout(10)
-DAYS = 3
+driver.set_page_load_timeout(7)
+DAYS = 1
 GEO = 'AU'
 PAGES = pages_count
-for i in range(1,int(PAGES)):
+for i in range(500,int(PAGES)):
     print(i)
-    url = f'https://adheart.me/teasers/?platforms[]=facebook&geos[]={GEO}&last_active_at={DAYS}&categories=Array&use_blacklist=false&page={i}'
+    url = f'https://adheart.me/teasers/?platforms[]=facebook&&last_active_at={DAYS}&categories=Array&use_blacklist=false&page={i}'
     try:
         driver.get(url)
     except TimeoutException:
