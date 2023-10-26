@@ -16,7 +16,16 @@ class FbBlockLibError(Exception):
     """Блокировка фейсбуком запросов в библеотеку"""
 
 
+class MaxWaitCardLoadError(Exception):
+    """Превышено время ожидания карточек"""
+
+
+class NoLoadCardBtnError(Exception):
+    """Кнопка загрузки новых карточек не найдена"""
+
+
 def log_links(links):
+    """Записать ссылки из карточек в лог файл"""
     with open('/home/vlad/links.txt', 'a') as file:
         for link in links:
             file.write(link + '\n')
@@ -69,6 +78,7 @@ class FbLibPage:
         return self._prepare_url()
 
     def remove_all_cards(self):
+        """Удалить все карточки со страницы"""
         DRIVER.execute_script("""
 var cards = document.querySelectorAll('div.xrvj5dj.xdq2opy.xexx8yu.xbxaen2.x18d9i69.xbbxn1n.xdoe023.xbumo9q.x143o31f.x7sq92a.x1crum5w > div.xh8yej3')
 for (let i=0; i < cards.length; i++){
@@ -78,33 +88,33 @@ for (let i=0; i < cards.length; i++){
 """)
 
     def click_load_new_js(self):
+        """Клик на кнопку загрузки новых карт"""
         DRIVER.execute_script("""
 var load_new_button = document.querySelector('a._8n_3')
 load_new_button.click()
                 """)
 
     def click_load_new_cards(self):
+        """ожидать кнопку загрузки новыз карточек"""
         for _ in range(20):
-            # print('wait load new button')
             self._is_fb_block_loading()
             sleep(1)  # 1 is old value
             if self.cards_count():  # не кликать кнопку - если карточки стали загружаться автоматически
                 return
             try:
                 button = DRIVER.find_element(By.CSS_SELECTOR, 'a._8n_3')
-                # print('Button found')
                 sleep(0.5)  # 1 is old value
                 if button:
                     if self.cards_count():  # не кликать кнопку - если карточки стали загружаться автоматически
                         return
                     self.click_load_new_js()
-                    # button.click()
                     return
             except NoSuchElementException as error:
                 pass
-        raise ZeroDivisionError('no click button found')
+        raise NoLoadCardBtnError
 
     def hide_cards_media(self):
+        """Скрить медиа контент у карточек"""
         DRIVER.execute_script("""
 const styleNoMedia = document.createElement("style")
 styleNoMedia.textContent = "div.xrvj5dj.xdq2opy.xexx8yu.xbxaen2.x18d9i69.xbbxn1n.xdoe023.xbumo9q.x143o31f.x7sq92a.x1crum5w > div.xh8yej3  ._7jyg._7jyh{display:none;}"
@@ -112,43 +122,42 @@ document.head.appendChild(styleNoMedia)
         """)
 
     def cards_count(self):
+        """Посчитать сколько карточек на странице"""
         cards = DRIVER.find_elements(By.CSS_SELECTOR,
                                      'div.xrvj5dj.xdq2opy.xexx8yu.xbxaen2.x18d9i69.xbbxn1n.xdoe023.xbumo9q.x143o31f.x7sq92a.x1crum5w > div.xh8yej3')
         return len(cards)
 
     def get_links(self):
+        """Достать ссылки на группы из верски"""
         html = str(DRIVER.page_source)
         cards_searcher = CardSearch(html)
         return cards_searcher.links
 
     def run(self):
         self.hide_cards_media()
-        # input('Start main?')
-        # sleep(5)
         for _ in range(self.PAGES_FOR_KEY_WORK):
             self._wait_cards_load()
             links = self.get_links()
             log_links(links)
             current_time = datetime.now().strftime('%H:%M:%S')
-            print('Links count:', len(links), self.q, current_time)
-            # sleep(1)
+            print('\n')
+            print(f'Links count: {len(links)}', self.q, current_time)
+            print('#' * len(links))
             self.remove_all_cards()
-            # sleep(0.5)  # 3 is old value
             self.click_load_new_cards()
 
     def _wait_cards_load(self):
-        # print('Start wait cards')
+        """Ждать появления карточек"""
         start = time.time()
         while True:
             self._is_fb_block_loading()
             cards_count = self.cards_count()
-            # print('Cards on page', cards_count)
             if cards_count:
                 sleep(0.5)
                 break
             else:
                 if time.time() - start > self.MAX_WAIT_TIME_CARDS_LOAD:
-                    raise ZeroDivisionError('MAX_WAIT_TIME_CARDS_LOAD')
+                    raise MaxWaitCardLoadError
                 else:
                     sleep(0.1)
                     continue
@@ -168,6 +177,7 @@ document.head.appendChild(styleNoMedia)
         except NoSuchElementException:
             pass
 
+
 # PROXY = 'http://MeHeS7:Eb1Empua4ES6@nproxy.site:14569/'
 # options = {
 # 	'proxy': {
@@ -178,7 +188,6 @@ curr_file_path = Path(__file__).parent.absolute()
 error_media_path = os.path.join(curr_file_path, 'media/error.mp3')
 fb_block_media_path = os.path.join(curr_file_path, 'media/fb_block_lib.mp3')
 
-
 options = webdriver.ChromeOptions()
 # options.add_argument('--headless')
 DRIVER = webdriver.Chrome(
@@ -187,18 +196,22 @@ DRIVER = webdriver.Chrome(
 )
 DRIVER.maximize_window()
 
+
 def parse_by_keys(keys):
     COUNTRY = 'US'
     DAYS_AGO = 1
     start_date = str(datetime.now().date() - timedelta(days=DAYS_AGO))
     global_errors_count = 0
-    GLOBAL_ERRORS_LIMIT = 3
+    GLOBAL_ERRORS_LIMIT = 2
     for key in keys:
         try:
             print('Start KEY:', key)
             fb_lib_page = FbLibPage(q=key, country=COUNTRY, start_date=start_date)
             DRIVER.get(fb_lib_page.url)  # todo add timeout and check status code
             fb_lib_page.run()
+        except (MaxWaitCardLoadError, NoLoadCardBtnError) as error:
+            print('*' * 40 + '\n')
+            print(key, '\n', error)
         except Exception as error:
             print('*' * 40 + '\n')
             print(key, '\n', error)
