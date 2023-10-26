@@ -6,9 +6,9 @@ import configparser
 conf_path = 'conf.ini'
 config = configparser.ConfigParser()
 config.read(conf_path)
-start_key = config.get('AdsLibParser', 'start_key')
-end_key = config.get('AdsLibParser', 'end_key')
-keys_count = config.get('AdsLibParser', 'keys_count')
+start_key = int(config.get('AdsLibParser', 'start_key'))
+end_key = int(config.get('AdsLibParser', 'end_key'))
+keys_count = int(config.get('AdsLibParser', 'keys_count'))
 country = config.get('AdsLibParser', 'country')
 
 keys = KeyWord.objects.filter(number_in_dict__range=(start_key, end_key)).order_by('?')[:keys_count]
