@@ -168,11 +168,7 @@ document.head.appendChild(styleNoMedia)
                                              'div.x11408do.xr1yuqi.xkrivgy.x4ii5y1.x1gryazu.xw5ewwj.xh8yej3.x2b8uid')
             print('BLOCK BLOCk', info_block)
             if info_block:
-                print('Fb block requests!')
-                playsound(fb_block_media_path)
-                sleep(5)
-                DRIVER.quit()
-                exit()
+                raise FbBlockLibError
         except NoSuchElementException:
             pass
 
@@ -208,9 +204,16 @@ def parse_by_keys(keys):
             fb_lib_page = FbLibPage(q=key, country=COUNTRY, start_date=start_date)
             DRIVER.get(fb_lib_page.url)  # todo add timeout and check status code
             fb_lib_page.run()
+        except FbBlockLibError as error:
+            print('Fb block requests!')
+            playsound(fb_block_media_path)
+            sleep(15)
+            DRIVER.quit()
+            exit()
         except (MaxWaitCardLoadError, NoLoadCardBtnError) as error:
             print('*' * 40 + '\n')
             print(key, '\n', error)
+            pass
         except Exception as error:
             print('*' * 40 + '\n')
             print(key, '\n', error)
