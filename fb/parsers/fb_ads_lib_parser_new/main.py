@@ -12,18 +12,7 @@ from playsound import playsound
 from pathlib import Path
 from print_color import print as cprint
 from .messages import *
-
-
-class FbBlockLibError(Exception):
-    """Блокировка фейсбуком запросов в библеотеку"""
-
-
-class MaxWaitCardLoadError(Exception):
-    """Превышено время ожидания карточек"""
-
-
-class NoLoadCardBtnError(Exception):
-    """Кнопка загрузки новых карточек не найдена"""
+from .exceptions import *
 
 
 def log_links(links):
