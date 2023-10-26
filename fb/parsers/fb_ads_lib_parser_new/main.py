@@ -165,7 +165,6 @@ document.head.appendChild(styleNoMedia)
         try:
             info_block = DRIVER.find_element(By.CSS_SELECTOR,
                                              'div.x11408do.xr1yuqi.xkrivgy.x4ii5y1.x1gryazu.xw5ewwj.xh8yej3.x2b8uid')
-            print('BLOCK BLOCk', info_block)
             if info_block:
                 raise FbBlockLibError
         except NoSuchElementException:
@@ -191,8 +190,7 @@ DRIVER = webdriver.Chrome(
 DRIVER.maximize_window()
 
 
-def parse_by_keys(keys):
-    COUNTRY = 'US'
+def parse_by_keys(keys, country):
     DAYS_AGO = 1
     start_date = str(datetime.now().date() - timedelta(days=DAYS_AGO))
     global_errors_count = 0
@@ -200,7 +198,7 @@ def parse_by_keys(keys):
     for key in keys:
         try:
             print('Start KEY:', key)
-            fb_lib_page = FbLibPage(q=key, country=COUNTRY, start_date=start_date)
+            fb_lib_page = FbLibPage(q=key, country=country, start_date=start_date)
             DRIVER.get(fb_lib_page.url)  # todo add timeout and check status code
             fb_lib_page.run()
         except FbBlockLibError as error:
