@@ -1,6 +1,14 @@
 from parsers.fb_ads_lib_parser_new.main  import parse_by_keys
 from ads.models import KeyWord
+import configparser
 
-keys = KeyWord.objects.filter(number_in_dict__range=(1000, 2000)).order_by('?')[:40]
-# keys = KeyWord.objects.order_by('?')[:40]
+
+conf_path = 'conf.ini'
+config = configparser.ConfigParser()
+config.read(conf_path)
+start_key = config.get('AdsLibParser', 'start_key')
+end_key = config.get('AdsLibParser', 'end_key')
+keys_count = config.get('AdsLibParser', 'keys_count')
+
+keys = KeyWord.objects.filter(number_in_dict__range=(start_key, end_key)).order_by('?')[:keys_count]
 parse_by_keys(keys)
