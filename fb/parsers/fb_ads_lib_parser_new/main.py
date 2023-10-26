@@ -48,11 +48,10 @@ class FbLibPage:
 
     FB_LIB_URL = 'https://www.facebook.com/ads/library/'
 
-    PAGES_FOR_KEY_WORK = 60
+    PAGES_FOR_KEY_WORD = 200
 
-    MAX_WAIT_TIME_CARDS_LOAD = 30
     TIME_FOR_CARDS_LOADING = 3
-    MAX_PAGE_ITERATION = 150
+    MAX_WAIT_TIME_CARDS_LOAD = 30
     BLOCK_CLASS_NAME = 'xxx'
 
     def __init__(self, *, q, start_date, country):
@@ -135,7 +134,7 @@ document.head.appendChild(styleNoMedia)
 
     def run(self):
         self.hide_cards_media()
-        for _ in range(self.PAGES_FOR_KEY_WORK):
+        for _ in range(self.PAGES_FOR_KEY_WORD):
             self._wait_cards_load()
             links = self.get_links()
             log_links(links)
