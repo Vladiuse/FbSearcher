@@ -257,14 +257,6 @@ class FbGroup(models.Model):
         fields = ['pk', 'name', 'email']
         file_suffix = 'collected'
         FbGroup._log_groups(qs, fields, file_suffix)
-        # log_dir_path = FbGroup.LOG_DIR_PATH
-        # file_name = str(datetime.now().date()) + '__collected.csv'
-        # file_path = os.path.join(settings.MEDIA_ROOT,log_dir_path, file_name)
-        # qs = FbGroup.collected_objects.all()
-        # with open(file_path, 'w', newline='\n', encoding='utf-8') as csv_file:
-        #     writer = csv.writer(csv_file, delimiter=',', quotechar='"')
-        #     for group in qs:
-        #         writer.writerow([group.pk,group.name, group.email])
 
     @staticmethod
     def log_not_collected():
@@ -272,20 +264,15 @@ class FbGroup(models.Model):
         fields = ['pk',]
         file_suffix = 'not_collected'
         FbGroup._log_groups(qs, fields, file_suffix)
-        # log_dir_path = FbGroup.LOG_DIR_PATH
-        # file_name = str(datetime.now().date()) + '__not_collected.csv'
-        # file_path = os.path.join(settings.MEDIA_ROOT,log_dir_path, file_name)
-        # qs = FbGroup.not_collected_objects.all()
-        # with open(file_path, 'w', newline='\n', encoding='utf-8') as csv_file:
-        #     writer = csv.writer(csv_file, delimiter=',', quotechar='"')
-        #     for group in qs:
-        #         writer.writerow([group.pk])
 
     @staticmethod
     def _log_groups(qs, fields, file_suffix):
         log_dir_path = FbGroup.LOG_DIR_PATH
-        file_name = f'{datetime.now().date()}__{file_suffix}.csv'
-        file_path = os.path.join(settings.MEDIA_ROOT, log_dir_path, file_name)
+        file_name = f'{file_suffix}.csv'
+        log_dir_path = os.path.join(settings.MEDIA_ROOT, log_dir_path, str(datetime.now().date()))
+        if not os.path.exists(log_dir_path):
+            os.mkdir(log_dir_path)
+        file_path = os.path.join(log_dir_path, file_name)
         with open(file_path, 'w', newline='\n', encoding='utf-8') as csv_file:
             writer = csv.writer(csv_file, delimiter=',', quotechar='"')
             for group in qs:
