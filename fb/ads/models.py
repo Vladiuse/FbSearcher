@@ -176,6 +176,8 @@ class FullDataManager(CollectedManager):
 
 
 class FbGroup(models.Model):
+    LOG_DIR_PATH = 'fb_groups_logs'
+
     objects = models.Manager()
     not_collected_objects = NotCollectedManager()
     error_req_objects = ErrorReqManager()
@@ -245,15 +247,43 @@ class FbGroup(models.Model):
         return f'<FbGroup> {self.url}'
 
     @staticmethod
-    def log_all_data():
-        log_dir_path = 'fb_groups_logs'
-        file_name = str(datetime.now().date()) + '.csv'
+    def log_data():
+        FbGroup.log_not_collected()
+        FbGroup.log_collected()
+
+    @staticmethod
+    def log_collected():
+        log_dir_path = FbGroup.LOG_DIR_PATH
+        file_name = str(datetime.now().date()) + '__collected.csv'
         file_path = os.path.join(settings.MEDIA_ROOT,log_dir_path, file_name)
-        qs = FbGroup.full_objects.all()
+        qs = FbGroup.collected_objects.all()
         with open(file_path, 'w', newline='\n', encoding='utf-8') as csv_file:
             writer = csv.writer(csv_file, delimiter=',', quotechar='"')
             for group in qs:
                 writer.writerow([group.pk,group.name, group.email])
+
+    @staticmethod
+    def log_not_collected():
+        log_dir_path = FbGroup.LOG_DIR_PATH
+        file_name = str(datetime.now().date()) + '__not_collected.csv'
+        file_path = os.path.join(settings.MEDIA_ROOT,log_dir_path, file_name)
+        qs = FbGroup.not_collected_objects.all()
+        with open(file_path, 'w', newline='\n', encoding='utf-8') as csv_file:
+            writer = csv.writer(csv_file, delimiter=',', quotechar='"')
+            for group in qs:
+                writer.writerow([group.pk])
+
+
+    # @staticmethod
+    # def log_groups(qs, fields, file_suffix):
+    #     log_dir_path = FbGroup.LOG_DIR_PATH
+    #     file_name = f'{datetime.now().date()}__{file_suffix}.csv'
+    #     file_path = os.path.join(settings.MEDIA_ROOT, log_dir_path, file_name)
+    #     with open(file_path, 'w', newline='\n', encoding='utf-8') as csv_file:
+    #         writer = csv.writer(csv_file, delimiter=',', quotechar='"')
+    #         for group in qs:
+    #             writer.writerow([getattr(group, filed) for filed in fields])
+
 
     @property
     def url(self):
@@ -419,8 +449,8 @@ class FbGroup(models.Model):
         #         file.write(line)
         #
         # return path
-        qs = FbGroup.full_objects.all()[15000:20000]
-        with open('/home/vlad/4.csv', 'w', newline='\n') as csv_file:
+        qs = FbGroup.full_objects.exclude(is_used=True)[:20000]
+        with open('/home/vlad/5.csv', 'w', newline='\n') as csv_file:
             writer = csv.writer(csv_file, delimiter=',', quotechar='"')
             # writer.writerow(['Some text and " dasd', 'email.com'])
             for group in qs:
