@@ -1,0 +1,113 @@
+{%extends 'ads/base.html'%}
+
+{%block head_text%}
+Обновить группы из Zip файла FbAdsLibrary
+{%endblock%}
+{%block content%}
+<style>
+    .wrapper{
+        
+    }
+    .wrapper.center{
+        display: flex;
+        justify-content: center;
+    }
+    form{
+        margin: 20px 0;
+    }
+    form button{
+        margin-top: 15px;
+        width: 100%;
+        text-align: center;
+    }
+    form{
+        max-width: 700px;
+    }
+    table{
+        max-width: 400px;
+    }
+</style>
+<div class="container">
+    <div class="wrapper center">
+        <form class="form" method="POST" enctype="multipart/form-data" >
+
+            {%csrf_token%}
+            {{ form.zip_file_type.errors }}
+            <label for="" class="form-label">Выберите тип файла</label>
+            {{ form.zip_file_type}}
+            <!-- {{form.as_div}} -->
+            <label for="formFileMultiple" class="form-label">Выберете Zip файлы для загрузки</label>
+            {{ form.zip_files.errors }}
+            <input class="form-control" name="zip_files" type="file" id="formFileMultiple" multiple required>
+            {{ form.add_low_spend.errors }}
+            <div>
+                <input class="form-check-input" name="add_low_spend" type="checkbox" id="add_low_spend">
+            <label class="form-check-label" for="add_low_spend">Добавлять траты &lt;100 </label>
+            </div>
+            <button class="btn btn-primary" type="submit">
+                <div class="spinner-grow spinner-grow-sm" role="status" style="display: none;">
+                    <span class="visually-hidden">Loading...</span>
+                  </div>
+                <span>Загузить</span>
+            </button>
+        </form>
+    </div>
+</div>
+<div class="container" id="load-result">
+    {%if readers_n_results%}
+    <div class="wrapper center">
+        <h4>Файлов обработано: {{readers_n_results|length}}, Создано новых групп: {{new_groups_created}}</h4>
+    </div>
+    {%for reader, update_result in readers_n_results%}
+    <div class="wrapper center">
+            <table class="table">
+                <thead class="table-primary">
+                <tr>
+                    <td colspan="2">Файл {{reader.file_name}}</td>
+                </tr>
+
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Групп в файле</td>
+                    <td>{{reader.total}}</td>
+                </tr>
+                <tr>
+                    <td>Уникальных</td>
+                    <td>{{reader|length}}</td>
+                </tr>
+                </tbody>
+            </table>
+            <table class="table">
+                <thead class="table-primary">
+                <tr>
+                    <td colspan="2">БД</td>
+                </tr>
+
+                </thead>
+                <tbody>
+                <tr>
+                    <td>Новых</td>
+                    <td> {{update_result.new}}</td>
+                </tr>
+                <tr>
+                    <td>Обновлено</td>
+                    <td>{{update_result.updated}}</td>
+                </tr>
+                </tbody>
+            </table>    
+    </div>
+    {%endfor%}
+    {%endif%}
+    
+</div>
+<script>
+    $('form').submit(function(){
+        console.log('123')
+        $('#load-result').empty()
+    $('form button').attr('disabled', true)
+    $('form button .spinner-grow').show()
+    $('form button span').text('Загружаеться')
+    })
+</script>
+{%endblock%}
