@@ -6,7 +6,7 @@ from .serializers import FbGroupCreateSerializer
 from rest_framework.response import Response
 from .forms import FbLibCsvForm, FbLibZipForm, TxtFileForm
 from .fb_adlib_csv_reader import FbLibStatCsvReader, FbLibStatZipReader, Fb7DaysZipReader, TxtFileReader
-from .models import FbGroup, KeyWord
+from .models import FbGroup
 from django.views import View
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -210,10 +210,10 @@ def mark_mail_services(request):
     FbGroup.mark_mail_services()
     return redirect('groups_stat')
 
-def key_words(request):
-    key_words = KeyWord.objects.all()
-    content = {'key_words': key_words}
-    return render(request, 'ads/key_words.html', content)
+# def key_words(request):
+#     key_words = KeyWord.objects.all()
+#     content = {'key_words': key_words}
+#     return render(request, 'ads/key_words.html', content)
 
 
 def load_actual_mails(request):

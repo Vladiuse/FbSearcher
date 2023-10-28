@@ -10,6 +10,8 @@ import pickle
 from selenium.common.exceptions import NoSuchElementException
 from datetime import datetime, timedelta
 from selenium.webdriver.common.by import By
+from datetime import datetime
+
 
 
 COOKIE_PATH = 'cookies_adheart.pkl'
@@ -92,6 +94,7 @@ document.head.appendChild(styleHr)
                     pass
 
     def run(self):
+        """Автопрокрутка вниз"""
         DRIVER.get(f'https://adheart.me/teasers/?last_active_at={self.days}&platforms[]=facebook&categories=Array&use_blacklist=false&page={self.start_page}')
         input('Start? ')
         self._hide_cards_media()
@@ -104,6 +107,41 @@ document.head.appendChild(styleHr)
             self.pages_count += 1
             print('Page', self.pages_count)
 
+    def _hide_all_media(self):
+        self._hide_hr()
+        self._hide_cards_media()
+
+    def _log_links_from_page(self):
+        links = self.get_links()
+        log_links(links)
+
+    def run_hand_mode(self):
+        commands = {
+            'hide_media': self._hide_all_media,
+            'log_cards': self._log_links_from_page,
+            'remove': self.remove_all_cards,
+            'exit': DRIVER.quit,
+        }
+        print('Main')
+        self._hide_all_media()
+        while True:
+            sleep(1)
+            count = self.cards_count()
+            if count > 4 * 40:
+                self._log_links_from_page()
+                current_time = datetime.now().strftime('%H:%M:%S')
+                print(f'Log {count}', current_time)
+        # while True:
+        #     command = input('Enter command: ')
+        #     try:
+        #         command_func = commands[command]
+        #         command_func()
+        #     except KeyError:
+        #         print('Incorrect command. Avaible:')
+        #         for key in commands:
+        #             print(key)
+
+
 DRIVER = webdriver.Chrome()
 DRIVER.get('https://adheart.me/ru/dashboard')
 if os.path.exists(COOKIE_PATH):
@@ -113,5 +151,5 @@ if os.path.exists(COOKIE_PATH):
 DRIVER.get('https://adheart.me/ru/dashboard')
 pickle.dump(DRIVER.get_cookies(), open(COOKIE_PATH, "wb"))
 
-adheart_parser = AdHeartDriverParser(start_page=450)
-adheart_parser.run()
+adheart_parser = AdHeartDriverParser(start_page=1)
+adheart_parser.run_hand_mode()

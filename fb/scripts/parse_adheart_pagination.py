@@ -40,15 +40,16 @@ if os.path.exists(COOKIE_PATH):
         driver.add_cookie(cookie)
 driver.get('https://adheart.me/ru/dashboard')
 input('LOGIN ? ')
-pages_count = 10 * 1000
 pickle.dump(driver.get_cookies(), open(COOKIE_PATH, "wb"))
-driver.set_page_load_timeout(7)
+
+driver.set_page_load_timeout(4)
 DAYS = 1
-GEO = 'AU'
-PAGES = pages_count
-for i in range(500,int(PAGES)):
+GEO = 'IT'
+start = 1
+PAGES = 90
+for i in range(start,PAGES - 5):
     print(i)
-    url = f'https://adheart.me/teasers/?platforms[]=facebook&&last_active_at={DAYS}&categories=Array&use_blacklist=false&page={i}'
+    url = f'https://adheart.me/teasers/?geos[]={GEO}&platforms[]=facebook&&last_active_at={DAYS}&categories=Array&use_blacklist=false&page={i}'
     try:
         driver.get(url)
     except TimeoutException:
@@ -57,9 +58,12 @@ for i in range(500,int(PAGES)):
     html = driver.page_source
     # log_html(i,html)
     links = get_links(html)
+    if not len(links):
+        sleep(10)
+        print('Sleep', '*'*40)
     current_time = datetime.now().strftime('%H:%M:%S')
     print('Links: ',len(links), current_time)
     with open(LOG_FILE, 'a') as file:
         for link in links:
             file.write(link + '\n')
-
+print('End')

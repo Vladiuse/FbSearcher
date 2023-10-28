@@ -38,77 +38,77 @@ def load_netscape_cookies(cookie_file):
     jar.load()
     return jar
 
-
-class KeyWord(models.Model):
-    FB_LIB_URL = 'https://www.facebook.com/ads/library/'
-    URL_PARAMS = {'active_status': 'all',
-                  # 'ad_type': 'political_and_issue_ads',
-                  'ad_type': 'all',
-                  'country': None,
-                  'q': None,
-                  'sort_data[direction]': 'desc',
-                  'sort_data[mode]': 'relevancy_monthly_grouped',
-                  'search_type': 'keyword_unordered',
-                  'media_type': 'all',
-                  'start_date[min]': None,
-                  'start_date[max]': '',
-                  'publisher_platforms[0]': 'facebook',
-                  }
-    number_in_dict = models.IntegerField(default=0)
-    word = models.CharField(
-        max_length=30,
-        primary_key=True,
-        validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')])
-    ru_word = models.CharField(
-        max_length=100,
-        blank=True,
-    )
-    ads_count_policy = models.PositiveIntegerField(blank=True, null=True)
-    ads_count_all = models.PositiveIntegerField(blank=True, null=True)
-    is_collected = models.BooleanField(default=False)
-    # TODO cards_count_average - add count of showing cards average by day
-
-    class Meta:
-        ordering = ['number_in_dict', ]
-
-    def __str__(self):
-        return self.word
-
-    def _get_params(self):
-        params = self.URL_PARAMS
-        params['q'] = str(self.word)
-        params['country'] = 'US'
-        days_ago = 1
-        params['start_date[min]'] = str(datetime.now().date() - timedelta(days=days_ago))
-        return params
-
-    def _prepare_url(self):
-        prepare = PreparedRequest()
-        prepare.prepare_url(self.FB_LIB_URL, self._get_params())
-        return prepare.url
-
-    @property
-    def url(self):
-        """Получить ссылку ads library с поиском по выбраному ключу"""
-        return self._prepare_url()
-
-    @staticmethod
-    def get_bunch(length=20, k=2):
-        if k < 1 or k >= 10:  # TODO set 10 as CONST
-            raise ValueError('K must be more than 1 and less than 10')
-        if length <= 0 or length >= 1000:
-            raise ValueError('"count" must be more than zero or less than 1000')
-        qs = KeyWord.objects.filter(number_in_dict__range=[(k-1)*1000 + 1, k*1000])\
-                 .filter(is_collected=False).only('word')[:length]
-        if not qs.exists():
-            raise KeyWord.DoesNotExist # TODO
-        to_update_words = [key.word for key in qs]
-        KeyWord.objects.filter(word__in=to_update_words).update(is_collected=True)
-        return qs
-
-    @staticmethod
-    def set_all_not_collected():
-        KeyWord.objects.update(is_collected=False)
+#
+# class KeyWord(models.Model):
+#     FB_LIB_URL = 'https://www.facebook.com/ads/library/'
+#     URL_PARAMS = {'active_status': 'all',
+#                   # 'ad_type': 'political_and_issue_ads',
+#                   'ad_type': 'all',
+#                   'country': None,
+#                   'q': None,
+#                   'sort_data[direction]': 'desc',
+#                   'sort_data[mode]': 'relevancy_monthly_grouped',
+#                   'search_type': 'keyword_unordered',
+#                   'media_type': 'all',
+#                   'start_date[min]': None,
+#                   'start_date[max]': '',
+#                   'publisher_platforms[0]': 'facebook',
+#                   }
+#     number_in_dict = models.IntegerField(default=0)
+#     word = models.CharField(
+#         max_length=30,
+#         primary_key=True,
+#         validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')])
+#     ru_word = models.CharField(
+#         max_length=100,
+#         blank=True,
+#     )
+#     ads_count_policy = models.PositiveIntegerField(blank=True, null=True)
+#     ads_count_all = models.PositiveIntegerField(blank=True, null=True)
+#     is_collected = models.BooleanField(default=False)
+#     # TODO cards_count_average - add count of showing cards average by day
+#
+#     class Meta:
+#         ordering = ['number_in_dict', ]
+#
+#     def __str__(self):
+#         return self.word
+#
+#     def _get_params(self):
+#         params = self.URL_PARAMS
+#         params['q'] = str(self.word)
+#         params['country'] = 'US'
+#         days_ago = 1
+#         params['start_date[min]'] = str(datetime.now().date() - timedelta(days=days_ago))
+#         return params
+#
+#     def _prepare_url(self):
+#         prepare = PreparedRequest()
+#         prepare.prepare_url(self.FB_LIB_URL, self._get_params())
+#         return prepare.url
+#
+#     @property
+#     def url(self):
+#         """Получить ссылку ads library с поиском по выбраному ключу"""
+#         return self._prepare_url()
+#
+#     @staticmethod
+#     def get_bunch(length=20, k=2):
+#         if k < 1 or k >= 10:  # TODO set 10 as CONST
+#             raise ValueError('K must be more than 1 and less than 10')
+#         if length <= 0 or length >= 1000:
+#             raise ValueError('"count" must be more than zero or less than 1000')
+#         qs = KeyWord.objects.filter(number_in_dict__range=[(k-1)*1000 + 1, k*1000])\
+#                  .filter(is_collected=False).only('word')[:length]
+#         if not qs.exists():
+#             raise KeyWord.DoesNotExist # TODO
+#         to_update_words = [key.word for key in qs]
+#         KeyWord.objects.filter(word__in=to_update_words).update(is_collected=True)
+#         return qs
+#
+#     @staticmethod
+#     def set_all_not_collected():
+#         KeyWord.objects.update(is_collected=False)
 
 
 
@@ -370,6 +370,8 @@ class FbGroup(models.Model):
             )
             spend_time = res.elapsed.total_seconds()
         except (ConnectTimeout, ReadTimeout, ConnectionError, RequestException) as error:
+            print(type(error))
+            print(error, '\n')
             end = time.time()
             spend_time = end - start
             req_result = {
@@ -443,14 +445,16 @@ class FbGroup(models.Model):
         #         file.write(line)
         #
         # return path
-        qs = FbGroup.full_objects.exclude(is_used=True)[:20000]
-        with open('/home/vlad/5.csv', 'w', newline='\n') as csv_file:
-            writer = csv.writer(csv_file, delimiter=',', quotechar='"')
-            # writer.writerow(['Some text and " dasd', 'email.com'])
-            for group in qs:
-                writer.writerow([group.name, group.email])
-                group.is_used = True
-                group.save()
+        for i in range(1,13):
+            qs = FbGroup.full_objects.exclude(is_used=True)[:5000]
+            print(i, qs.count())
+            with open(f'/home/vlad/{i}.csv', 'w', newline='\n') as csv_file:
+                writer = csv.writer(csv_file, delimiter=',', quotechar='"')
+                # writer.writerow(['Some text and " dasd', 'email.com'])
+                for group in qs:
+                    writer.writerow([group.name, group.email])
+                    group.is_used = True
+                    group.save()
         return '/home/vlad/all.csv'
 
 

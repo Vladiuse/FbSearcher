@@ -1,5 +1,3 @@
-from ads.models import FbGroup, IgnoreGroupWord, KeyWord
-from bs4 import BeautifulSoup
-
+from ads.models import FbGroup
 
 FbGroup.create_file()

@@ -18,7 +18,7 @@ from requests.exceptions import RequestException
 groups = FbGroup.objects.filter(status__in=[
     'not_loaded',
     #'error_req',
-])[:30000]
+])
 proxy_4 = ProxyMobile.objects.get(pk=4)
 proxy_3 = ProxyMobile.objects.get(pk=3)
 proxy_5 = ProxyMobile.objects.get(pk=5)
@@ -186,7 +186,7 @@ class ProxyBar:
     AUTO_CHANGE_IP = True
     MAX_TRY_IP_CHANGE_ERROR = 5  # not change
     MISTAKES_IN_ROW = 2
-    MISTAKES_IN_ROW_TIME = 15
+    MISTAKES_IN_ROW_TIME = 10
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -381,7 +381,7 @@ def start_parse():
 
 proxies_to_run = []
 # proxies = [proxy, proxy]
-proxies = ProxyMobile.objects.filter(pk__in=[5,])
+proxies = ProxyMobile.objects.filter(pk__in=[5,6,7])
 #proxies = [ProxyFake(), ProxyFake(), ProxyFake(), ]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 
