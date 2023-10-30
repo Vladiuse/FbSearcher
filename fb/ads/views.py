@@ -195,6 +195,7 @@ def groups_stat(request):
         'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service'),
         'mails_not_used': FbGroup.full_objects.filter(is_used=False).count(),
         'mails_used': FbGroup.full_objects.filter(is_used=True).count(),
+        'daily_stat': FbGroup.objects.values('created').annotate(count=Count('created')).order_by('created'),
     }
     return render(request, 'ads/groups_stat.html', content)
 
