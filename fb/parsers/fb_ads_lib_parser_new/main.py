@@ -45,6 +45,10 @@ class FbLibPage:
     MAX_WAIT_TIME_CARDS_LOAD = 30
     BLOCK_CLASS_NAME = 'xxx'
 
+    # TODO add cards count
+    # TODO add get payment data
+    # TODo добавить голосовое сколько прошло времени - час два (мб нужно будет менять айпи)
+
     def __init__(self, *, q, start_date, country):
         self.q = q
         self.start_date = start_date
@@ -125,7 +129,7 @@ document.head.appendChild(styleNoMedia)
 
     def run(self):
         self.hide_cards_media()
-        for _ in range(self.PAGES_FOR_KEY_WORD):
+        for _ in range(self.PAGES_FOR_KEY_WORD): # TODO rewrite on while
             self._wait_cards_load()
             links = self.get_links()
             log_links(links)

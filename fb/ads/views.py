@@ -195,7 +195,7 @@ def groups_stat(request):
         'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service'),
         'mails_not_used': FbGroup.full_objects.filter(is_used=False).count(),
         'mails_used': FbGroup.full_objects.filter(is_used=True).count(),
-        'daily_stat': FbGroup.objects.values('created').annotate(count=Count('created')).order_by('created'),
+        'daily_stat': FbGroup.daily_stat_new_groups(),
     }
     return render(request, 'ads/groups_stat.html', content)
 
@@ -210,11 +210,6 @@ def download_page(request):
 def mark_mail_services(request):
     FbGroup.mark_mail_services()
     return redirect('groups_stat')
-
-# def key_words(request):
-#     key_words = KeyWord.objects.all()
-#     content = {'key_words': key_words}
-#     return render(request, 'ads/key_words.html', content)
 
 
 def load_actual_mails(request):

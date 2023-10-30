@@ -18,6 +18,16 @@
             <canvas id="UsedMails"></canvas>
         </div>
     </div>
+</div>
+
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <canvas id="newGroupsDaily"></canvas>
+        </div>
+    </div>
+</div>
+<div class="container-fluid">
     <div class="row">
         <div class="col"></div>
         <div class="col">
@@ -28,13 +38,6 @@
             </div>
         </div>
         <div class="col"></div>
-    </div>
-    <div class="container">
-        <div class="row">
-            <div class="col">
-                <canvas id="newGroupsDaily"></canvas>
-            </div>
-        </div>
     </div>
 </div>
 <script>
@@ -205,13 +208,13 @@
     const newGroupsDaily = document.getElementById('newGroupsDaily');
     const labels = [
         // {%for item in daily_stat%}
-        '{{item.created}}',
+        '{{item.date}}',
         // {%endfor%}
     ];
     const data = {
       labels: labels,
       datasets: [{
-        label: 'My First Dataset',
+        label: 'Статистика добавления новых групп по дням',
         data: [
         // {%for item in daily_stat%}
         '{{item.count}}',

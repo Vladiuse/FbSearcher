@@ -1,6 +1,7 @@
 import os.path
 import csv
 from django.db import models
+from django.db.models import Count
 from urllib.parse import urlparse
 from django.core.validators import RegexValidator
 from django.core.exceptions import ValidationError
@@ -277,6 +278,26 @@ class FbGroup(models.Model):
             writer = csv.writer(csv_file, delimiter=',', quotechar='"')
             for group in qs:
                 writer.writerow([getattr(group, filed) for filed in fields])
+
+    @staticmethod
+    def daily_stat_new_groups():
+        daily_stat = list(FbGroup.objects.values('created').annotate(count=Count('created')).order_by('created'))
+        daily_stat_dict = {item['created']: item['count'] for item in daily_stat}
+        start_date = daily_stat[0]['created']
+        end_date = daily_stat[-1]['created'] + timedelta(days=1)
+        result = []
+        while start_date < end_date:
+            try:
+                count = daily_stat_dict[start_date]
+            except KeyError:
+                count = 0
+            result.append({
+                'date': start_date,
+                'count': count,
+            })
+            start_date += timedelta(days=1)
+        return result
+
 
 
     @property
