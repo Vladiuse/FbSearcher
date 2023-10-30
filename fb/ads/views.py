@@ -1,5 +1,3 @@
-import random as r
-from time import sleep, time
 from rest_framework.views import APIView
 from django.shortcuts import render, redirect
 from .serializers import FbGroupCreateSerializer
