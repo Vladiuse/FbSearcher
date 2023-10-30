@@ -17,7 +17,7 @@ from requests.exceptions import RequestException
 
 groups = FbGroup.objects.filter(status__in=[
     'not_loaded',
-    #'error_req',
+    'error_req',
 ])
 proxy_4 = ProxyMobile.objects.get(pk=4)
 proxy_3 = ProxyMobile.objects.get(pk=3)
