@@ -17,12 +17,12 @@ UNKNOWN_ERROR = """
 #                 #
 ###################
 """
-NOT_CRITICAL_ERROR = """
-########################
-#                      #
-#  NOT CRITICAL ERROR  #
-#                      #
-########################
+CARD_WAIT_TIMEOUT = """
+#######################
+#                     #
+#  CARD WAIT TIMEOUT  #
+#                     #
+#######################
 """
 
 
@@ -32,7 +32,7 @@ NEXT_KEY = """
 ##############
 """
 
-__all__ = ['FB_LIB_BLOCK', 'UNKNOWN_ERROR', 'NOT_CRITICAL_ERROR', 'NEXT_KEY']
+__all__ = ['FB_LIB_BLOCK', 'UNKNOWN_ERROR', 'CARD_WAIT_TIMEOUT', 'NEXT_KEY']
 if __name__ == '__main__':
     cprint(FB_LIB_BLOCK, color='red')
     cprint(UNKNOWN_ERROR, color='yellow')

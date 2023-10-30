@@ -171,6 +171,7 @@ document.head.appendChild(styleNoMedia)
 curr_file_path = Path(__file__).parent.absolute()
 error_media_path = os.path.join(curr_file_path, 'media/error.mp3')
 fb_block_media_path = os.path.join(curr_file_path, 'media/fb_block_lib.mp3')
+card_wait_timeout = os.path.join(curr_file_path, 'media/card_wait_timeout.mp3')
 
 options = webdriver.ChromeOptions()
 # options.add_argument('--headless')
@@ -191,6 +192,7 @@ def parse_by_keys(keys, country):
             cprint(NEXT_KEY, color='green')
             fb_lib_page = FbLibPage(q=key, country=country, start_date=start_date)
             DRIVER.get(fb_lib_page.url)  # todo add timeout and check status code
+            global_errors_count = 0
             fb_lib_page.run()
         except FbBlockLibError as error:
             cprint(FB_LIB_BLOCK, color='red')
@@ -200,7 +202,8 @@ def parse_by_keys(keys, country):
             exit()
         except (MaxWaitCardLoadError, NoLoadCardBtnError) as error:
             print(key, '\n', error)
-            cprint(NOT_CRITICAL_ERROR, color='yellow')
+            cprint(CARD_WAIT_TIMEOUT, color='yellow')
+            playsound(card_wait_timeout)
         except Exception as error:
             print(key, '\n', error)
             cprint(UNKNOWN_ERROR, color='red')
