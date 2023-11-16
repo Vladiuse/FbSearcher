@@ -19,7 +19,7 @@ groups = FbGroup.objects.filter(status__in=[
     'not_loaded',
     'error_req',
 ]).order_by('?')
-proxies = ProxyMobile.objects.filter(pk__in=[12,13,14])
+proxies = ProxyMobile.objects.filter(pk__in=[14])
 
 ERROR_REQ_COLOR = '#dc0000'
 NO_DATA_COLOR = '#F1C830'
@@ -174,7 +174,7 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 6
+    STREAM_COUNT = 8
 
     # auto ip change
     AUTO_CHANGE_IP = True

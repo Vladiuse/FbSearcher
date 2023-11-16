@@ -15,7 +15,7 @@ from requests.exceptions import ConnectTimeout, ProxyError, ReadTimeout, Connect
 from django.db.utils import OperationalError
 from datetime import datetime, timedelta
 from django.conf import settings
-
+models.EmailField
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',

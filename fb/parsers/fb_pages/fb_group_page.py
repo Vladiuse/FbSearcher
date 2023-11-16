@@ -141,7 +141,7 @@ class FbGroupPageNoAuth:
         """Найти мыло в коде (елси незалогинен)
         Пример: "text":"someemail@gmail.com"
         """
-        res = re.search(r'"text":"[\w\d_-]{2,50}(\\u0040|@)[\w\d_-]{2,50}\.[\w]{2,6}"',
+        res = re.search(r'"text":"[.\w\d_-]{2,50}(\\u0040|@)[\w\d_-]{2,50}(\.[\w]{2,6}\.[\w]{2,6}|\.[\w]{2,6})"',
                          self.html)
         if res:
             email_text_in_code = res.group(0)

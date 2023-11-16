@@ -86,6 +86,137 @@ class FbGroupNoAuthTestEmail(TestCase):
         result = page.get_email()
         self.assertEqual(result, 'someemail@gmail.com')
 
+    def test_get_email_1(self):
+        code = """Найти мыло в коде (елси незалогинен)
+              Пример: "text":"event@kirigaya.co.jp" dasda
+              """
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, 'event@kirigaya.co.jp')
+
+    def test_get_mail_two_domains(self):
+        mail = 'event@kirigaya.co.jp'
+        code = f'Пример: "text":"{mail}" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, mail)
+
+
+    def test_get_mail_underline_before(self):
+        mail = 'even_t@kirigaya.co.jp'
+        code = f'Пример: "text":"{mail}" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, mail)
+    #
+    def test_get_mail_underline_after(self):
+        mail = 'event@kir_igaya.co.jp'
+        code = f'Пример: "text":"{mail}" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, mail)
+
+    def test_get_mail_dash_before(self):
+        mail = 'even-t@kirigaya.co.jp'
+        code = f'Пример: "text":"{mail}" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, mail)
+
+    def test_get_mail_dash_after(self):
+        mail = 'event@kir-igaya.co.jp'
+        code = f'Пример: "text":"{mail}" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, mail)
+
+    def test_get_mail_with_point_after(self):
+        mail = 'event@kirigaya.co.jp'
+        code = f'Пример: "text":"{mail}" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, mail)
+
+    def test_get_mail_with_point_before(self):
+        mail = 'event.some@kirigaya.jp'
+        code = f'Пример: "text":"event.some@kirigaya.jp" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertEqual(result, mail)
+
+    def test_4_domain(self):
+        mail = 'event.some@kirigaya.jp'
+        code = f'Пример: "text":"event.some@kirigaya.jp.com.ua" dasda'
+        page = FbGroupPageNoAuth(code)
+        result = page.get_email()
+        self.assertIsNone(result)
+
+    def test_many_examples(self):
+        emails = [
+            'marikmaison10@mail.ru',
+            'host-gator@support.com',
+            'username@naver.com',
+            'user123@daum.net',
+            'koruser@email.co.kr',
+            'hallyu.fan@gmail.com',
+            'kpoplover@korea.net',
+            'user.name@emailprovider.com',
+            'first_name.last-name@email-service.net',
+            'creative_email@example.org',
+            'user1234@domain-with-dashes.org',
+            'coding-ninja@email-coders.net',
+            'music_lover@melody-mail.com',
+            'traveler.plus@destinationmail.org',
+            'social_media_guru@emailplus.com',
+            'book_worm@library-mail.org',
+            #'gamer+geek@gamingmail.com',
+            'user123@example.com',
+            'john.doe@email-provider.net',
+            'info@my-website.org',
+            'contact_me@email_service.com',
+            'webmaster@company_website.com',
+            'support_team@email-co.org',
+            'user_name123@domain.com',
+            'newsletter.subscriber@example.org',
+            'customer-service@emailbiz.net',
+            'sales@ecommerce-site.com',
+            'dsaSfasdfdsa@mail.ru.com',
+            'test.user1@example.com',
+            'john_doe123@gmail.com',
+            'support_team_2@company.org',
+            'webmaster@website-testing.net',
+            'qa.engineer@testingmail.com',
+            'newsletter2@subscription.biz',
+            'customer_service2@ecommerce-site.com',
+            'developer3@example.net',
+            'admin_panel@test.org',
+            'user_alpha@domain.net',
+            'testuser.beta@gmail.com',
+            'alpha.beta@testingmail.net',
+            'service.test@company.org',
+            'user_gamma@example.net',
+            'support.gamma@website.org',
+            'qa.engineer3@testmail.com',
+            'user.delta@testing.biz',
+            'customer_delta@ecommerce-site.net',
+            'dev.gamma@example.org',
+            'admin2@admin-panel.com',
+            'user_epsilon@example.net',
+            'epsilon.test@gmail.com',
+            'support.epsilon@website.biz',
+            'qa.engineer4@testmail.org',
+            'user.zeta@company.net',
+            'zeta_tester@testingmail.com',
+            'newsletter.zeta@subscription.org',
+            'customer_zeta@ecommerce-site.biz',
+            'admin.zeta@admin-panel.net',
+            'user_omega@example.net',
+        ]
+        for mail in emails:
+            code = f'Пример: "text":"{mail}" dasda'
+            page = FbGroupPageNoAuth(code)
+            result = page.get_email()
+            self.assertEqual(result, mail, msg=mail)
 
 
 class FbGroupNoAuthTestName(TestCase):
