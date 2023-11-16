@@ -126,16 +126,9 @@ class KeyWord(models.Model):
                   }
     number_in_dict = models.IntegerField(default=0)
     word = models.CharField(
-        max_length=30,
-        # primary_key=True,
-        validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')])
-    ru_word = models.CharField(
-        max_length=100,
-        blank=True,
+        max_length=255,
+        #validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')]
     )
-    ads_count_policy = models.PositiveIntegerField(blank=True, null=True)
-    ads_count_all = models.PositiveIntegerField(blank=True, null=True)
-    is_collected = models.BooleanField(default=False)
     language = models.ForeignKey(
         to=Language,
         on_delete=models.PROTECT,
@@ -144,7 +137,7 @@ class KeyWord(models.Model):
 
     class Meta:
         ordering = ['number_in_dict', ]
-        unique_together = ['word', 'language']
+        # unique_together = ['word', 'language']
 
     def __str__(self):
         return self.word

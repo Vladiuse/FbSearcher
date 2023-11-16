@@ -4,7 +4,7 @@ from .models import Country, Language, Currency, KeyWord
 
 
 class KeyWordAdmin(admin.ModelAdmin):
-    list_display = ['word', 'ads_count_policy', 'ads_count_all']
+    list_display = ['number_in_dict','word','language_id']
 
 
 class CountryCurrencyInline(admin.TabularInline):

@@ -18,12 +18,8 @@ from requests.exceptions import RequestException
 groups = FbGroup.objects.filter(status__in=[
     'not_loaded',
     'error_req',
-])
-proxy_4 = ProxyMobile.objects.get(pk=4)
-proxy_3 = ProxyMobile.objects.get(pk=3)
-proxy_5 = ProxyMobile.objects.get(pk=5)
-proxy_6 = ProxyMobile.objects.get(pk=6)
-proxy_7 = ProxyMobile.objects.get(pk=7)
+]).order_by('?')
+proxies = ProxyMobile.objects.filter(pk__in=[12,13,14])
 
 ERROR_REQ_COLOR = '#dc0000'
 NO_DATA_COLOR = '#F1C830'
@@ -39,7 +35,7 @@ class ProxyStream:
     Класс для потока прокси
     """
     REQ_BAR_MAX_LEN = 35
-    REQ_TIMEOUT = 5
+    REQ_TIMEOUT = 6
 
     def __init__(self, stream_num, proxy_bar, proxy, groups):
         self.stream_num = stream_num
@@ -178,15 +174,15 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 5
+    STREAM_COUNT = 6
 
     # auto ip change
-    REQ_COUNT_CHANGE_IP = 3 * 1000
-    WAIT_AFTER_ERROR_IP_CHANGE = 20
     AUTO_CHANGE_IP = True
+    REQ_COUNT_CHANGE_IP = 0.75 * 1000
+    WAIT_AFTER_ERROR_IP_CHANGE = 20
     MAX_TRY_IP_CHANGE_ERROR = 5  # not change
     MISTAKES_IN_ROW = 2
-    MISTAKES_IN_ROW_TIME = 10
+    MISTAKES_IN_ROW_TIME = 15
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -380,8 +376,6 @@ def start_parse():
 
 
 proxies_to_run = []
-# proxies = [proxy, proxy]
-proxies = ProxyMobile.objects.filter(pk__in=[5,6,7])
 #proxies = [ProxyFake(), ProxyFake(), ProxyFake(), ]  # FAKE
 group_parts = devine_array(list(groups), len(proxies))
 

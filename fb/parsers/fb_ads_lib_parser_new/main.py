@@ -180,7 +180,7 @@ card_wait_timeout = os.path.join(curr_file_path, 'media/card_wait_timeout.mp3')
 options = webdriver.ChromeOptions()
 # options.add_argument('--headless')
 DRIVER = webdriver.Chrome(
-    options=options,
+    # options=options,
     # seleniumwire_options=options
 )
 DRIVER.maximize_window()
@@ -197,6 +197,7 @@ def parse_by_keys(keys, country):
             fb_lib_page = FbLibPage(q=key, country=country, start_date=start_date)
             DRIVER.get(fb_lib_page.url)  # todo add timeout and check status code
             global_errors_count = 0
+
             fb_lib_page.run()
         except FbBlockLibError as error:
             cprint(FB_LIB_BLOCK, color='red')

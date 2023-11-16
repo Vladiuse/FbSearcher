@@ -378,10 +378,10 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        for i in range(1,13):
-            qs = FbGroup.full_objects.exclude(is_used=True)[:5000]
+        for i in range(30):
+            qs = FbGroup.full_objects.exclude(is_used=True)[:1000]
             print(i, qs.count())
-            with open(f'/home/vlad/{i}.csv', 'w', newline='\n') as csv_file:
+            with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:
                 writer = csv.writer(csv_file, delimiter=',', quotechar='"')
                 # writer.writerow(['Some text and " dasd', 'email.com'])
                 for group in qs:
