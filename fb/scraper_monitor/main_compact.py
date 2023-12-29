@@ -18,8 +18,17 @@ from requests.exceptions import RequestException
 groups = FbGroup.objects.filter(status__in=[
     'not_loaded',
     'error_req',
-]).order_by('?')
-proxies = ProxyMobile.objects.filter(pk__in=[14])
+]).order_by('?')[:15 * 1000]
+# groups = FbGroup.objects.filter(created__range=('2023-10-27', '2023-10-27')
+#                                 ).filter(email='').order_by('?')
+proxies = ProxyMobile.objects.filter(pk__in=[
+    21,
+    # 19,
+    # 15,
+     #16,
+     #17,
+    # 18,
+])
 
 ERROR_REQ_COLOR = '#dc0000'
 NO_DATA_COLOR = '#F1C830'
@@ -174,7 +183,7 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 8
+    STREAM_COUNT = 7
 
     # auto ip change
     AUTO_CHANGE_IP = True

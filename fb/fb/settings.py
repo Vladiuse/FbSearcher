@@ -106,24 +106,23 @@ WSGI_APPLICATION = 'fb.wsgi.application'
 #     }
 # }
 DATABASES = {
-     # 'default': {
-     #     'ENGINE': 'django.db.backends.mysql',
-     #     'NAME': get_secret('db_name'),
-     #     'USER': get_secret('db_name'),
-     #     'PASSWORD': get_secret('db_password'),
-     #     'HOST': 'localhost',
-     #     'PORT': '3306',
-     #
-     # },
-    'default': { # ASIA
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': get_secret('db_name_asia'),
-        'USER': get_secret('db_name_asia'),
-        'PASSWORD': get_secret('db_password_asia'),
-        'HOST': 'localhost',
-        'PORT': '3306',
+     'default': {
+         'ENGINE': 'django.db.backends.mysql',
+         'NAME': get_secret('db_name'),
+         'USER': get_secret('db_name'),
+         'PASSWORD': get_secret('db_password'),
+         'HOST': 'localhost',
+         'PORT': '3306',
 
     },
+    #  'default': { # ASIA
+    #     'ENGINE': 'django.db.backends.mysql',
+    #     'NAME': get_secret('db_name_asia'),
+    #     'USER': get_secret('db_name_asia'),
+    #      'PASSWORD': get_secret('db_password_asia'),
+    #      'HOST': 'localhost',
+    #     'PORT': '3306',
+    #  },
  }
 
 # Password validation

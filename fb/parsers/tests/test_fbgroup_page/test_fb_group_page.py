@@ -145,11 +145,11 @@ class FbGroupNoAuthTestEmail(TestCase):
         self.assertEqual(result, mail)
 
     def test_4_domain(self):
-        mail = 'event.some@kirigaya.jp'
-        code = f'Пример: "text":"event.some@kirigaya.jp.com.ua" dasda'
+        mail = 'z-steam@ml.zkai.co.jp'
+        code = f'Пример: "text":"{mail}" dasda'
         page = FbGroupPageNoAuth(code)
         result = page.get_email()
-        self.assertIsNone(result)
+        self.assertEqual(result, mail)
 
     def test_many_examples(self):
         emails = [
@@ -169,7 +169,7 @@ class FbGroupNoAuthTestEmail(TestCase):
             'traveler.plus@destinationmail.org',
             'social_media_guru@emailplus.com',
             'book_worm@library-mail.org',
-            #'gamer+geek@gamingmail.com',
+            #'gamer+geek@gamingmail.com',  #TODO add + in reg search
             'user123@example.com',
             'john.doe@email-provider.net',
             'info@my-website.org',
@@ -211,6 +211,7 @@ class FbGroupNoAuthTestEmail(TestCase):
             'customer_zeta@ecommerce-site.biz',
             'admin.zeta@admin-panel.net',
             'user_omega@example.net',
+            'z-steam@ml.zkai.co.jp'
         ]
         for mail in emails:
             code = f'Пример: "text":"{mail}" dasda'

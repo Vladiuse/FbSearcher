@@ -17,3 +17,7 @@ class FbTemplate(models.Model):
     def html(self):
         with open(self.file.path, encoding='utf-8') as file:
             return file.read()
+
+
+class EmailExample(models.Model):
+    img_url = models.URLField()

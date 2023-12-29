@@ -231,8 +231,8 @@ class FbGroup(models.Model):
         """Отметить какой email сервис"""
         mail_services = MailService.objects.all()
         # TODO make in transaction
-        FbGroup.collected_objects.filter(email='').filter(is_main_service_mark=False).update(is_main_service_mark=True)
-        groups = FbGroup.full_objects.only('email', 'email_service').filter(is_main_service_mark=False)
+        #FbGroup.collected_objects.filter(email='').filter(is_main_service_mark=False).update(is_main_service_mark=True)
+        groups = FbGroup.full_objects.only('email', 'email_service').filter(is_main_service_mark=False).filter(is_used=False)
         for group in groups:
             for service in mail_services:
                 if re.match('.+@' + service.pattern, group.email.lower()):
@@ -378,12 +378,12 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        for i in range(30):
+        for i in range(18, 50):
             qs = FbGroup.full_objects.exclude(is_used=True)[:1000]
+            #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:10000]  # korporat
             print(i, qs.count())
             with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:
                 writer = csv.writer(csv_file, delimiter=',', quotechar='"')
-                # writer.writerow(['Some text and " dasd', 'email.com'])
                 for group in qs:
                     writer.writerow([group.name, group.email])
                     group.is_used = True

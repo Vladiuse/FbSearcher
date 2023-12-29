@@ -102,7 +102,7 @@ class ProxyMobile(ProxyAbs):
     def _click_change_ip_url(self):
         """Перейти по ссылки для сменны ip прокси"""
         try:
-            res = req.get(self.change_ip_url, timeout=12)
+            res = req.get(self.change_ip_url, timeout=30)
             if res.status_code != 200:
                 raise CodeNot200
         except (RequestException, CodeNot200) as error:

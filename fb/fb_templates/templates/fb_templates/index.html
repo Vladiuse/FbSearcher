@@ -4,8 +4,12 @@
 Шаблоны
 {%endblock%}
 {%block content%}
-<div class="container">
-    <div class="row row-cols-1 row-cols-md-4 g-4">
+<div style="display: flex;justify-content: center;">
+  <a href="{%url 'fb_templates:email_examples'%}" class="btn btn-light">Скрины примеров</a>
+</div>
+<br>
+<div class="container-fluid">
+    <div class="row row-cols-1 row-cols-md-5 g-5">
         {%for fb_template in fb_templates%}
         <div class="col">
           <div class="card text-center">
@@ -15,9 +19,8 @@
             <img src="https://t4.ftcdn.net/jpg/04/00/24/31/360_F_400243185_BOxON3h9avMUX10RsDkt3pJ8iQx72kS3.jpg" class="card-img-top" alt="">
             {%endif%}
             <div class="card-body">
-              <!-- <h5 class="card-title">Card title</h5> -->
-              <p class="card-text">{{fb_template.desc}}</p>
-              <a href="{%url 'fb_templates:view_template' fb_template.pk %}" class="btn btn-secondary" target="_blank">See</a>
+              <p class="card-text">{{fb_template.file.name}}</p>
+              <a href="{%url 'fb_templates:view_template' fb_template.pk %}" class="btn btn-secondary" target="_blank">See {{fb_template.pk}}</a>
             </div>
           </div>
         </div>

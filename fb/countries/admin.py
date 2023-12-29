@@ -5,6 +5,7 @@ from .models import Country, Language, Currency, KeyWord
 
 class KeyWordAdmin(admin.ModelAdmin):
     list_display = ['number_in_dict','word','language_id']
+    list_filter = ['language_id']
 
 
 class CountryCurrencyInline(admin.TabularInline):
