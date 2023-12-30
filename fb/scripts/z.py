@@ -4,7 +4,7 @@ from django.utils import timezone
 import csv
 
 
-FbGroup.log_data()
+FbGroup.create_file()
 
 # # PROPARSE AGAIN
 #qs = FbGroup.objects.filter(created='2023-11-10').filter(email="")

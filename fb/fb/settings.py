@@ -59,7 +59,6 @@ INSTALLED_APPS = [
     'django_extensions',
 
     'ads.apps.AdsConfig',
-    'accounts.apps.AccountsConfig',
     'proxies.apps.ProxiesConfig',
     'fb_templates.apps.FbTemplatesConfig',
     'countries.apps.CountriesConfig',

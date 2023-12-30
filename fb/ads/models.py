@@ -163,6 +163,7 @@ class FbGroup(models.Model):
     last_ad_date = models.DateField(default=timezone.now)
     req_html_data = models.FileField(upload_to='req_html_data', blank=True)
     is_used = models.BooleanField(default=False)
+    is_in_pars_task = models.BooleanField(default=False)
 
     def __str__(self):
         return f'<FbGroup> {self.url}'
@@ -378,8 +379,8 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        for i in range(18, 50):
-            qs = FbGroup.full_objects.exclude(is_used=True)[:1000]
+        for i in range(1,2):
+            qs = FbGroup.full_objects.exclude(is_used=True)[:4900 - 450]
             #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:10000]  # korporat
             print(i, qs.count())
             with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:
