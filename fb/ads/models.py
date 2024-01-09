@@ -379,8 +379,8 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        for i in range(1,2):
-            qs = FbGroup.full_objects.exclude(is_used=True)[:4900 - 450]
+        for i in range(50):
+            qs = FbGroup.full_objects.exclude(is_used=True)[:1000]
             #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:10000]  # korporat
             print(i, qs.count())
             with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:

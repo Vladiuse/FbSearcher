@@ -15,19 +15,22 @@ from .fake_objects import ResponseFake, RequestFake, ProxyFake
 from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
 from requests.exceptions import RequestException
 
-groups = FbGroup.objects.filter(status__in=[
+groups = FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
     'not_loaded',
     'error_req',
-]).order_by('?')[:15 * 1000]
-# groups = FbGroup.objects.filter(created__range=('2023-10-27', '2023-10-27')
-#                                 ).filter(email='').order_by('?')
-proxies = ProxyMobile.objects.filter(pk__in=[
+]).exclude(is_in_pars_task=True).order_by('?')[:5000]
+# groups = FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
+#     'not_loaded',
+#     'error_req',
+# ]).order_by('?')
+
+proxies = ProxyMobile.objects.only('id','ip','port','login','password','change_ip_url').filter(pk__in=[
     21,
-    # 19,
-    # 15,
-     #16,
-     #17,
-    # 18,
+    #19,
+    #15,
+    #16,
+    #17,
+    #18,
 ])
 
 ERROR_REQ_COLOR = '#dc0000'
@@ -44,7 +47,7 @@ class ProxyStream:
     Класс для потока прокси
     """
     REQ_BAR_MAX_LEN = 35
-    REQ_TIMEOUT = 6
+    REQ_TIMEOUT = 8
 
     def __init__(self, stream_num, proxy_bar, proxy, groups):
         self.stream_num = stream_num
@@ -187,7 +190,7 @@ class ProxyBar:
 
     # auto ip change
     AUTO_CHANGE_IP = True
-    REQ_COUNT_CHANGE_IP = 0.75 * 1000
+    REQ_COUNT_CHANGE_IP = 0.55 * 1000
     WAIT_AFTER_ERROR_IP_CHANGE = 20
     MAX_TRY_IP_CHANGE_ERROR = 5  # not change
     MISTAKES_IN_ROW = 2

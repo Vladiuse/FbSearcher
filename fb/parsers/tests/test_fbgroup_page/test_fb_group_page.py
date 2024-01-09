@@ -211,7 +211,10 @@ class FbGroupNoAuthTestEmail(TestCase):
             'customer_zeta@ecommerce-site.biz',
             'admin.zeta@admin-panel.net',
             'user_omega@example.net',
-            'z-steam@ml.zkai.co.jp'
+            'z-steam@ml.zkai.co.jp',
+
+            #
+            'kyle@wilsonstreeservices.com.au',
         ]
         for mail in emails:
             code = f'Пример: "text":"{mail}" dasda'

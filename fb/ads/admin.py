@@ -32,7 +32,7 @@ class FbGroupDataFilter(admin.SimpleListFilter):
 class FbGroupAdmin(admin.ModelAdmin):
     list_display = ['pk', 'status','name' ,'title','email','email_service', 'followers','url_link', 'req_log_file']
     list_display_links = ['pk']
-    list_filter = ['status', FbGroupDataFilter]
+    list_filter = ['status', FbGroupDataFilter, 'created']
     search_fields = ['pk', 'title', 'name', 'email']
     actions = ['clean_all_data', 'mark_names']
 
