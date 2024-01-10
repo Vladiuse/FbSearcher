@@ -383,12 +383,15 @@ class FbGroup(models.Model):
             qs = FbGroup.full_objects.exclude(is_used=True)[:1000]
             #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:10000]  # korporat
             print(i, qs.count())
+            groups_to_update = []
             with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:
                 writer = csv.writer(csv_file, delimiter=',', quotechar='"')
                 for group in qs:
                     writer.writerow([group.name, group.email])
-                    group.is_used = True
-                    group.save()
+                    groups_to_update.append(group.pk)
+            qs = FbGroup.objects.filter(pk__in=groups_to_update)
+            print(qs.count())
+            qs.update(is_used=True)
         return '/home/vlad/all.csv'
 
 
