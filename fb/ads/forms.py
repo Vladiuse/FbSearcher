@@ -15,8 +15,8 @@ class FbLibZipForm(forms.Form):
     FB_ADS_LIB_TYPE = 'fb_ads_lib_zip'
     FB_7_DAYS_TYPE = '7_days'
     CSV_FILES_TYPES = (
-        (FB_ADS_LIB_TYPE, 'FaceBook Ads Library'),
-        (FB_7_DAYS_TYPE, '7 days stat'),
+        (FB_7_DAYS_TYPE, 'Country stat'),
+        (FB_ADS_LIB_TYPE, 'FaceBook Ads Library keys'),
     )
     zip_file_type = forms.ChoiceField(
         widget=forms.Select(
@@ -29,7 +29,7 @@ class FbLibZipForm(forms.Form):
         widget=forms.FileInput(
             attrs={'class': "form-control"})
     )
-    add_low_spend = forms.BooleanField(required=False)
+    add_low_spend = forms.BooleanField(required=False,)
 
 
 class TxtFileForm(forms.Form):
