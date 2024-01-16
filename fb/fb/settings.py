@@ -104,6 +104,7 @@ WSGI_APPLICATION = 'fb.wsgi.application'
 #         'NAME': BASE_DIR / 'email_parse_groups.db',
 #     }
 # }
+
 DATABASES = {
      'default': {
          'ENGINE': 'django.db.backends.mysql',
@@ -116,7 +117,18 @@ DATABASES = {
     },
  }
 
-# Password validation
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'fb_searcher_social',
+#         'USER': 'fb_searcher_social',
+#         'PASSWORD': get_secret('db_password'),
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#
+#     },
+# }
+    # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
