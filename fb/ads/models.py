@@ -163,6 +163,7 @@ class FbGroup(models.Model):
     last_ad_date = models.DateField(default=timezone.now)
     req_html_data = models.FileField(upload_to='req_html_data', blank=True)
     is_used = models.BooleanField(default=False)
+    used_count = models.PositiveIntegerField(default=0)
     is_in_pars_task = models.BooleanField(default=False)
 
     def __str__(self):
@@ -204,20 +205,23 @@ class FbGroup(models.Model):
     def daily_stat_new_groups():
         daily_stat = list(FbGroup.objects.values('created').annotate(count=Count('created')).order_by('created'))
         daily_stat_dict = {item['created']: item['count'] for item in daily_stat}
-        start_date = daily_stat[0]['created']
-        end_date = daily_stat[-1]['created'] + timedelta(days=1)
-        result = []
-        while start_date < end_date:
-            try:
-                count = daily_stat_dict[start_date]
-            except KeyError:
-                count = 0
-            result.append({
-                'date': start_date,
-                'count': count,
-            })
-            start_date += timedelta(days=1)
-        return result
+        if daily_stat_dict:
+            start_date = daily_stat[0]['created']
+            end_date = daily_stat[-1]['created'] + timedelta(days=1)
+            result = []
+            while start_date < end_date:
+                try:
+                    count = daily_stat_dict[start_date]
+                except KeyError:
+                    count = 0
+                result.append({
+                    'date': start_date,
+                    'count': count,
+                })
+                start_date += timedelta(days=1)
+            return result
+        else:
+            return {}
 
 
 
@@ -379,9 +383,9 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        for i in range(50):
+        for i in range(26):
             qs = FbGroup.full_objects.exclude(is_used=True)[:1000]
-            #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:10000]  # korporat
+            #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:18000]  # korporat
             print(i, qs.count())
             groups_to_update = []
             with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:
@@ -390,10 +394,25 @@ class FbGroup(models.Model):
                     writer.writerow([group.name, group.email])
                     groups_to_update.append(group.pk)
             qs = FbGroup.objects.filter(pk__in=groups_to_update)
-            print(qs.count())
             qs.update(is_used=True)
         return '/home/vlad/all.csv'
 
+
+class SocialAds(models.Model):
+    group_id = models.CharField(max_length=50)
+
+    @staticmethod
+    def update_db_by_group_ids(ids:iter):
+        ads_to_create = []
+        for group_id in ids:
+            s = SocialAds(group_id=group_id)
+            ads_to_create.append(s)
+        SocialAds.objects.bulk_create(ads_to_create)
+        result = {
+            'new': len(ids),
+            'updated': len(ids),
+        }
+        return result
 
 
 class ThreadCounter(models.Model):
