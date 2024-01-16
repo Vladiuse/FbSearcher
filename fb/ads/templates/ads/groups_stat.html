@@ -123,15 +123,29 @@
     const UsedStat = document.getElementById('UsedMails');
     const UsedStatData = {
         labels: [
-            'Used: {{mails_used}}',
-            'Not used: {{mails_not_used}}',
+            //!!! {%for item in used_stat%}
+            '{{item.used_count}}: {{item.count}}',
+            // {%endfor%}
         ],
         datasets: [{
             label: 'My First Dataset',
-            data: ['{{mails_used}}', '{{mails_not_used}}',],
+            data: [
+                //!!! {%for item in used_stat%}
+                '{{item.count}}', 
+                // {%endfor%}
+            ],
             backgroundColor: [
+            '#c2c2c2',
+                '#59B763',
+                '#ffd963',
+                '#3082F1',
                 '#ff6363',
-                '#7AB759',
+                '#8963ff',
+                '#ff6363',
+                '#30cf7d',
+                '#30cfc5',
+                '#3046cf',
+                '#eb9e0f',
             ],
             hoverOffset: 4
         }]
