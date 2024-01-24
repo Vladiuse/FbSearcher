@@ -10,7 +10,12 @@ def get_pk():
     counter += 1
     return counter
 
+class WorldPart(models.Model):
+    name = models.CharField(max_length=50)
+    ru_name = models.CharField(max_length=50)
 
+    def __str__(self):
+        return self.ru_name
 class Country(models.Model):
     iso = models.CharField(
         max_length=2,
@@ -56,6 +61,12 @@ class Country(models.Model):
     )
     population = models.IntegerField(default=0)
     use_in_parse = models.BooleanField(default=False)
+    world_part = models.ForeignKey(
+        WorldPart,
+        on_delete=models.SET_NULL,
+        blank=True,
+        null=True
+    )
 
     class Meta:
         verbose_name = 'Страна'

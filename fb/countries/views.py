@@ -7,7 +7,7 @@ from django.views.generic import DetailView, UpdateView
 from django.urls import reverse
 
 def index(request):
-    countries = Country.objects.filter(use_in_parse=True)
+    countries = Country.objects.filter(use_in_parse=True).select_related('world_part')
     content = {
         'countries': countries,
     }

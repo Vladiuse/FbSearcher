@@ -12,10 +12,12 @@
       <th scope="col"></th>
       <th scope="col">ISO</th>
       <th scope="col">Страна</th>
-
+      <th scope="col">Регион</th>
       <th scope="col">Население</th>
       <th scope="col">Use</th>
       <th scope="col">Язык</th>
+      <th scope="col">Админ</th>
+      
     </tr>
   </thead>
   <tbody>
@@ -27,7 +29,7 @@
         <a target="_blank" href="{%url 'countries:country' country.pk %}">{{country.iso}}</a>
       </th>
       <td>{{country.ru_full_name}}</td>
-
+      <td>{{country.world_part|default_if_none:"-"}}</td>
       <td>{{country.population|population_short}}</td>
       <td>
         {%if country.use_in_parse%}x{%endif%}
@@ -36,6 +38,9 @@
         {%for lang in country.language.all%}
         {{lang}}
         {%endfor%}
+      </td>
+      <td>
+        <a target="_blank" href="/admin/countries/country/{{country.pk}}/change/">Редактировать</a>
       </td>
 
     </tr>

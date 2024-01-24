@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Country, Language, Currency, KeyWord
+from .models import Country, Language, Currency, KeyWord, WorldPart
 
 
 class KeyWordAdmin(admin.ModelAdmin):
@@ -54,3 +54,4 @@ admin.site.register(Country, CountryAdmin)
 admin.site.register(Language, LanguageAdmin)
 admin.site.register(Currency,CurrencyAdmin)
 admin.site.register(KeyWord, KeyWordAdmin)
+admin.site.register(WorldPart)
