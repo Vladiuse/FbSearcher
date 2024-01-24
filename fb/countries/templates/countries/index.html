@@ -1,0 +1,52 @@
+
+{% extends 'ads/base.html' %}
+{% load static %}
+{% load country_filters%}
+{% block content %}
+
+<div class="container">
+
+  <table class="table table table-striped">
+  <thead>
+    <tr>
+      <th scope="col"></th>
+      <th scope="col">ISO</th>
+      <th scope="col">Страна</th>
+
+      <th scope="col">Население</th>
+      <th scope="col">Use</th>
+      <th scope="col">Язык</th>
+    </tr>
+  </thead>
+  <tbody>
+  {% for country in countries %}
+    <tr>
+      <th scope="row"><span class="flag-icon flag-icon-{{country.pk}}"></span></th>
+      <th scope="row" style="text-transform: uppercase;">
+        <!-- <a target="_blank" href="http://127.0.0.1:8000/admin/countries/country/{{country.iso}}">{{country.iso}}</a> -->
+        <a target="_blank" href="{%url 'countries:country' country.pk %}">{{country.iso}}</a>
+      </th>
+      <td>{{country.ru_full_name}}</td>
+
+      <td>{{country.population|population_short}}</td>
+      <td>
+        {%if country.use_in_parse%}x{%endif%}
+      </td>
+      <td>
+        {%for lang in country.language.all%}
+        {{lang}}
+        {%endfor%}
+      </td>
+
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+
+
+</div>
+
+{% endblock %}
+</div>
+</body>
+</html>

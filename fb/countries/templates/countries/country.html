@@ -1,0 +1,77 @@
+{% extends 'ads/base.html' %}
+{% load static %}
+{% load country_filters%}
+{% block content %}
+<style>
+    .country-name{
+        display: flex;
+        align-items: center;
+    }
+    .flag-icon{
+        margin-right: 30px;
+        width: 100px;
+        height: 100px;
+    }
+    .view-key-form{
+        display: flex;
+        align-items: center;
+        flex-wrap:wrap;
+        gap: 10px;
+        padding: 10px;
+    }
+    .view-key-form input{
+        width: 150px;
+    }
+    .voc-block{
+        margin-top: 30px;
+    }
+    .voc-form button{
+        margin-top: 10px;
+    }
+    .voc-form input{
+        max-width: 250px;
+    }
+</style>
+<div class="container">
+    <h2 class="country-name"><span class="flag-icon flag-icon-{{country.pk}}"></span>{{country.ru_full_name}}</h2>
+    <p>Население: {{country.population|population_short}}</p>
+</div>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <h5 class="text-center">Доступные языки  </h5>
+            {%for voc in country.vocabulary.all%}  
+            <div class="container voc-block">
+            {%if voc.language.has_vocabulary%}
+            <h6>{{voc.language}}</h6>
+            <form class="voc-form" action="{%url 'countries:vocabulary-update' voc.pk%}" method="POST">
+                {%csrf_token%}
+                <label for="" class="form-label">Грубина ключей</label>
+                    <input type="text" value="{{voc.keys_deep|default_if_none:''}}" name="keys_deep" required class="form-control" placeholder="Задайте шлубину ключей">
+                    <button type="submit" class="btn btn-primary">Обновить</button>
+            </form>
+            {%else%}
+            <h6>{{voc.language}}: Не словаря</h6>
+            {%endif%}
+        </div>
+            {%endfor%}
+        </div>
+        <div class="col">
+            <h5 class="text-center">Обзор Facebook Ads Library по {{country.ru_full_name}}</h5>
+            {%for voc in country.vocabulary.all%}
+            <form class="view-key-form"action="{%url 'countries:fb_adslib_show' %}" target="_blank" method="POST">
+                <label for="" class="form-label">{{voc.language}}</label>
+                {%csrf_token%}
+                <input name="country" value="{{country.pk}}" type="hidden">
+                <input name="language" value="{{voc.language.pk}}" type="hidden">
+                <input class="form-control" name="number_in_dict" type="number" placeholder="Введите номер ключа" required min="1" max="20000">
+                <button type="submit" class="btn btn-secondary">Показать ключ</button>
+            </form>
+            
+            {%endfor%}
+        </div>
+    </div>
+    
+    
+</div>
+{%endblock%}
