@@ -400,9 +400,9 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        for i in range(26,50):
-            used_count = 1
-            qs = FbGroup.full_objects.filter(used_count=used_count)[:1000]
+        for i in range(1):
+            used_count = 0
+            qs = FbGroup.full_objects.filter(used_count=used_count)[:4900]
             #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:18000]  # korporat
             print(i, qs.count())
             groups_to_update = []

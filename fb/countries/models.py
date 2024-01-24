@@ -75,6 +75,22 @@ class Country(models.Model):
     def __str__(self):
         return self.pk.upper()
 
+class CountryComment(models.Model):
+    TYPES = [
+        ('danger', 'Danger'),
+        ('primary', 'Primary'),
+        ('success', 'Success'),
+        ('warning', 'Warning'),
+    ]
+    country = models.ForeignKey(
+        to=Country,
+        on_delete=models.CASCADE,
+        related_name='comments'
+    )
+    text = models.TextField()
+    type = models.CharField(max_length=10, choices=TYPES, )
+    created = models.DateField(auto_now_add=True)
+
 
 class Language(models.Model):
     iso = models.CharField(

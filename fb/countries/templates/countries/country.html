@@ -3,6 +3,9 @@
 {% load country_filters%}
 {% block content %}
 <style>
+    .country-info-block{
+        margin-bottom: 20px;
+    }
     .country-name{
         display: flex;
         align-items: center;
@@ -31,15 +34,32 @@
     .voc-form input{
         max-width: 250px;
     }
+    .alert{
+        display: flex;
+        justify-content: space-between;
+    }
+    .alert i{
+        margin-left: 8px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+    .alert i:hover{
+        color: rgb(99, 11, 11);
+    }
+    .comment-block{
+        margin: 20px 0;
+    }
+
 </style>
-<div class="container">
+<div class="container-fluid country-info-block">
     <h2 class="country-name"><span class="flag-icon flag-icon-{{country.pk}}"></span>{{country.ru_full_name}}</h2>
     <p>Население: {{country.population|population_short}}</p>
+    <p>ВВП нанос:</p>
 </div>
-<div class="container">
+<div class="container-fluid">
     <div class="row">
         <div class="col">
-            <h5 class="text-center">Доступные языки  </h5>
+            <h5 >Доступные языки  </h5>
             {%for voc in country.vocabulary.all%}  
             <div class="container voc-block">
             {%if voc.language.has_vocabulary%}
@@ -57,7 +77,44 @@
             {%endfor%}
         </div>
         <div class="col">
-            <h5 class="text-center">Обзор Facebook Ads Library по {{country.ru_full_name}}</h5>
+            <h5 >Коментарии к гео </h5>
+            <button class="btn btn-secondary" type="button" data-bs-toggle="collapse" data-bs-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+                Добавить
+              </button>
+            
+            <div class="collapse" id="collapseExample">
+                <form action="{% url 'countries:country-comment-create' %}" method="POST">
+                    {%csrf_token%}
+                    <select class="form-select" aria-label="Default select example" name="type">
+                        <option value="danger">Danger</option>
+                        <option value="primary" selected>Primary</option>
+                        <option value="success">Success</option>
+                        <option value="warning">Warning</option>
+                      </select>
+                    <input class="form-control" type="hidden" name="country" value="{{country.pk}}">
+                    <textarea class="form-control" name="text" id="" cols="30" rows="3"></textarea>
+                    <button type="submit" class="btn btn-primary">Создать</button>
+                </form>
+              </div>
+            
+            <div class="comment-block">
+                {%for comment in country.comments.all%}
+            <div class="alert alert-{{comment.type}}" role="alert" id="comment-{{comment.pk}}">
+                <div class="text">
+                    {{comment.text}}
+                </div>
+                 <div>
+                    {{comment.created}}
+                    <i class="fa-solid fa-trash"></i>
+                </div>
+              </div>
+              {%empty%}
+              <p>Нет коментариев</p>
+             {%endfor%}   
+            </div>            
+        </div>
+        <div class="col">
+            <h5 >Обзор Facebook Ads Library по {{country.ru_full_name}}</h5>
             {%for voc in country.vocabulary.all%}
             <form class="view-key-form"action="{%url 'countries:fb_adslib_show' %}" target="_blank" method="POST">
                 <label for="" class="form-label">{{voc.language}}</label>
@@ -74,4 +131,49 @@
     
     
 </div>
+
+  <!-- Remove comment Modal -->
+  <div class="modal fade" id="deleteCommentModal" tabindex="-1" aria-labelledby="deleteCommentModalLabel" aria-hidden="true">
+    <div class="modal-dialog">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="deleteCommentModalLabel">Удалить коментарий?</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          ...
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+          <form action="" method="POST">
+            {%csrf_token%}
+            <button type="submit" class="btn btn-danger">Delete</button>
+          </form>
+          
+        </div>
+      </div>
+    </div>
+  </div>
+  
+<script>
+    var modalBlock = document.getElementById('deleteCommentModal')
+    var deleteModal = new bootstrap.Modal(modalBlock)
+    var modalText = modalBlock.querySelector('.modal-body')
+    var modalForm = modalBlock.querySelector('form')
+    var removeCommentButtons = document.querySelectorAll('.alert i')
+    removeCommentButtons.forEach(function(elem){
+        console.log(elem)
+        elem.addEventListener('click', showDeleteCommentModal)
+    })
+
+    function showDeleteCommentModal(event){
+        var target = event.target
+        var alertBlock = target.closest(".alert")
+        var commentId = alertBlock.id.replace('comment-','')
+        modalText.innerHTML = alertBlock.querySelector('.text').innerText
+        var deleteUrl = `/countries/country-comment/${commentId}/delete/`
+        modalForm.action = deleteUrl
+        deleteModal.show()
+    }
+</script>
 {%endblock%}
