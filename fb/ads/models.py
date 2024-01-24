@@ -97,6 +97,7 @@ class FullDataManager(CollectedManager):
 
 
 class FbGroup(models.Model):
+    UPDATE_BORDER_DATE = '2024-01-24'
     LOG_DIR_PATH = 'fb_groups_logs'
 
     objects = models.Manager()
@@ -225,11 +226,21 @@ class FbGroup(models.Model):
 
     @staticmethod
     def used_stat():
-        used_stat = FbGroup.full_objects.values('used_count').annotate(count=Count('used_count'))
+        """Статистика количества использования"""
+        updates_border_date = datetime.strptime(FbGroup.UPDATE_BORDER_DATE, '%Y-%m-%d').date()
+        used_stat = (FbGroup.full_objects.filter(last_ad_date__gte=updates_border_date)
+                     .values('used_count').annotate(count=Count('used_count')))
+
+        used_stat = list(used_stat)
+        used_stat.sort(key=lambda item: item['used_count'])
         for item in used_stat:
             if item['used_count'] == 0:
                 item['used_count'] = 'Не пролито'
         return used_stat
+
+    @staticmethod
+    def parse_stat():
+        parse_stat = FbGroup.not_collected_objects.values('status').annotane(count=Count('status'))
 
     @property
     def url(self):

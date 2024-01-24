@@ -5,17 +5,18 @@
 {%endblock%}
 {%block content%}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-<div class="container-fluid">
+<div class="container">
 
     <div class="row">
-        <div class="col">
-            <canvas id="parserStat"></canvas>
-        </div>
         <div class="col">
             <canvas id="ColectedStat"></canvas>
         </div>
         <div class="col">
-            <canvas id="UsedMails"></canvas>
+            <canvas id="mailServiceStat"></canvas>
+            <div style="width: 100%;text-align: center;">
+                <br>
+                <a href="{%url 'mark_mail_services' %}" class="btn btn-primary" role="button">Определить сервис</a>
+            </div>
         </div>
     </div>
 </div>
@@ -27,57 +28,7 @@
         </div>
     </div>
 </div>
-<div class="container-fluid">
-    <div class="row">
-        <div class="col"></div>
-        <div class="col">
-            <canvas id="mailServiceStat"></canvas>
-            <div style="width: 100%;text-align: center;">
-                <br>
-                <a href="{%url 'mark_mail_services' %}" class="btn btn-primary" role="button">Определить сервис</a>
-            </div>
-        </div>
-        <div class="col"></div>
-    </div>
-</div>
-<script>
-    const parserStat = document.getElementById('parserStat');
-    const parserStatData = {
-        title: '123',
-        labels: [
-            'Not collected: {{not_collected_count}}',
-            'Error req: {{error_req_count}}',
-            'Colected: {{collected_count}}',
-        ],
-        datasets: [{
-            label: 'My First Dataset',
-            data: ['{{not_collected_count}}', '{{error_req_count}}','{{collected_count}}'],
-            backgroundColor: [
-                '#9D9D9D',
-                '#ff6363',
-                '#7AB759',
-            ],
-            hoverOffset: 4
-        }]
-    };
 
-    new Chart(parserStat, {
-        type: 'doughnut',
-        data: parserStatData,
-        options: {
-            plugins: {
-                legend: {
-                    position: 'left',
-                    align: 'center'
-                },
-                title: {
-                    display: true,
-                    text: 'Соотношение обработаних и нет групп',
-                }
-            }
-        }
-    });
-</script>
 
 <script>
     const ColectedStat = document.getElementById('ColectedStat');
@@ -119,55 +70,6 @@
     });
 </script>
 
-<script>
-    const UsedStat = document.getElementById('UsedMails');
-    const UsedStatData = {
-        labels: [
-            //!!! {%for item in used_stat%}
-            '{{item.used_count}}: {{item.count}}',
-            // {%endfor%}
-        ],
-        datasets: [{
-            label: 'My First Dataset',
-            data: [
-                //!!! {%for item in used_stat%}
-                '{{item.count}}', 
-                // {%endfor%}
-            ],
-            backgroundColor: [
-            '#c2c2c2',
-                '#59B763',
-                '#ffd963',
-                '#3082F1',
-                '#ff6363',
-                '#8963ff',
-                '#ff6363',
-                '#30cf7d',
-                '#30cfc5',
-                '#3046cf',
-                '#eb9e0f',
-            ],
-            hoverOffset: 4
-        }]
-    };
-
-    new Chart(UsedStat, {
-        type: 'doughnut',
-        data: UsedStatData,
-        options: {
-            plugins: {
-                legend: {
-                    position: 'left',
-                    align: 'center'
-                },
-                title: {
-                    display: true,
-                    text: 'Статистика по использованым',
-                }
-            }
-        }
-    });
-</script>
 <script>
     const mailServiceStat = document.getElementById('mailServiceStat');
     const mailServiceStatData = {

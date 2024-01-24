@@ -14,6 +14,7 @@ urlpatterns = [
     path('groups_stat/', views.groups_stat, name='groups_stat'),
     path('mark_mail_services/', views.mark_mail_services, name='mark_mail_services'),
     path('download_page/', views.download_page, name='download_page'),
+    path('parse_stat_page/', views.parse_stat_page, name='parse_stat_page'),
     path('load_actual_mails/', views.load_actual_mails, name='load_actual_mails'),
     path('sleep_10/', views.sleep_10, )
 ]

@@ -4,36 +4,80 @@
 Скачать данные
 {%endblock%}
 {%block content%}
-<style>
-    .load-wrapper {
-        width: 100%;
-        text-align: center;
-        display: flex;
-        justify-content: space-around;
-        
-    }
-    .container{
-        margin-top: 20px;
-    }
-</style>
-<div class="container alerts-wrapper">
-    {%if ignored_services_group%}
-    <div class="alert alert-danger" role="alert">
-        Есть группы с игнорируемыми email сервисами!
-      </div>
-    {%endif%}
-    {%if ignored_by_name%}
-    <div class="alert alert-danger" role="alert">
-        Есть группы со стоп словами!
-      </div>
-    {%endif%}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="container">
+    <div class="row">
+        <div class="col">
+            <canvas id="UsedMails"></canvas>
+        </div>
+        <div class="col">
+            <h4>Дата отсчета обновлено: {{groups_updates_border_date}}</h4>
+            <form>
+                <div class="mb-3">
+                  <label for="exampleInputEmail1" class="form-label">Email address</label>
+                  <input type="email" class="form-control" id="exampleInputEmail1" aria-describedby="emailHelp">
+                  <div id="emailHelp" class="form-text">We'll never share your email with anyone else.</div>
+                </div>
+                <div class="mb-3">
+                  <label for="exampleInputPassword1" class="form-label">Password</label>
+                  <input type="password" class="form-control" id="exampleInputPassword1">
+                </div>
+                <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="exampleCheck1">
+                  <label class="form-check-label" for="exampleCheck1">Check me out</label>
+                </div>
+                <button type="submit" class="btn btn-primary">Submit</button>
+              </form>
+        </div>
+    </div>
 </div>
-<div class="container load-wrapper">
-        {%if with_mail_count%}
-        <h4>Доступно для скачивания: {{with_mail_count}}</h4>
-        <a href="{%url 'load_actual_mails' %}" class="btn btn-primary" role="button">Скачать csv</a>
-        {%else%}
-        <h4>Нет данных для скачивания</h4>
-        {%endif%}
-</div>
+<script>
+    const UsedStat = document.getElementById('UsedMails');
+    const UsedStatData = {
+        labels: [
+            //!!! {%for item in used_stat%}
+            '{{item.used_count}}: {{item.count}}',
+            // {%endfor%}
+        ],
+        datasets: [{
+            label: 'My First Dataset',
+            data: [
+                //!!! {%for item in used_stat%}
+                '{{item.count}}', 
+                // {%endfor%}
+            ],
+            backgroundColor: [
+            '#c2c2c2',
+                '#59B763',
+                '#ffd963',
+                '#3082F1',
+                '#ff6363',
+                '#8963ff',
+                '#ff6363',
+                '#30cf7d',
+                '#30cfc5',
+                '#3046cf',
+                '#eb9e0f',
+            ],
+            hoverOffset: 4
+        }]
+    };
+
+    new Chart(UsedStat, {
+        type: 'doughnut',
+        data: UsedStatData,
+        options: {
+            plugins: {
+                legend: {
+                    position: 'left',
+                    align: 'center'
+                },
+                title: {
+                    display: true,
+                    text: 'Статистика по использованым',
+                }
+            }
+        }
+    });
+</script>
 {%endblock%}
