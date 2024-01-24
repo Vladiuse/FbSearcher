@@ -3,11 +3,12 @@ from django.core.validators import RegexValidator
 
 # Create your models here.
 counter = 0
+
+
 def get_pk():
     global counter
     counter += 1
     return counter
-
 
 
 class Country(models.Model):
@@ -47,11 +48,14 @@ class Country(models.Model):
     language = models.ManyToManyField(
         'Language',
         blank=True,
+        through="CountryLanguage",
     )
     curr = models.ManyToManyField(
         'Currency',
         blank=True,
     )
+    population = models.IntegerField(default=0)
+    use_in_parse = models.BooleanField(default=False)
 
     class Meta:
         verbose_name = 'Страна'
@@ -59,6 +63,7 @@ class Country(models.Model):
 
     def __str__(self):
         return self.pk.upper()
+
 
 class Language(models.Model):
     iso = models.CharField(
@@ -71,6 +76,7 @@ class Language(models.Model):
         blank=True
     )
     discount_text = models.CharField(max_length=250, blank=True)
+    has_vocabulary = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['iso']
@@ -80,7 +86,6 @@ class Language(models.Model):
 
 
 class Currency(models.Model):
-
     name = models.CharField(
         max_length=60,
         verbose_name='Название валюты'
@@ -108,73 +113,30 @@ class Currency(models.Model):
         return f'{self.name}({self.iso.upper()})'
 
 
-
 class KeyWord(models.Model):
-    FB_LIB_URL = 'https://www.facebook.com/ads/library/'
-    URL_PARAMS = {'active_status': 'all',
-                  # 'ad_type': 'political_and_issue_ads',
-                  'ad_type': 'all',
-                  'country': None,
-                  'q': None,
-                  'sort_data[direction]': 'desc',
-                  'sort_data[mode]': 'relevancy_monthly_grouped',
-                  'search_type': 'keyword_unordered',
-                  'media_type': 'all',
-                  'start_date[min]': None,
-                  'start_date[max]': '',
-                  'publisher_platforms[0]': 'facebook',
-                  }
-    number_in_dict = models.IntegerField(default=0)
+    number_in_dict = models.IntegerField()
     word = models.CharField(
         max_length=255,
-        #validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')]
+        # validators=[RegexValidator(regex='([A-Za-z]){1,30}', message='Incorrect eng key word')]
     )
     language = models.ForeignKey(
         to=Language,
         on_delete=models.PROTECT,
+        related_name='keywords',
     )
-    # TODO cards_count_average - add count of showing cards average by day
 
     class Meta:
         ordering = ['number_in_dict', ]
         # unique_together = ['word', 'language']
 
     def __str__(self):
-        return self.word
+        return f'{self.language_id} {self.number_in_dict}: {self.word}'
 
-    def _get_params(self):
-        params = self.URL_PARAMS
-        params['q'] = str(self.word)
-        params['country'] = 'US'
-        days_ago = 1
-        params['start_date[min]'] = str(datetime.now().date() - timedelta(days=days_ago))
-        return params
 
-    def _prepare_url(self):
-        prepare = PreparedRequest()
-        prepare.prepare_url(self.FB_LIB_URL, self._get_params())
-        return prepare.url
-
-    @property
-    def url(self):
-        """Получить ссылку ads library с поиском по выбраному ключу"""
-        return self._prepare_url()
-
-    @staticmethod
-    def get_bunch(length=20, k=2):
-        if k < 1 or k >= 10:  # TODO set 10 as CONST
-            raise ValueError('K must be more than 1 and less than 10')
-        if length <= 0 or length >= 1000:
-            raise ValueError('"count" must be more than zero or less than 1000')
-        qs = KeyWord.objects.filter(number_in_dict__range=[(k-1)*1000 + 1, k*1000])\
-                 .filter(is_collected=False).only('word')[:length]
-        if not qs.exists():
-            raise KeyWord.DoesNotExist # TODO
-        to_update_words = [key.word for key in qs]
-        KeyWord.objects.filter(word__in=to_update_words).update(is_collected=True)
-        return qs
-
-    @staticmethod
-    def set_all_not_collected():
-        KeyWord.objects.update(is_collected=False)
+class CountryLanguage(models.Model):
+    language = models.ForeignKey(Language, on_delete=models.CASCADE)
+    country = models.ForeignKey(Country, on_delete=models.CASCADE,
+                                related_name='vocabulary',
+                                )
+    keys_deep = models.PositiveIntegerField(blank=True, null=True, )
 

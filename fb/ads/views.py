@@ -182,7 +182,6 @@ class UpdateFbGroupFromTxt(View):
             return render(request, self.template_name, context=content)
 
 def groups_stat(request):
-    used_stat = FbGroup.full_objects.values('used_count').annotate(count=Count('used_count'))
     content = {
         'not_collected_count': FbGroup.not_collected_objects.count(),
         'collected_count': FbGroup.collected_objects.count(),
@@ -192,10 +191,8 @@ def groups_stat(request):
         'no_data_count': FbGroup.collected_no_data_objects.count(),
         'login_form_count': FbGroup.collected_objects.filter(name='FaceBook').count(),
         'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service'),
-        # 'mails_not_used': FbGroup.full_objects.filter(is_used=False).count(),
-        # 'mails_used': FbGroup.full_objects.filter(is_used=True).count(),
         'daily_stat': FbGroup.daily_stat_new_groups(),
-        'used_stat': used_stat,
+        'used_stat': FbGroup.used_stat(),
     }
     return render(request, 'ads/groups_stat.html', content)
 

@@ -223,7 +223,13 @@ class FbGroup(models.Model):
         else:
             return {}
 
-
+    @staticmethod
+    def used_stat():
+        used_stat = FbGroup.full_objects.values('used_count').annotate(count=Count('used_count'))
+        for item in used_stat:
+            if item['used_count'] == 0:
+                item['used_count'] = 'Не пролито'
+        return used_stat
 
     @property
     def url(self):
@@ -383,8 +389,9 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        for i in range(26):
-            qs = FbGroup.full_objects.exclude(is_used=True)[:1000]
+        for i in range(26,50):
+            used_count = 1
+            qs = FbGroup.full_objects.filter(used_count=used_count)[:1000]
             #qs = FbGroup.full_objects.exclude(is_used=True).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:18000]  # korporat
             print(i, qs.count())
             groups_to_update = []
@@ -394,7 +401,7 @@ class FbGroup(models.Model):
                     writer.writerow([group.name, group.email])
                     groups_to_update.append(group.pk)
             qs = FbGroup.objects.filter(pk__in=groups_to_update)
-            qs.update(is_used=True)
+            qs.update(used_count=used_count + 1)
         return '/home/vlad/all.csv'
 
 
