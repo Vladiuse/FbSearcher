@@ -40,6 +40,9 @@
     <div class="wrapper center">
         
         <form method="POST"  enctype="multipart/form-data" >
+            {%csrf_token%}
+            {{ form.txt_files.errors }}
+            {{form.errors}}
             <div class="btn-group">
                 <button type="button" class="btn btn-secondary dropdown-toggle" data-bs-toggle="dropdown" data-bs-display="static" aria-expanded="false">
                     Допустимые форматы ссылок:
@@ -54,10 +57,11 @@
                 </ul>
               </div>
               <br>
-            {%csrf_token%}
-            {{ form.txt_files.errors }}
+            
             <label for="" class="form-label">Выберите txt файлы</label>
             <input class="form-control" name="txt_files" type="file" id="formFileMultiple" multiple required>
+            <input type="checkbox" name="add_in_stat"  id="add_in_stat" data-bs-toggle="tooltip" data-bs-placement="top" title="имя файла DS_COUNTRYCODE_links.txt">
+            <label for="add_in_stat" class="form-lavel" data-bs-toggle="tooltip" data-bs-placement="top" title="имя файла DS_COUNTRYCODE_links.txt">Cоxранить статистику</label>
             <button class="btn btn-primary" type="submit">
                 <div class="spinner-grow spinner-grow-sm" role="status" style="display: none;">
                     <span class="visually-hidden">Loading...</span>
