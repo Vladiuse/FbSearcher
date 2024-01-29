@@ -48,7 +48,7 @@ class TxtFileForm(forms.Form):
     add_in_stat = forms.BooleanField(required=False)
 
     def clean(self):
-        """При созранении статистики должны быть указана страна в имени файла"""
+        """При созранении` статистики должны быть указана страна в имени файла"""
         cleaned_data = super().clean()
         if cleaned_data['add_in_stat']:
             not_match_file_names = []
@@ -59,12 +59,10 @@ class TxtFileForm(forms.Form):
                     loaded_countries.add(country.lower())
                 except ValueError:
                     not_match_file_names.append( file.name)
-            print(not_match_file_names)
             if not_match_file_names:
                 raise ValidationError(
                     [ValidationError(_(f'Incorrect file name: {file_name}'), code='error') for file_name in not_match_file_names]
                 )
-            print(loaded_countries)
             countries_in_db = Country.objects.filter(pk__in=loaded_countries).values('pk')
             if len(countries_in_db) != len(loaded_countries):
                 if_bd_exists_codes = set([country['pk'] for country in countries_in_db])

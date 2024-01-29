@@ -70,11 +70,11 @@
             </button>
         </form>
     </div>
-    {%if readers_n_results%}
+    {%if readers%}
     <div class="wrapper center">
-        <h4>Файлов обработано: {{readers_n_results|length}}, Создано новых групп: {{new_groups_created}}</h4>
+        <h4>Файлов обработано: {{readers|length}}, Создано новых групп: {{new_groups_created}}</h4>
     </div>
-    {%for reader, update_result in readers_n_results%}
+    {%for reader in readers %}
     <div class="wrapper center">
             <table class="table">
                 <thead class="table-primary">
@@ -104,11 +104,11 @@
                 <tbody>
                 <tr>
                     <td>Новых</td>
-                    <td> {{update_result.new}}</td>
+                    <td> {{reader.new}}</td>
                 </tr>
                 <tr>
                     <td>Обновлено</td>
-                    <td>{{update_result.updated}}</td>
+                    <td>{{reader.updated}}</td>
                 </tr>
                 </tbody>
             </table>

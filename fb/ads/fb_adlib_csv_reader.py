@@ -128,6 +128,7 @@ class Fb7DaysZipReader:
 
 
 class TxtFileReader:
+    FILE_NAME_SPLIT_CHAR = '_'
     """Читает txt файл с группами"""
     def __init__(self, path, is_big,file_name=None):
         self.path = path
@@ -136,12 +137,28 @@ class TxtFileReader:
         self.unique_group_ids = list()
         self.total = 0
         self.incorrect_lines = set()
+        # info from db
+        self.updated = None
+        self.new = None
 
     @property
     def file_name(self):
         if self._file_name:
             return self._file_name
         return path.basename(self.path)
+
+    @property
+    def country_code(self):
+        ds_name,country_code, other = self.file_name.split(TxtFileReader.FILE_NAME_SPLIT_CHAR)
+        return country_code
+
+    @property
+    def ds_name(self):
+        ds_name,country_code, other = self.file_name.split(TxtFileReader.FILE_NAME_SPLIT_CHAR)
+        return ds_name
+    @property
+    def unique(self):
+        return len(self)
 
     def read(self):
         groups_urls = set()
@@ -167,6 +184,11 @@ class TxtFileReader:
 
     def __getitem__(self, item):
         return self.unique_group_ids[item]
+
+    def add_update_result(self,data):
+        """Добавить в ридер инфо о количестве новый и одновленных записей"""
+        self.updated = data['updated']
+        self.new = data['new']
 
 
 

@@ -6,6 +6,7 @@ from rest_framework.response import Response
 from .forms import FbLibCsvForm, FbLibZipForm, TxtFileForm
 from .fb_adlib_csv_reader import FbLibStatCsvReader, FbLibStatZipReader, Fb7DaysZipReader, TxtFileReader
 from .models import FbGroup
+from remote_pc.models import DS, DSDailyStat
 from django.views import View
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
@@ -154,6 +155,7 @@ class UpdateFbGroupFromTxt(View):
             reader_class = TxtFileReader
             start_groups_count = FbGroup.objects.count()
             readers_n_results = []
+            readers = []
             for file in files:
                 if isinstance(file, InMemoryUploadedFile):
                     reader = reader_class(file, file_name=file.name,is_big=False)
@@ -161,15 +163,27 @@ class UpdateFbGroupFromTxt(View):
                     reader = reader_class(file.temporary_file_path(),is_big=True, file_name=file.name,)
                     # return HttpResponse('temporary')
                 reader.read()
-                update_result = {
-                    'new': 10,
-                    'updated': 100,
-                }
-                update_result = FbGroup.update_db_by_group_ids(reader)
-                readers_n_results.append([reader,update_result])
+                FbGroup.update_db_by_group_ids(reader)
+                # readers_n_results.append([reader,update_result])
+                readers.append(reader)
+            if form.cleaned_data['add_in_stat']:
+                print(readers)
+                for reader in readers:
+                    updated_data = {
+                        'new':reader.new,
+                        'updated': reader.updated,
+                        'unique': reader.unique,
+                        'total': reader.total,
+                    }
+                    DSDailyStat.add_parse_stat(
+                        ds_name=reader.ds_name,
+                        country_code=reader.country_code,
+                        data=updated_data,
+                    )
+
             content = {
                 'form': TxtFileForm(),
-                'readers_n_results': readers_n_results,
+                'readers': readers,
                 'total_result': None, # TODO remove??
                 'new_groups_created': FbGroup.objects.count() - start_groups_count,
             }

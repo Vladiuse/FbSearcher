@@ -25,6 +25,7 @@ urlpatterns = [
     path('ads/', include('ads.urls'),),
     path('fb_templates/', include('fb_templates.urls'), ),
     path('countries/', include('countries.urls'), ),
+    path('remote_pc/', include('remote_pc.urls')),
 ]
 
 # Serving the media files in development mode
