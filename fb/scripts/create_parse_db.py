@@ -87,7 +87,10 @@ def add_proxy(qs):
 
 
 if os.path.exists(BD_NAME):
-    input('Delete bd?')
+    res = input('Db exist,delete? type Yes/y: ')
+    if res.lower() not in ['yes', 'y']:
+        print('Incorrect answer')
+        exit()
     os.remove(BD_NAME)
 
 
@@ -102,12 +105,12 @@ proxies = ProxyMobile.objects.all()
 
 add_proxy(proxies)
 
-for i in range(10):
+for i in range(8):
     print(f'Bunch #{i}')
     groups = FbGroup.objects.filter(status__in=[
         'not_loaded',
         'error_req',
-    ]).exclude(is_in_pars_task=True)[:5000]
+    ]).exclude(is_in_pars_task=True)[:10000]
     add_groups(groups)
 
 #SHOW
