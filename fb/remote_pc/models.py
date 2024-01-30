@@ -83,7 +83,7 @@ class DSDailyStat(models.Model):
     created = models.DateField(auto_now_add=True)
 
     class Meta:
-        unique_together = ['ds', 'created']
+        unique_together = ['ds', 'created', 'country']
 
     @staticmethod
     def add_parse_stat(ds_name, country_code, data):

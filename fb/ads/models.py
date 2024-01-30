@@ -283,22 +283,27 @@ class FbGroup(models.Model):
         print('Not loaded:', FbGroup.not_collected_objects.count())
 
     @staticmethod
-    def update_db_by_group_ids(reader: iter) -> dict:
+    def update_db_by_group_ids(reader: iter):
+        from pprint import pprint
         """Обновить базу групп со списка (айди групп)"""
-        new_count = 0
-        updated = 0
-        for group_id in reader:
-            group_model, created = FbGroup.objects.update_or_create(
-                group_id=group_id,
-                defaults={'last_ad_date': timezone.now().date()},
-            )
-            if created:
-                new_count += 1
-            else:
-                updated += 1
+        groups_ids_from_file = list(reader)
+        groups_to_update = FbGroup.objects.filter(pk__in=groups_ids_from_file)
+        groups_to_update.update(last_ad_date=timezone.now().date())
+        updated_groups_ids = list(map(lambda x: x.lower(),[group.pk for group in groups_to_update]))
+        groups_ids_to_create = []
+        for group_id in groups_ids_from_file:
+            if group_id.lower() not in updated_groups_ids:
+                groups_ids_to_create.append(group_id)
+        pprint(groups_ids_to_create)
+        # create new groups
+        groups_to_create = []
+        for group_id in groups_ids_to_create:
+            group = FbGroup(pk=group_id)
+            groups_to_create.append(group)
+        FbGroup.objects.bulk_create(groups_to_create)
         result = {
-            'new': new_count,
-            'updated': updated,
+            'new': len(groups_ids_to_create),
+            'updated': len(updated_groups_ids),
         }
         reader.add_update_result(result)
 
