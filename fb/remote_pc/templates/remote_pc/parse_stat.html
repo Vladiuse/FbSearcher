@@ -1,0 +1,102 @@
+{%extends 'ads/base.html'%}
+
+{%block head_text%}
+Статистика парсинга
+{%endblock%}
+{%block content%}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<div class="container-fluid">
+    
+    <div class="row">
+      <div class="col-4">
+        
+        <canvas id="dss_avg_stat"></canvas>
+      </div>
+      <div class="col-8">
+        <canvas id="daily_stat_total"></canvas>
+      </div>
+    </div>
+</div>
+
+
+<script>
+    //dss_avg_stat
+    const dss_avg_stat = document.getElementById('dss_avg_stat');
+    const dss_avg_stat_labels = [
+        // {%for item in dss_avg_stat%}
+        '{{item.ds__name}}',
+        // {%endfor%}
+    ];
+    const dss_avg_stat_data = {
+      labels: dss_avg_stat_labels,
+      datasets: [{
+        label: 'Статистика спаршеных карточек',
+        data: [
+        // {%for item in dss_avg_stat%}
+        '{{item.avg}}',
+        // {%endfor%}
+    ],
+    backgroundColor: 
+    [
+        // {%for item in dss_avg_stat%}
+        '{{item.ds__color}}',
+        // {%endfor%}
+    ],
+        borderWidth: 1
+      }]
+    };
+    
+    
+    const dss_avg_stat_config = {
+      type: 'bar',
+      data: dss_avg_stat_data,
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      },
+    };
+    
+    
+    new Chart(dss_avg_stat, dss_avg_stat_config)
+        </script>
+<script>
+    //daily_stat_total
+    const daily_stat_total = document.getElementById('daily_stat_total');
+    const labels = [
+        // {%for item in daily_stat_total%}
+        '{{item.date}}',
+        // {%endfor%}
+    ];
+    const data = {
+      labels: labels,
+      datasets: [{
+        label: 'Статистика спаршеных карточек',
+        data: [
+        // {%for item in daily_stat_total%}
+        '{{item.total}}',
+        // {%endfor%}
+    ],
+        borderWidth: 1
+      }]
+    };
+    
+    
+    const config = {
+      type: 'bar',
+      data: data,
+      options: {
+        scales: {
+          y: {
+            beginAtZero: true
+          }
+        }
+      },
+    };
+    
+    
+    new Chart(daily_stat_total, config)
+        </script>
+{%endblock%}

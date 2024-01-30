@@ -1,289 +1,55 @@
-{%load static%}
-<!DOCTYPE html>
-<html lang="en">
+{%extends 'ads/base.html'%}
 
-<head>
-  {% if is_not_word_exists%}
-  <link rel="icon" type="image/x-icon" href="{% static 'red_circle.png' %}">
-  {%endif%}
-  <meta charset="UTF-8">
-  <title>DS - {{active_count}}/{{dss|length}}</title>
-  <meta http-equiv="refresh" content="{{main_page_reload_time.value}}" />
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet"
-    integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+{%block head_text%}
+DSs
+{%endblock%}
+{%block content%}
 
-<!--ICONS-->
-<script src="https://kit.fontawesome.com/da43c2ea11.js" crossorigin="anonymous"></script>
-  </head>
+
 <style>
-  #timeout{
-    position: fixed;
-    top: 20px;
-    left: 20px;
-    color: red;
-    background-color: white;
-    outline: 10px solid red;
-    border-radius: 20px;
-  }
-  i{
-    width: 20%;
-    font-size: 15em;
-  }
-  .status{
-  width: 100%;
-  }
-  .os i{
-    font-size: 1.7em;
-    margin-right: 5px;
-  }
-  .os{
-    display: flex;
-    align-items: center;
-  }
-  .fa-windows{
-    color:#1f8ae8;
-  }
-  p {
-  margin-bottom: 0rem;
-}
-.msg {
-  margin: 0 10px;
-  padding: 0;
-  display: inline-block;
-  background: rgb(21, 180, 21);
-  box-shadow: 0 0 10px rgb(21, 180, 21);
-  width: 15px;
-  height: 15px;
-  border-radius: 50%;
-  animation-name: blink;
-  animation-duration: .4s;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
-  animation-timing-function: linear;
-}
-
-@keyframes blink {
-  0% {
-    opacity: 0;
-  }
-  100% {
-    opacity: 1;
-  }
-}
-
+    .card i{
+        font-size: 150px;
+        text-align: center;
+        margin: 10px 0;
+        color: rgb(58 108 224);
+    }
 </style>
-<style>
-
-.server{
-  width: 160px;
-  height: 40px;
-  background: #3a3a3a;
-  border-radius: 1px;
-}
-
-.server ul{
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.server ul li{
-  width: 14px;
-  height: 14px;
-  float: left;
-  margin-left: 12px;
-  margin-top: 12px;
-  background: rgba(149,244,118,0.6);
-}
-
-
-.server ul li:first-child{
-  -webkit-animation: pattern1 0.14s linear infinite;
-}
-
-.server ul li:nth-child(2){
-  -webkit-animation: pattern1 0.14s 0.02s linear infinite;
-}
-.server ul li:nth-child(3){
-  -webkit-animation: pattern1 0.14s 0.035s linear infinite;
-}
-
-.server ul li:last-child{
-  -webkit-animation: pattern1 0.14s 0.05s linear infinite;
-}
-
-@-webkit-keyframes pattern1{
-  0%{
-    background: rgba(149,244,118,0.6);
-  }
-  100%{
-    background: rgba(149,244,118,1);
-  }
-}
-
-.warning ul li{
-
-  background: rgba(245,190,0,0.6);
-}
-
-.danger ul li{
-  background: rgba(236,69,62,0.6);
-}
-
-.secondary ul li{
-    background: rgba(129, 129, 129, 0.6);
-}
-
-.warning ul li:first-child{
-  -webkit-animation: pattern2 0.14s linear infinite;
-}
-
-.warning ul li:nth-child(2){
-  -webkit-animation: pattern2 0.14s 0.02s linear infinite;
-}
-.warning ul li:nth-child(3){
-  -webkit-animation: pattern2 0.14s 0.035s linear infinite;
-}
-
-.warning ul li:last-child{
-  -webkit-animation: pattern2 0.14s 0.05s linear infinite;
-}
-
-@-webkit-keyframes pattern2{
-  0%{
-    background: rgba(245,190,0,0.6);
-  }
-  100%{
-    background: rgba(245,190,0,1);
-  }
-}
-
-
-
-.danger ul li:first-child{
-  -webkit-animation: pattern3 0.9s linear infinite;
-}
-
-.danger ul li:nth-child(2){
-  -webkit-animation: pattern3 0.9s linear infinite;
-}
-.danger ul li:nth-child(3){
-  -webkit-animation: pattern3 0.9s linear infinite;
-}
-
-.danger ul li:last-child{
-  -webkit-animation: pattern3 0.9s linear infinite;
-}
-
-@-webkit-keyframes pattern3{
-  0%{
-    background: rgba(236,69,62,0.6);
-  }
-  80%{
-    background: rgba(236,69,62,0.6);
-  }
-  100%{
-    background: rgba(236,69,62,1);
-  }
-}
-.secondary ul li:first-child{
-  -webkit-animation: pattern4 0.9s linear infinite;
-}
-
-.secondary ul li:nth-child(2){
-  -webkit-animation: pattern4 0.9s linear infinite;
-}
-.secondary ul li:nth-child(3){
-  -webkit-animation: pattern4 0.9s linear infinite;
-}
-
-.secondary ul li:last-child{
-  -webkit-animation: pattern4 0.9s linear infinite;
-}
-
-
-@-webkit-keyframes pattern4{
-  0%{
-    background: rgba(143, 143, 143, 0.6);
-  }
-  100%{
-    background: rgba(143, 143, 143, 0.6);
-  }
-}
-</style>
-<body>
-  <div class="" id="timeout" style="display: none;">
-    <i class="fa-solid fa-rotate-right"></i>
-  </div>
-  <div class="container">
-    <h4>Работет: {%if active_count%}<span class="msg"></span>{%endif%}{{active_count}}/{{dss|length}}</h4>
-  </div>
-  <div class="container">
-    <table class="table align-middle">
-      <thead class="table-primary">
-        <tr>
-          <th scope="col">IP</th>
-          <th scope="col">OS</th>
-          <th scope="col">Param</th>
-                    <th scope="col">Name</th>
-          <th scope="col">Status</th>
-          <th scope="col">Last ping</th>
-          <th scope="col">Past</th>
-        </tr>
-      </thead>
-      <tbody>
-        {%for ds in dss%}
-        
-        <tr>
-          <td>
-            <p>{{ds.login}}@{{ds.ip}}</p>
-            <p>pass: {{ds.password}}</p>
-          </td>
-          <td >
-            <div class="os">
-              {% if ds.os == 'Linux'%}
-              <i class="fa-brands fa-linux"></i>
-              {% endif%}
-              {% if ds.os == 'Windows'%}
-              <i class="fa-brands fa-windows"></i>
-              {% endif%}
-            {{ds.os}}
+<br>
+<div class="container">
+    <div class="row row-cols-1 row-cols-md-3 g-4">
+        <div class="col">
+          <div class="card text-center">
+            <a href="{%url 'remote_pc:active' %}">
+                <i class="fa-solid fa-signal"></i>
+            </a>
+            <div class="card-body">
+              <h5 class="card-title">Актиные</h5>
+              <p class="card-text">Активные парс-машины</p>
             </div>
-          </td>
-          <td>{{ds.code}} {{ds.ram}}GB</td>
-          <td>
-            <h4>{{ds.name}}</h4>
-          </td>
-          <td>
-            <div class="server {{ds.status.color}}">
-              <ul>
-                <li></li>
-                <li></li>
-                <li></li>
-                <li></li>
-              </ul>
+          </div>
+        </div>
+        <div class="col">
+          <div class="card text-center">
+            <a href="{%url 'remote_pc:parse_stat' %}">
+                <i class="fa-solid fa-chart-column"></i>
+            </a>
+            <div class="card-body">
+              <h5 class="card-title">Статистика</h5>
+              <p class="card-text">Статистика парсинга</p>
             </div>
-            <!-- <button type="button" class="status btn btn-{{ds.status.color}}">{{ds.status.text}}</button> -->
-          </td>
-          <td>
-            {{ds.last_activity|date:"m-d H:i:s"}}
-          </td>
-          <td>
-            {{ds.past}}
-          </td>
-        </tr>
-        
-        {%endfor%}
-      </tbody>
-    </table>
-  </div>
-  <script>
-    var timeOut = {{show_site_not_load_block_time.value}} * 1000
-    setTimeout(function () {
-      var elem = document.getElementById('timeout')
-      elem.style.display = 'flex'
-    }, timeOut);
-  </script>
-</body>
-
-</html>
+          </div>
+        </div>
+        <!-- <div class="col">
+            <div class="card text-center">
+                <a href="{%url 'update-from-txt' %}">
+                  <i class="fa-regular fa-file-lines"></i>
+                </a>
+              <div class="card-body">
+                <h5 class="card-title">TXT</h5>
+                <p class="card-text">Загузить группы из файла TXT</p>
+              </div>
+            </div>
+          </div> -->
+      </div>
+</div>
+{%endblock%}

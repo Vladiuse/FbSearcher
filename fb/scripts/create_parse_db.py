@@ -105,7 +105,7 @@ proxies = ProxyMobile.objects.all()
 
 add_proxy(proxies)
 
-for i in range(8):
+for i in range(7):
     print(f'Bunch #{i}')
     groups = FbGroup.objects.filter(status__in=[
         'not_loaded',

@@ -1,9 +1,11 @@
 from django.db import models
 from django.utils import timezone
+from django.db.models import Sum, Avg
 from datetime import timedelta
 from django.core.validators import RegexValidator
 from countries.models import Country
 from datetime import datetime
+
 
 class DS(models.Model):
     OS = (
@@ -20,9 +22,10 @@ class DS(models.Model):
     password = models.CharField(max_length=50)
     core = models.PositiveIntegerField()
     ram = models.PositiveIntegerField()
-    os = models.CharField(max_length=50,choices=OS)
+    os = models.CharField(max_length=50, choices=OS)
     last_activity = models.DateTimeField(blank=True, null=True)
     use_in_pars = models.BooleanField(default=True)
+    color = models.CharField(max_length=7,blank=True,)
 
     def __str__(self):
         return f'<{self.name}> {self.ip} {self.full_name}'
@@ -62,7 +65,7 @@ class DS(models.Model):
         }
         if self.last_activity:
             delta = timezone.now() - self.last_activity
-            if delta >  timedelta(minutes=45):
+            if delta > timedelta(minutes=45):
                 return NOT_ACTIVE
             elif delta > timedelta(minutes=10):
                 return NOT_WORK
@@ -71,6 +74,14 @@ class DS(models.Model):
             else:
                 return WORK
         return NOT_ACTIVE
+
+    @staticmethod
+    def daily_total_stat():
+        return DSDailyStat.objects.values('created').annotate(total=Sum('total')).order_by('created')
+
+    @staticmethod
+    def dss_avg_stat():
+        return DSDailyStat.objects.select_related('ds').values('ds', 'ds__name', 'ds__color').annotate(avg=Avg('total'))
 
 
 class DSDailyStat(models.Model):
