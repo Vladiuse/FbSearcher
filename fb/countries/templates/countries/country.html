@@ -2,6 +2,7 @@
 {% load static %}
 {% load country_filters%}
 {% block content %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <style>
     .country-info-block{
         margin-bottom: 20px;
@@ -55,6 +56,11 @@
     <h2 class="country-name"><span class="flag-icon flag-icon-{{country.pk}}"></span>{{country.ru_full_name}}</h2>
     <p>Население: {{country.population|population_short}}</p>
     <p>ВВП нанос:</p>
+    <p>total: {{country.stat.total_sum}}</p>
+    <p>total: {{country.stat.unique_sum}}</p>
+    <div class="canvas-wrap" style="width:150px;">
+        <canvas  id="country_unique_sum"></canvas>
+    </div>
 </div>
 <div class="container-fluid">
     <div class="row">
@@ -175,5 +181,44 @@
         modalForm.action = deleteUrl
         deleteModal.show()
     }
+</script>
+<script>
+    const country_unique_sum = document.getElementById('country_unique_sum');
+    const country_unique_sumData = {
+        labels : [
+            
+            'total',
+            'unique'
+        
+        ],
+        datasets: [{
+            label: 'My First Dataset',
+            data: [
+             10,
+              20
+            ],
+            backgroundColor: [
+                '#c2c2c2',
+                '#59B763',
+            ],
+            hoverOffset: 4,
+            cutout: '70%',
+        }] 
+    };
+
+    new Chart(country_unique_sum, {
+        type: 'doughnut',
+        data: country_unique_sumData,
+        options: {
+            plugins: {
+                legend: null,
+                title: {
+                    display: true,
+                    text: 'Статистика по сервисам',
+                },
+                
+            }
+        }
+    });
 </script>
 {%endblock%}

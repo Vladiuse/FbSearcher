@@ -1,6 +1,6 @@
 from django.db import models
 from django.utils import timezone
-from django.db.models import Sum, Avg
+from django.db.models import Sum, Avg, Count
 from datetime import timedelta
 from django.core.validators import RegexValidator
 from countries.models import Country
@@ -8,6 +8,10 @@ from datetime import datetime
 
 
 class DS(models.Model):
+    PREFIXES = (
+        ('PC', 'Желеска (PC)'),
+        ('D', 'Дэдик (D)')
+    )
     OS = (
         ('Windows', 'Windows'),
         ('Linux', 'Linux'),
@@ -15,7 +19,8 @@ class DS(models.Model):
     WORK = 'Работает'
     NOT_WORK = 'Не работает'
     NOT_ACTIVE = 'Не активен'
-    name = models.CharField(max_length=50, blank=True, unique=True)
+    prefix = models.CharField(max_length=5,choices=PREFIXES,)
+    number = models.CharField(max_length=50,)
     full_name = models.CharField(max_length=50, blank=True)
     ip = models.GenericIPAddressField()
     login = models.CharField(max_length=50)
@@ -28,12 +33,16 @@ class DS(models.Model):
     color = models.CharField(max_length=7,blank=True,)
 
     def __str__(self):
-        return f'<{self.name}> {self.ip} {self.full_name}'
+        return self.name()
 
     class Meta:
+        unique_together = ['prefix', 'number']
         verbose_name = 'DS'
         verbose_name_plural = 'DS'
-        ordering = ['name']
+        ordering = ['number', 'prefix']
+
+    def name(self):
+        return f'{self.prefix}{self.number}'
 
     def ping(self):
         self.last_activity = timezone.now()
@@ -81,12 +90,19 @@ class DS(models.Model):
 
     @staticmethod
     def dss_avg_stat():
-        return DSDailyStat.objects.select_related('ds').values('ds', 'ds__name', 'ds__color').annotate(avg=Avg('total'))
+        stat = DSDailyStat.objects.select_related('ds').values('ds', 'ds__number','ds__prefix', 'ds__color', ).annotate(
+            avg=Sum('total') / Count('created', distinct=True)
+        )
+        return sorted(stat, key=lambda item: (item['ds__prefix'], int(item['ds__number'])))
 
 
 class DSDailyStat(models.Model):
     ds = models.ForeignKey(DS, on_delete=models.CASCADE)
-    country = models.ForeignKey(Country, on_delete=models.CASCADE)
+    country = models.ForeignKey(
+        Country,
+        on_delete=models.CASCADE,
+        related_name='ds_stat',
+    )
     total = models.PositiveIntegerField(default=0)
     unique = models.PositiveIntegerField(default=0)
     new = models.PositiveIntegerField(default=0)

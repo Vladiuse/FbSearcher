@@ -24,7 +24,7 @@
     const dss_avg_stat = document.getElementById('dss_avg_stat');
     const dss_avg_stat_labels = [
         // {%for item in dss_avg_stat%}
-        '{{item.ds__name}}',
+        '{{item.ds__prefix}}{{item.ds__number}}',
         // {%endfor%}
     ];
     const dss_avg_stat_data = {

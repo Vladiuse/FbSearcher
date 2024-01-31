@@ -17,20 +17,15 @@ from requests.exceptions import RequestException
 
 groups = FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
     'not_loaded',
-    'error_req',
-]).exclude(is_in_pars_task=True).order_by('?')[:5000]
+    #'error_req',
+]).exclude(is_in_pars_task=True).order_by('?')
 # groups = FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
 #     'not_loaded',
 #     'error_req',
 # ]).order_by('?')
 
 proxies = ProxyMobile.objects.only('id','ip','port','login','password','change_ip_url').filter(pk__in=[
-    21,
-    #19,
-    #15,
-    #16,
-    #17,
-    #18,
+   7
 ])
 
 ERROR_REQ_COLOR = '#dc0000'

@@ -409,11 +409,11 @@ class FbGroup(models.Model):
         if res.lower() not in ['y', 'yes']:
             raise KeyError
         updates_border_date = datetime.strptime(FbGroup.UPDATE_BORDER_DATE, '%Y-%m-%d').date()
-        for i in range(1,2):
-            used_count = 1
-            qs = FbGroup.full_objects.filter(used_count=0)[:5000] # for new
+        for i in range(1):
+            used_count = 0
+            #qs = FbGroup.full_objects.filter(used_count=0)[:10000] # for new
             #qs = FbGroup.full_objects.filter(last_ad_date__gte=updates_border_date).filter(used_count=used_count)[:1000] # for updatet data
-            #qs = FbGroup.full_objects.filter(last_ad_date__gte=updates_border_date).filter(used_count=used_count).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:7000]  # korporat
+            qs = FbGroup.full_objects.filter(last_ad_date__gte=updates_border_date).filter(used_count=used_count).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:10000]  # korporat
             print(i, qs.count())
             groups_to_update = []
             with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:

@@ -1,8 +1,10 @@
+from django.db.models import Sum
+from django.apps import apps
 from django.db import models
 from django.core.validators import RegexValidator
-
-# Create your models here.
 counter = 0
+
+
 
 
 def get_pk():
@@ -74,6 +76,10 @@ class Country(models.Model):
 
     def __str__(self):
         return self.pk.upper()
+
+    def stat(self):
+        return Country.objects.filter(pk=self.pk).aggregate(total_sum=Sum('ds_stat__total'), unique_sum=Sum('ds_stat__unique'))
+
 
 class CountryComment(models.Model):
     TYPES = [
