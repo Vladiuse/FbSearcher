@@ -5,6 +5,14 @@
 {%endblock%}
 {%block content%}
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+{%if not_marked_mail_service_objects_exists%}
+<div class="container">
+<div class="alert alert-warning" role="alert">
+    Есть непромаркированые емейл сервисы!        
+</div>
+</div>
+{%endif%}
 <div class="container">
     <div class="row">
         <div class="col">

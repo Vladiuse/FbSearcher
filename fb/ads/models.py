@@ -37,7 +37,12 @@ class MailService(models.Model):
     name = models.CharField(max_length=50, primary_key=True)
     pattern = models.CharField(max_length=30)
     examples = models.TextField(blank=True)
-    ignore  = models.BooleanField(default=False)
+    ignore = models.BooleanField(default=False)
+
+
+    @property
+    def email_pattern(self):
+        return '.+@'+str(self.pattern)
 
     def __str__(self):
         return self.name
@@ -80,6 +85,11 @@ class CollectedManager(models.Manager):
     def get_queryset(self):
         return super().get_queryset().filter(status=FbGroup.COLLECTED)
 
+class NotMarkMailServiceManager(CollectedManager):
+
+    def get_queryset(self):
+        return super().get_queryset().filter(is_main_service_mark=False)
+
 
 class NoDataManager(CollectedManager):
     def get_queryset(self):
@@ -106,6 +116,7 @@ class FbGroup(models.Model):
     collected_objects = CollectedManager()
     collected_no_data_objects = NoDataManager()
     collected_no_mail_objects = NoMailManager()
+    not_marked_mail_service_objects = NotMarkMailServiceManager()
     full_objects = FullDataManager()
     actual_objects = ActualGroupManager()
 
@@ -253,14 +264,10 @@ class FbGroup(models.Model):
         """Отметить какой email сервис"""
         mail_services = MailService.objects.all()
         # TODO make in transaction
-        #FbGroup.collected_objects.filter(email='').filter(is_main_service_mark=False).update(is_main_service_mark=True)
-        groups = FbGroup.full_objects.only('email', 'email_service').filter(is_main_service_mark=False).filter(used_count=0)
-        for group in groups:
-            for service in mail_services:
-                if re.match('.+@' + service.pattern, group.email.lower()):
-                    group.email_service = service
-            group.is_main_service_mark = True
-            group.save()
+        not_marked_groups = FbGroup.collected_objects.filter(is_main_service_mark=False)
+        for mail_service in mail_services:
+            qs = not_marked_groups.filter(is_main_service_mark=False).filter(email__iregex=mail_service.email_pattern)
+            qs.update(email_service=mail_service,is_main_service_mark=True)
 
     @staticmethod
     def mark_ignored_name():

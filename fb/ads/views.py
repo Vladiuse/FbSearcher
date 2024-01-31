@@ -216,6 +216,7 @@ def download_page(request):
     content = {
         'used_stat': FbGroup.used_stat(),
         'groups_updates_border_date': groups_updates_border_date,
+        'not_marked_mail_service_objects_exists': FbGroup.not_marked_mail_service_objects.exists(),
     }
     return render(request, 'ads/download_page.html', content)
 
