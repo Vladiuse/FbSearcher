@@ -2,10 +2,14 @@
 {% extends 'ads/base.html' %}
 {% load static %}
 {% load country_filters%}
+{%block head_text%}
+Страны для парса
+{%endblock%}
 {% block content %}
 
 <div class="container">
-
+  {%for world_part in world_parts%}
+  <h1 style="background-color: {{world_part.color}};">{{world_part}}</h1>
   <table class="table table table-striped">
   <thead>
     <tr>
@@ -21,33 +25,34 @@
     </tr>
   </thead>
   <tbody>
-  {% for country in countries %}
-    <tr>
-      <th scope="row"><span class="flag-icon flag-icon-{{country.pk}}"></span></th>
-      <th scope="row" style="text-transform: uppercase;">
-        <!-- <a target="_blank" href="http://127.0.0.1:8000/admin/countries/country/{{country.iso}}">{{country.iso}}</a> -->
-        <a target="_blank" href="{%url 'countries:country' country.pk %}">{{country.iso}}</a>
-      </th>
-      <td>{{country.ru_full_name}}</td>
-      <td>{{country.world_part|default_if_none:"-"}}</td>
-      <td>{{country.population|population_short}}</td>
-      <td>
-        {%if country.use_in_parse%}x{%endif%}
-      </td>
-      <td>
-        {%for lang in country.language.all%}
-        {{lang}}
-        {%endfor%}
-      </td>
-      <td>
-        <a target="_blank" href="/admin/countries/country/{{country.pk}}/change/">Редактировать</a>
-      </td>
+    
+        {% for country in world_part.country.all %}
+          <tr>
+            <th scope="row"><span class="flag-icon flag-icon-{{country.pk}}"></span></th>
+            <th scope="row" style="text-transform: uppercase;">
+              <a target="_blank" href="{%url 'countries:country' country.pk %}">{{country.iso}}</a>
+            </th>
+            <td>{{country.ru_full_name}}</td>
+            <td>{{country.world_part|default_if_none:"-"}}</td>
+            <td>{{country.population|population_short}}</td>
+            <td>
+              {%if country.use_in_parse%}x{%endif%}
+            </td>
+            <td>
+              {%for lang in country.language.all%}
+              {{lang}}
+              {%endfor%}
+            </td>
+            <td>
+              <a target="_blank" href="/admin/countries/country/{{country.pk}}/change/">Редактировать</a>
+            </td>
 
-    </tr>
+          </tr>
   {% endfor %}
+
   </tbody>
 </table>
-
+{%endfor%}
 
 </div>
 

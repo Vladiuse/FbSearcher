@@ -1,23 +1,31 @@
 from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
-from .models import Country, CountryLanguage, Language, KeyWord, CountryComment
+from .models import Country, CountryLanguage, Language, KeyWord, CountryComment, WorldPart
 from .forms import CountryLanguageForm
 from django.views import View
 from django.views.generic import DetailView, UpdateView, DeleteView
 from django.urls import reverse
 from django.views.generic import CreateView
+from django.db.models import Prefetch
 
 def index(request):
-    countries = Country.objects.filter(use_in_parse=True).select_related('world_part')
+    countries = Country.objects.filter(use_in_parse=True).order_by('-population')
+    world_parts = WorldPart.objects.prefetch_related(Prefetch(
+       'country', queryset=countries
+    ))
+
     content = {
-        'countries': countries,
+        'world_parts': world_parts,
     }
     return render(request, 'countries/index.html', content)
 
 def country(request, pk):
     country = Country.objects.get(pk=pk)
+    country_stat = country.stat()
     content = {
         'country': country,
+        'country_stat': country_stat,
+        'country_new_daily_stat': country.country_new_daily_stat(),
     }
     return render(request, 'countries/country.html', content)
 

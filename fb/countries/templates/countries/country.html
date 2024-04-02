@@ -1,11 +1,25 @@
 {% extends 'ads/base.html' %}
 {% load static %}
 {% load country_filters%}
+{%block title%}
+        {{country}} - {{country.ru_full_name}}
+{%endblock%}
 {% block content %}
+<!-- Resources -->
+<script src="https://cdn.amcharts.com/lib/5/index.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/percent.js"></script>
+<script src="https://cdn.amcharts.com/lib/5/themes/Animated.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+
+</style>
 <style>
     .country-info-block{
         margin-bottom: 20px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 80px;
+        margin-bottom: 120px;
     }
     .country-name{
         display: flex;
@@ -52,15 +66,68 @@
     }
 
 </style>
-<div class="container-fluid country-info-block">
+<style>
+
+    .pie{
+        width: 200px;
+        height: 200px;
+    }
+    .pie label{
+        text-align: center;
+        width: 100%;
+        font-weight: 800;
+        margin-bottom:20px;
+    }
+    </style>
+<!-- <div class="container-fluid country-info-block">
+   <div>
     <h2 class="country-name"><span class="flag-icon flag-icon-{{country.pk}}"></span>{{country.ru_full_name}}</h2>
     <p>Население: {{country.population|population_short}}</p>
     <p>ВВП нанос:</p>
-    <p>total: {{country.stat.total_sum}}</p>
-    <p>total: {{country.stat.unique_sum}}</p>
-    <div class="canvas-wrap" style="width:150px;">
-        <canvas  id="country_unique_sum"></canvas>
+   </div>
+   {%if country.stat%}
+    <div class="pie" id="uniqie_percent">
+        <label for=""></label>
     </div>
+    <div class="pie" id="new_percent">
+        <label for=""></label>
+    </div>
+    <div >
+      <canvas  style="width: 100%;" id="country_new_daily_stat"></canvas>
+    </div>
+    
+    {%else%}
+    <h5>Нет собраной статистики</h5>
+   {%endif%}
+</div> -->
+<div class="container-fluid">
+  <div class="row">
+    <div class="col-2">
+      <span class="flag-icon flag-icon-{{country.pk}}"></span>
+      <h2 class="country-name">{{country.ru_full_name}}</h2>
+      <p>Население: {{country.population|population_short}}</p>
+    </div>
+
+    {%if country.stat%}
+    <div class="col-2">
+      <div class="pie" id="uniqie_percent">
+        <label for=""></label>
+    </div>
+    </div>
+    <div class="col-2">
+      <div class="pie" id="new_percent">
+        <label for=""></label>
+    </div>
+    </div>
+    <div class="col-6">
+      <canvas   id="country_new_daily_stat"></canvas>
+    </div>
+    {%else%}
+    <div class="col-10">
+      <h5>Нет собраной статистики</h5>
+    </div>
+   {%endif%}
+  </div>
 </div>
 <div class="container-fluid">
     <div class="row">
@@ -182,43 +249,113 @@
         deleteModal.show()
     }
 </script>
-<script>
-    const country_unique_sum = document.getElementById('country_unique_sum');
-    const country_unique_sumData = {
-        labels : [
-            
-            'total',
-            'unique'
-        
-        ],
-        datasets: [{
-            label: 'My First Dataset',
-            data: [
-             10,
-              20
-            ],
-            backgroundColor: [
-                '#c2c2c2',
-                '#59B763',
-            ],
-            hoverOffset: 4,
-            cutout: '70%',
-        }] 
-    };
 
-    new Chart(country_unique_sum, {
-        type: 'doughnut',
-        data: country_unique_sumData,
-        options: {
-            plugins: {
-                legend: null,
-                title: {
-                    display: true,
-                    text: 'Статистика по сервисам',
-                },
-                
-            }
-        }
+<!-- Unique code -->
+<script>
+    function createChart(label_text,id, data, center_text){
+        var elem = document.getElementById(id)
+        elem.querySelector('label').innerText = label_text
+        ///
+        am5.ready(function() {
+    var chartData = {};
+    var root = am5.Root.new(id);
+    
+    root.setThemes([
+      am5themes_Animated.new(root)
+    ]);
+    var chart = root.container.children.push(am5percent.PieChart.new(root, {
+      innerRadius: 100,
+      layout: root.verticalLayout
+    }));
+    var series = chart.series.push(am5percent.PieSeries.new(root, {
+      valueField: "size",
+      categoryField: "sector"
+    }));
+    series.data.setAll(data);
+    series.appear(1000, 100);
+    series.labels.template.set("visible", false);
+    series.ticks.template.set("visible", false);
+    
+    // Add label
+    var label = root.tooltipContainer.children.push(am5.Label.new(root, {
+      x: am5.p50,
+      y: am5.p50,
+      centerX: am5.p50,
+      centerY: am5.p50,
+      fill: am5.color(0x000000),
+      fontSize: 50
+    }));
+    
+
+    label.set("text", center_text);
+    
     });
-</script>
+        ///
+    }
+
+    createChart('Уникальных','uniqie_percent',
+    [{ sector: "Уникальных", size: '{{country_stat.unique_sum}}'},
+    { sector: "Всего собрано", size: '{{country_stat.total_sum}}' -  '{{country_stat.unique_sum}}'},
+    ]
+    , '{{country_stat.unique_percent}}%')
+
+    createChart('Новых','new_percent',
+    [{ sector: "Новых", size: '{{country_stat.new_sum}}'},
+    { sector: "Уникальных", size: '{{country_stat.unique_sum}}' - '{{country_stat.new_sum}}'},
+    ]
+    , '{{country_stat.new_percent}}%')
+    
+    </script>
+
+
+<script>
+    //Статистика новых по стране по дням
+    const country_new_daily_stat = document.getElementById('country_new_daily_stat');
+    const country_new_daily_stat_labels = [
+          // {%for item in country_new_daily_stat%}
+          '{{item.created}} - {{item.avg}}%',
+          // {%endfor%}
+      ];
+      const country_new_daily_stat_data = {
+    labels: country_new_daily_stat_labels,
+    datasets: [
+   
+      {
+        label: 'Новых групп',
+        data: [
+             // {%for item in country_new_daily_stat%}
+          '{{item.new}}',
+          // {%endfor%}
+        ],
+  
+      },
+      {
+        label: 'Всего карт',
+        data: [
+             // {%for item in country_new_daily_stat%}
+          '{{item.total}}' - '{{item.new}}',
+          // {%endfor%}
+        ],
+  
+      },
+    ]
+  };
+      
+      
+      const country_new_daily_stat_config = {
+        type: 'bar',
+        data: country_new_daily_stat_data,
+        options: {
+          scales: {
+        x: {
+          stacked: true,
+        },
+        y: {
+          stacked: true
+        }
+      }
+        },
+      };
+      new Chart(country_new_daily_stat, country_new_daily_stat_config)
+  </script>
 {%endblock%}

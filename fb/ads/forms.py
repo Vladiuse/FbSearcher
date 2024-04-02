@@ -1,5 +1,6 @@
 import re
 from django import forms
+from django.db.models.functions import Concat
 from django.core.validators import FileExtensionValidator
 from django.core.exceptions import ValidationError
 from django.utils.translation import gettext_lazy as _
@@ -75,9 +76,9 @@ class TxtFileForm(forms.Form):
                     [ValidationError(_(f'Incorrect country iso code in file name: {incorrecr}!')) for incorrecr in incorrect_codes]
                 )
 
-            remote_pc_in_db = DS.objects.filter(name__in=loaded_remote_pc).values('name')
+            remote_pc_in_db = DS.objects.annotate(name_db=Concat('prefix', 'number')).filter(name_db__in=loaded_remote_pc).values('name_db')
             if len(remote_pc_in_db) != len(loaded_remote_pc):
-                pc_db_exists_names = set([pc['name'] for pc in remote_pc_in_db])
+                pc_db_exists_names = set([pc['name_db'] for pc in remote_pc_in_db])
                 incorrect_pc_names = loaded_remote_pc - pc_db_exists_names
                 raise ValidationError(
                     [ValidationError(_(f'Incorrect DS name: {incorrecr}!')) for incorrecr in

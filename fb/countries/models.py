@@ -1,4 +1,5 @@
-from django.db.models import Sum
+from django.db.models import Sum, Avg, Count, Max, F, FloatField
+from django.db.models.functions import Round, Cast
 from django.apps import apps
 from django.db import models
 from django.core.validators import RegexValidator
@@ -15,6 +16,7 @@ def get_pk():
 class WorldPart(models.Model):
     name = models.CharField(max_length=50)
     ru_name = models.CharField(max_length=50)
+    color = models.CharField(max_length=10, blank=True)
 
     def __str__(self):
         return self.ru_name
@@ -67,7 +69,8 @@ class Country(models.Model):
         WorldPart,
         on_delete=models.SET_NULL,
         blank=True,
-        null=True
+        null=True,
+        related_name='country'
     )
 
     class Meta:
@@ -78,8 +81,16 @@ class Country(models.Model):
         return self.pk.upper()
 
     def stat(self):
-        return Country.objects.filter(pk=self.pk).aggregate(total_sum=Sum('ds_stat__total'), unique_sum=Sum('ds_stat__unique'))
+        if self.ds_stat.exists():
+            stat = Country.objects.filter(pk=self.pk).aggregate(total_sum=Sum('ds_stat__total'), unique_sum=Sum('ds_stat__unique'), new_sum=Sum('ds_stat__new'))
+            stat['unique_percent'] = round(stat['unique_sum']/ stat['total_sum'] * 100)
+            stat['new_percent'] = round(stat['new_sum'] / stat['unique_sum'] * 100)
+            return stat
 
+    def country_new_daily_stat(self):
+        """Статистика наработки по дням"""
+        stat = self.ds_stat.values('created').annotate(new=Sum('new'), total=Sum('total')).annotate(avg=Cast(Round(F('new') / F('total') * 100, 1), FloatField())).order_by('created')
+        return stat
 
 class CountryComment(models.Model):
     TYPES = [

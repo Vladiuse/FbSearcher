@@ -80,7 +80,7 @@ def add_groups(qs):
 
 def add_proxy(qs):
     for p in qs:
-        command = INSERT_PROXY_COM % (p.pk, p.protocol, p.ip, p.port, p.port, p.login, p.password, p.change_ip_url)
+        command = INSERT_PROXY_COM % (p.pk, p.protocol, p.ip, p.port, p.port, p.login, p.password, p.change_ip_url)    
         cur.execute(command)
     con.commit()
 
@@ -105,7 +105,7 @@ proxies = ProxyMobile.objects.all()
 
 add_proxy(proxies)
 
-for i in range(7):
+for i in range(6):
     print(f'Bunch #{i}')
     groups = FbGroup.objects.filter(status__in=[
         'not_loaded',

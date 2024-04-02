@@ -4,12 +4,21 @@
 Скачать данные
 {%endblock%}
 {%block content%}
+<style>
+    .alert{
+        display: flex;
+        flex-wrap: wrap;
+        gap: 30px;
+        align-items: center;
+    }
+</style>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
 {%if not_marked_mail_service_objects_exists%}
 <div class="container">
 <div class="alert alert-warning" role="alert">
-    Есть непромаркированые емейл сервисы!        
+    Есть непромаркированые емейл сервисы!      
+    <a class="btn btn-warning" role="button" href="{%url 'ads:mark_mail_services'%}">Определить</a> 
 </div>
 </div>
 {%endif%}

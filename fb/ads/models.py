@@ -1,7 +1,7 @@
 import os.path
 import csv
 from django.db import models
-from django.db.models import Count
+from django.db.models import Count, Q
 import re
 from django.utils import timezone
 import requests as req
@@ -15,6 +15,7 @@ from requests.exceptions import ConnectTimeout, ProxyError, ReadTimeout, Connect
 from django.db.utils import OperationalError
 from datetime import datetime, timedelta
 from django.conf import settings
+from time import sleep
 models.EmailField
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -106,8 +107,16 @@ class FullDataManager(CollectedManager):
         return super().get_queryset().exclude(Q(email='') | Q(name=''))
 
 
+class DownloadManager(FullDataManager):
+
+    def get_queryset(self):
+        return super().get_queryset().select_related('email_service').filter(is_main_service_mark=True).filter(
+            Q(email_service__isnull=True) | Q(email_service__ignore=False)
+        )
+
+
 class FbGroup(models.Model):
-    UPDATE_BORDER_DATE = '2024-01-24'
+    UPDATE_BORDER_DATE = '2024-02-28'
     LOG_DIR_PATH = 'fb_groups_logs'
 
     objects = models.Manager()
@@ -119,6 +128,7 @@ class FbGroup(models.Model):
     not_marked_mail_service_objects = NotMarkMailServiceManager()
     full_objects = FullDataManager()
     actual_objects = ActualGroupManager()
+    download_objects = DownloadManager()
 
     FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
     REQ_HTML_DIR = '/home/vlad/PycharmProjects/FbSearcher/fb/media/req_html_data'
@@ -236,12 +246,14 @@ class FbGroup(models.Model):
             return {}
 
     @staticmethod
-    def used_stat():
+    def used_stat(use_border_date=False):
         """Статистика количества использования"""
         updates_border_date = datetime.strptime(FbGroup.UPDATE_BORDER_DATE, '%Y-%m-%d').date()
-        used_stat = (FbGroup.full_objects.filter(last_ad_date__gte=updates_border_date)
+        if use_border_date:
+            used_stat = (FbGroup.download_objects.filter(last_ad_date__gte=updates_border_date)
                      .values('used_count').annotate(count=Count('used_count')))
-
+        else:
+            used_stat = (FbGroup.download_objects.values('used_count').annotate(count=Count('used_count')))
         used_stat = list(used_stat)
         used_stat.sort(key=lambda item: item['used_count'])
         for item in used_stat:
@@ -266,8 +278,10 @@ class FbGroup(models.Model):
         # TODO make in transaction
         not_marked_groups = FbGroup.collected_objects.filter(is_main_service_mark=False)
         for mail_service in mail_services:
+            print(mail_service)
             qs = not_marked_groups.filter(is_main_service_mark=False).filter(email__iregex=mail_service.email_pattern)
             qs.update(email_service=mail_service,is_main_service_mark=True)
+        not_marked_groups.update(is_main_service_mark=True)
 
     @staticmethod
     def mark_ignored_name():
@@ -291,7 +305,6 @@ class FbGroup(models.Model):
 
     @staticmethod
     def update_db_by_group_ids(reader: iter):
-        from pprint import pprint
         """Обновить базу групп со списка (айди групп)"""
         groups_ids_from_file = list(reader)
         groups_to_update = FbGroup.objects.filter(pk__in=groups_ids_from_file)
@@ -301,7 +314,7 @@ class FbGroup(models.Model):
         for group_id in groups_ids_from_file:
             if group_id.lower() not in updated_groups_ids:
                 groups_ids_to_create.append(group_id)
-        pprint(groups_ids_to_create)
+
         # create new groups
         groups_to_create = []
         for group_id in groups_ids_to_create:
@@ -345,6 +358,7 @@ class FbGroup(models.Model):
             )
             spend_time = res.elapsed.total_seconds()
         except (ConnectTimeout, ReadTimeout, ConnectionError, RequestException) as error:
+            sleep(1)
             print(type(error))
             print(error, '\n')
             end = time.time()
@@ -412,15 +426,20 @@ class FbGroup(models.Model):
 
     @staticmethod
     def create_file():
-        res = input('you shore?: ')
+        FILE_SIZE = 5000
+        print('File Size', FILE_SIZE)
+        res = input('you shore?: ',)
         if res.lower() not in ['y', 'yes']:
             raise KeyError
         updates_border_date = datetime.strptime(FbGroup.UPDATE_BORDER_DATE, '%Y-%m-%d').date()
         for i in range(1):
-            used_count = 0
-            #qs = FbGroup.full_objects.filter(used_count=0)[:10000] # for new
-            #qs = FbGroup.full_objects.filter(last_ad_date__gte=updates_border_date).filter(used_count=used_count)[:1000] # for updatet data
-            qs = FbGroup.full_objects.filter(last_ad_date__gte=updates_border_date).filter(used_count=used_count).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:10000]  # korporat
+            used_count = 2
+            # NEW
+            qs = FbGroup.download_objects.filter(used_count=0)[:FILE_SIZE] # for new
+            # USED
+            #qs = FbGroup.download_objects.filter(last_ad_date__gte=updates_border_date).filter(used_count=used_count)[:FILE_SIZE] # for updatet data
+            # CORP
+            #qs = FbGroup.download_objects.filter(used_count__gte=1).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:FILE_SIZE]  # korporat
             print(i, qs.count())
             groups_to_update = []
             with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:

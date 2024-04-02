@@ -62,6 +62,7 @@ INSTALLED_APPS = [
     'proxies.apps.ProxiesConfig',
     'fb_templates.apps.FbTemplatesConfig',
     'countries.apps.CountriesConfig',
+    'remote_pc.apps.RemotePcConfig',
 ]
 
 MIDDLEWARE = [
@@ -105,19 +106,19 @@ WSGI_APPLICATION = 'fb.wsgi.application'
 #     }
 # }
 
-# DATABASES = {
-#      'default': {
-#          'ENGINE': 'django.db.backends.mysql',
-#          'NAME': get_secret('db_name'),
-#          'USER': get_secret('db_name'),
-#          'PASSWORD': get_secret('db_password'),
-#          'HOST': 'localhost',
-#          'PORT': '3306',
-#
-#     },
-#  }
+DATABASES = {
+     'default': {
+         'ENGINE': 'django.db.backends.mysql',
+         'NAME': get_secret('db_name'),
+         'USER': get_secret('db_name'),
+         'PASSWORD': get_secret('db_password'),
+         'HOST': 'localhost',
+         'PORT': '3306',
 
-# DATABASES = {
+    },
+ }
+
+# DATABASES = {  # SOCIAL DB
 #     'default': {
 #         'ENGINE': 'django.db.backends.mysql',
 #         'NAME': 'fb_searcher_social',
@@ -130,17 +131,17 @@ WSGI_APPLICATION = 'fb.wsgi.application'
 # }
 
 # FOR TEST
-DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.mysql',
-        'NAME': 'test_fb_searcher',
-        'USER': 'test_fb_searcher',
-        'PASSWORD': get_secret('db_password'),
-        'HOST': 'localhost',
-        'PORT': '3306',
-
-    },
-}
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.mysql',
+#         'NAME': 'test_fb_searcher',
+#         'USER': 'test_fb_searcher',
+#         'PASSWORD': get_secret('db_password'),
+#         'HOST': 'localhost',
+#         'PORT': '3306',
+#
+#     },
+# }
 
     # Password validation
 # https://docs.djangoproject.com/en/4.2/ref/settings/#auth-password-validators

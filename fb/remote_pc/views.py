@@ -1,6 +1,6 @@
 from django.shortcuts import render, get_object_or_404
 from django.http import HttpResponse
-from .models import DS, Settings
+from .models import DS, Settings, DSDailyStat
 from django.views.decorators.http import require_http_methods
 from django.contrib.auth.decorators import login_required
 
@@ -35,8 +35,11 @@ def active(request):
 
 def parse_stat(request):
     content = {
+        'last_parse_date': DS.last_parse_date(),
         'daily_stat_total':  DS.daily_total_stat(),
+        'dss_today_stat': DS.dss_today_stat(),
         'dss_avg_stat': DS.dss_avg_stat,
+        'country_last_date_new_stat': DSDailyStat.country_last_date_new_stat(),
     }
     return render(request, 'remote_pc/parse_stat.html', content)
 @require_http_methods(['GET'])

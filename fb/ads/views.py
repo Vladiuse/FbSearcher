@@ -198,23 +198,20 @@ class UpdateFbGroupFromTxt(View):
 
 def groups_stat(request):
     content = {
-        # 'not_collected_count': FbGroup.not_collected_objects.count(),
-        # 'collected_count': FbGroup.collected_objects.count(),
-        # 'error_req_count': FbGroup.error_req_objects.count(),
         'with_mail_count': FbGroup.full_objects.count(),
         'no_mail_count': FbGroup.collected_no_mail_objects.count(),
         'no_data_count': FbGroup.collected_no_data_objects.count(),
         'login_form_count': FbGroup.collected_objects.filter(name='FaceBook').count(),
         'mails_service_stat': FbGroup.full_objects.values('email_service').annotate(count=Count('*')).order_by('email_service'),
         'daily_stat': FbGroup.daily_stat_new_groups(),
-        # 'used_stat': FbGroup.used_stat(),
+        'used_stat': FbGroup.used_stat(),
     }
     return render(request, 'ads/groups_stat.html', content)
 
 def download_page(request):
     groups_updates_border_date = datetime.strptime(FbGroup.UPDATE_BORDER_DATE, '%Y-%m-%d').date()
     content = {
-        'used_stat': FbGroup.used_stat(),
+        'used_stat': FbGroup.used_stat(use_border_date=True),
         'groups_updates_border_date': groups_updates_border_date,
         'not_marked_mail_service_objects_exists': FbGroup.not_marked_mail_service_objects.exists(),
     }
@@ -230,7 +227,7 @@ def parse_stat_page(request):
 
 def mark_mail_services(request):
     FbGroup.mark_mail_services()
-    return redirect('groups_stat')
+    return redirect('ads:index')
 
 
 def load_actual_mails(request):

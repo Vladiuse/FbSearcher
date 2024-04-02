@@ -9,13 +9,25 @@
     
     <div class="row">
       <div class="col-6">
-        
         <canvas id="dss_avg_stat"></canvas>
       </div>
       <div class="col-6">
-        <canvas id="daily_stat_total"></canvas>
+        <canvas id="dss_today_stat"></canvas>
+        
+        
       </div>
     </div>
+</div>
+<div class="container-fluid">
+  <!-- Статистика новых по странам за последний день -->
+  <div class="row">
+    <div class="col">
+      <canvas id="daily_stat_total"></canvas>
+    </div>
+    <div class="col">
+      <canvas id="country_last_date_new_stat"></canvas>
+    </div>
+  </div>
 </div>
 
 
@@ -30,7 +42,7 @@
     const dss_avg_stat_data = {
       labels: dss_avg_stat_labels,
       datasets: [{
-        label: 'Статистика спаршеных карточек',
+        label: 'Статистика спаршеных карточек по парсерам за все время',
         data: [
         // {%for item in dss_avg_stat%}
         '{{item.avg}}',
@@ -62,18 +74,63 @@
     
     new Chart(dss_avg_stat, dss_avg_stat_config)
         </script>
+
+
+<script>
+  //dss_today_stat
+  const dss_today_stat = document.getElementById('dss_today_stat');
+  const dss_today_stat_labels = [
+      // {%for item in dss_today_stat%}
+      '{{item.ds__prefix}}{{item.ds__number}}',
+      // {%endfor%}
+  ];
+  const dss_today_stat_data = {
+    labels: dss_today_stat_labels,
+    datasets: [{
+      label: 'Статистика спаршеных карточек по парсерам за {{last_parse_date}}',
+      data: [
+      // {%for item in dss_today_stat%}
+      '{{item.avg}}',
+      // {%endfor%}
+  ],
+  backgroundColor: 
+  [
+      // {%for item in dss_today_stat%}
+      '{{item.ds__color}}',
+      // {%endfor%}
+  ],
+      borderWidth: 1
+    }]
+  };
+  
+  
+  const dss_today_stat_config = {
+    type: 'bar',
+    data: dss_today_stat_data,
+    options: {
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    },
+  };
+  
+  
+  new Chart(dss_today_stat, dss_today_stat_config)
+      </script> 
 <script>
     //daily_stat_total
     const daily_stat_total = document.getElementById('daily_stat_total');
     const labels = [
         // {%for item in daily_stat_total%}
-        '{{item.date}}',
+        '{{item.created}}',
         // {%endfor%}
     ];
     const data = {
       labels: labels,
       datasets: [{
-        label: 'Статистика спаршеных карточек',
+        label: 'Статистика спаршеных карточек по дням',
         data: [
         // {%for item in daily_stat_total%}
         '{{item.total}}',
@@ -99,4 +156,60 @@
     
     new Chart(daily_stat_total, config)
         </script>
+
+<script>
+  //Статистика новых по странам за последний день
+  const country_last_date_new_stat = document.getElementById('country_last_date_new_stat');
+  const country_last_date_new_stat_labels = [
+        // {%for item in country_last_date_new_stat.stat%}
+        '{{item.country_id|upper}} {{item.avg}}%',
+        // {%endfor%}
+    ];
+    const country_last_date_new_stat_data = {
+  labels: country_last_date_new_stat_labels,
+  datasets: [
+ 
+    {
+      label: 'Новых групп',
+      data: [
+           // {%for item in country_last_date_new_stat.stat%}
+        '{{item.new}}',
+        // {%endfor%}
+      ],
+
+    },
+    {
+      label: 'Всего карт',
+      data: [
+           // {%for item in country_last_date_new_stat.stat%}
+        '{{item.total}}' - '{{item.new}}',
+        // {%endfor%}
+      ],
+
+    },
+  ]
+};
+    
+    
+    const country_last_date_new_stat_config = {
+      type: 'bar',
+      data: country_last_date_new_stat_data,
+      options: {
+        scales: {
+      x: {
+        stacked: true,
+      },
+      y: {
+        stacked: true
+      }
+    }
+      },
+    };
+    new Chart(country_last_date_new_stat, country_last_date_new_stat_config)
+</script>
 {%endblock%}
+
+
+
+
+
