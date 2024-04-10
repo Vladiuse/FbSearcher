@@ -6,6 +6,12 @@
 Страны для парса
 {%endblock%}
 {% block content %}
+<style>
+  .country_voc{
+    margin-top: 1px;
+    margin-bottom: 1px;
+  }
+</style>
 
 <div class="container">
   {%for world_part in world_parts%}
@@ -18,14 +24,14 @@
       <th scope="col">Страна</th>
       <th scope="col">Регион</th>
       <th scope="col">Население</th>
-      <th scope="col">Use</th>
+      <th scope="col">ParseWeight</th>
       <th scope="col">Язык</th>
       <th scope="col">Админ</th>
       
     </tr>
   </thead>
   <tbody>
-    
+
         {% for country in world_part.country.all %}
           <tr>
             <th scope="row"><span class="flag-icon flag-icon-{{country.pk}}"></span></th>
@@ -36,11 +42,11 @@
             <td>{{country.world_part|default_if_none:"-"}}</td>
             <td>{{country.population|population_short}}</td>
             <td>
-              {%if country.use_in_parse%}x{%endif%}
+              {{country.parse_population_conf}}
             </td>
             <td>
-              {%for lang in country.language.all%}
-              {{lang}}
+              {%for voc in country.vocabulary.all%}
+              <p class="country_voc">{{voc.language}} Deep: {{voc.keys_deep|default_if_none:"-"}} </p>
               {%endfor%}
             </td>
             <td>
@@ -57,6 +63,3 @@
 </div>
 
 {% endblock %}
-</div>
-</body>
-</html>

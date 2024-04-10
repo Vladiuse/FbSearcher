@@ -64,6 +64,7 @@ class Country(models.Model):
         blank=True,
     )
     population = models.IntegerField(default=0)
+    parse_population_conf = models.PositiveIntegerField(default=1, verbose_name='Коофициен для парса по населению')
     use_in_parse = models.BooleanField(default=False)
     world_part = models.ForeignKey(
         WorldPart,
@@ -183,4 +184,14 @@ class CountryLanguage(models.Model):
                                 related_name='vocabulary',
                                 )
     keys_deep = models.PositiveIntegerField(blank=True, null=True, )
+    weight = models.PositiveIntegerField(blank=True, default=1)
+
+
+    class Meta:
+        verbose_name = 'Словарь по стране'
+        verbose_name_plural = 'Словари по странам'
+        unique_together = ['country', 'language']
+
+    def __str__(self):
+        return f'CountryLang: {self.country_id}-{self.language_id}'
 

@@ -16,7 +16,7 @@ from django.db.utils import OperationalError
 from datetime import datetime, timedelta
 from django.conf import settings
 from time import sleep
-models.EmailField
+
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
     'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
@@ -116,7 +116,7 @@ class DownloadManager(FullDataManager):
 
 
 class FbGroup(models.Model):
-    UPDATE_BORDER_DATE = '2024-02-28'
+    UPDATE_BORDER_DATE = '2024-03-05'
     LOG_DIR_PATH = 'fb_groups_logs'
 
     objects = models.Manager()
@@ -137,6 +137,7 @@ class FbGroup(models.Model):
     NEED_LOGIN = 'need_login'
     ERROR_REQ = 'error_req'
     COLLECTED = 'collected'
+    FOURBIT_CHAR_IN_NAME = '4bit_char'
     STATUSES = (
         (NOT_LOADED, 'Не загружен'),
         (NEED_LOGIN, 'Нужен вход'),
@@ -340,6 +341,11 @@ class FbGroup(models.Model):
             print(error)
             print(self)
             print(data)
+            self.status = FbGroup.FOURBIT_CHAR_IN_NAME
+            self.title = ''
+            self.name = ''
+            self.followers = ''
+            self.save()
 
     def set_error_req(self):
         """Пометить группу ошибкой запроса"""
@@ -424,32 +430,6 @@ class FbGroup(models.Model):
         self.name = 'xxx ' + self.name
         self.save()
 
-    @staticmethod
-    def create_file():
-        FILE_SIZE = 5000
-        print('File Size', FILE_SIZE)
-        res = input('you shore?: ',)
-        if res.lower() not in ['y', 'yes']:
-            raise KeyError
-        updates_border_date = datetime.strptime(FbGroup.UPDATE_BORDER_DATE, '%Y-%m-%d').date()
-        for i in range(1):
-            used_count = 2
-            # NEW
-            qs = FbGroup.download_objects.filter(used_count=0)[:FILE_SIZE] # for new
-            # USED
-            #qs = FbGroup.download_objects.filter(last_ad_date__gte=updates_border_date).filter(used_count=used_count)[:FILE_SIZE] # for updatet data
-            # CORP
-            #qs = FbGroup.download_objects.filter(used_count__gte=1).filter(is_main_service_mark=True).filter(email_service_id__isnull=True)[:FILE_SIZE]  # korporat
-            print(i, qs.count())
-            groups_to_update = []
-            with open(f'/home/vlad/csv_reports/{i}.csv', 'w', newline='\n') as csv_file:
-                writer = csv.writer(csv_file, delimiter=',', quotechar='"')
-                for group in qs:
-                    writer.writerow([group.name, group.email])
-                    groups_to_update.append(group.pk)
-            qs = FbGroup.objects.filter(pk__in=groups_to_update)
-            qs.update(used_count=used_count + 1)
-        return '/home/vlad/all.csv'
 
 
 class SocialAds(models.Model):
@@ -499,3 +479,6 @@ class FbPagExample(models.Model):
 
     def __str__(self):
         return self.name
+
+
+

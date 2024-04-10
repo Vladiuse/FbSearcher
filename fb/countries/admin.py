@@ -1,6 +1,6 @@
 from django.contrib import admin
 from django.utils.translation import gettext_lazy as _
-from .models import Country, Language, Currency, KeyWord, WorldPart, CountryComment
+from .models import Country, Language, Currency, KeyWord, WorldPart, CountryComment, CountryLanguage
 
 
 class KeyWordAdmin(admin.ModelAdmin):
@@ -53,10 +53,18 @@ class CityAdmin(admin.ModelAdmin):
 
 class CountryCommentAdmin(admin.ModelAdmin):
     autocomplete_fields = ['country',]
+class WorldPartAdmin(admin.ModelAdmin):
+    list_display = ['pk', 'name']
+
+class CountryLanguageAdmin(admin.ModelAdmin):
+    list_display = ['country', 'language', 'keys_deep']
+    search_fields = ['country__pk', 'language__iso']
+    list_editable = ['keys_deep']
 
 admin.site.register(Country, CountryAdmin)
 admin.site.register(Language, LanguageAdmin)
 admin.site.register(Currency,CurrencyAdmin)
 admin.site.register(KeyWord, KeyWordAdmin)
-admin.site.register(WorldPart)
+admin.site.register(WorldPart, WorldPartAdmin)
 admin.site.register(CountryComment,CountryCommentAdmin)
+admin.site.register(CountryLanguage, CountryLanguageAdmin)
