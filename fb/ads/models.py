@@ -48,11 +48,28 @@ class MailService(models.Model):
     def __str__(self):
         return self.name
 
-class IgnoredMailGeo(models.Model):
-    domain = models.CharField(max_length=3, primary_key=True)
+class IgnoredDomainZone(models.Model):
+    name = models.CharField(max_length=3, primary_key=True)
 
     def __str__(self):
-        return self.domain
+        return self.name
+
+    @staticmethod
+    def get_regex_for_search():
+        zones_regex = [zone.name for zone in IgnoredDomainZone.objects.all()]
+        return f"\.({'|'.join(zones_regex)})"
+
+    def save(self, **kwargs):
+        self.name = str(self.name).lower()
+        super().save(**kwargs)
+
+
+
+# class IgnoredMailGeo(models.Model):
+#     domain = models.CharField(max_length=3, primary_key=True)
+#
+#     def __str__(self):
+#         return self.domain
 
 
 class IgnoreGroupWord(models.Model):
@@ -110,9 +127,11 @@ class FullDataManager(CollectedManager):
 class DownloadManager(FullDataManager):
 
     def get_queryset(self):
-        return super().get_queryset().select_related('email_service').filter(is_main_service_mark=True).filter(
+        with_marked_mails = super().get_queryset().select_related('email_service').filter(is_main_service_mark=True).filter(
             Q(email_service__isnull=True) | Q(email_service__ignore=False)
         )
+        with_no_ignored_domain_zones = with_marked_mails.filter(is_ignored_domain_zone=False)
+        return with_no_ignored_domain_zones
 
 
 class FbGroup(models.Model):
@@ -169,6 +188,7 @@ class FbGroup(models.Model):
         blank=True,
     )
     is_main_service_mark = models.BooleanField(default=False)
+    is_ignored_domain_zone = models.BooleanField(default=None, null=True)
     is_ignore_word = models.BooleanField(blank=True, null=True)
     followers = models.CharField(
         max_length=50,
@@ -294,6 +314,14 @@ class FbGroup(models.Model):
         FbGroup.collected_objects.update(is_ignore_word=False)
         groups = FbGroup.collected_objects.filter(name__iregex=regex)
         groups.update(is_ignore_word=True)
+
+    @staticmethod
+    def mark_ignored_domain_zones():
+        groups = FbGroup.full_objects.filter(is_ignored_domain_zone__isnull=True)
+        if IgnoredDomainZone.objects.exists():
+            groups_w_ignored_domain_zones = groups.filter(email__iregex=IgnoredDomainZone.get_regex_for_search())
+            groups_w_ignored_domain_zones.update(is_ignored_domain_zone=True)
+        groups.update(is_ignored_domain_zone=False)
 
 
     @staticmethod
