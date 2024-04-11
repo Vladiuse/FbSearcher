@@ -5,4 +5,4 @@ from .models import CountryLanguage
 class CountryLanguageForm(ModelForm):
 
     class Meta:
-        fields = ['keys_deep']
+        fields = ['keys_deep', 'weight']

@@ -43,6 +43,15 @@
     .voc-block{
         margin-top: 30px;
     }
+    .voc-form{
+      display: flex;
+      justify-content: flex-start;
+    }
+    .voc-form .btn-wrap{
+      display: flex;
+      align-items: center;
+      padding: 20px;
+    }
     .voc-form button{
         margin-top: 10px;
     }
@@ -139,9 +148,19 @@
             <h6>{{voc.language}}</h6>
             <form class="voc-form" action="{%url 'countries:vocabulary-update' voc.pk%}" method="POST">
                 {%csrf_token%}
-                <label for="" class="form-label">Грубина ключей</label>
-                    <input type="text" value="{{voc.keys_deep|default_if_none:''}}" name="keys_deep" required class="form-control" placeholder="Задайте шлубину ключей">
-                    <button type="submit" class="btn btn-primary">Обновить</button>
+                <div>
+                  <div>
+                    <label for="" class="form-label">Грубина ключей</label>
+                      <input type="text" value="{{voc.keys_deep|default_if_none:''}}" name="keys_deep" required class="form-control" placeholder="Задайте шлубину ключей">
+                  </div>
+                  <div>
+                    <label for="" class="form-label">Задайте кооф языковой группы</label>
+                    <input type="text" class="form-control" value="{{voc.weight}}" name="weight" required>
+                  </div>
+                </div>
+                    <div class="btn-wrap">
+                      <button type="submit" class="btn btn-primary">Обновить {{voc}}</button>
+                    </div>
             </form>
             {%else%}
             <h6>{{voc.language}}: Не словаря</h6>

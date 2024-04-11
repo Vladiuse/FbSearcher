@@ -206,15 +206,18 @@ class CountryLanguage(models.Model):
                                 related_name='vocabulary',
                                 )
     keys_deep = models.PositiveIntegerField(blank=True, null=True, )
-    weight = models.PositiveIntegerField(blank=True, default=1)
+    weight = models.PositiveIntegerField(blank=True, default=1, verbose_name='Весовой кооф языковой группы')
 
     class Meta:
         verbose_name = 'Словарь по стране'
         verbose_name_plural = 'Словари по странам'
         unique_together = ['country', 'language']
 
-    def __str__(self):
+    def __repr__(self):
         return f'CountryLang: {self.country_id}-{self.language_id}'
+
+    def __str__(self):
+        return f'{self.country_id}-{self.language_id}'.upper()
 
     @staticmethod
     def get_deep_by_pop(population):
