@@ -3,15 +3,15 @@ from django.db.models.functions import Round, Cast
 from django.apps import apps
 from django.db import models
 from django.core.validators import RegexValidator
+
 counter = 0
-
-
 
 
 def get_pk():
     global counter
     counter += 1
     return counter
+
 
 class WorldPart(models.Model):
     name = models.CharField(max_length=50)
@@ -20,6 +20,8 @@ class WorldPart(models.Model):
 
     def __str__(self):
         return self.ru_name
+
+
 class Country(models.Model):
     iso = models.CharField(
         max_length=2,
@@ -83,15 +85,19 @@ class Country(models.Model):
 
     def stat(self):
         if self.ds_stat.exists():
-            stat = Country.objects.filter(pk=self.pk).aggregate(total_sum=Sum('ds_stat__total'), unique_sum=Sum('ds_stat__unique'), new_sum=Sum('ds_stat__new'))
-            stat['unique_percent'] = round(stat['unique_sum']/ stat['total_sum'] * 100)
+            stat = Country.objects.filter(pk=self.pk).aggregate(total_sum=Sum('ds_stat__total'),
+                                                                unique_sum=Sum('ds_stat__unique'),
+                                                                new_sum=Sum('ds_stat__new'))
+            stat['unique_percent'] = round(stat['unique_sum'] / stat['total_sum'] * 100)
             stat['new_percent'] = round(stat['new_sum'] / stat['unique_sum'] * 100)
             return stat
 
     def country_new_daily_stat(self):
         """Статистика наработки по дням"""
-        stat = self.ds_stat.values('created').annotate(new=Sum('new'), total=Sum('total')).annotate(avg=Cast(Round(F('new') / F('total') * 100, 1), FloatField())).order_by('created')
+        stat = self.ds_stat.values('created').annotate(new=Sum('new'), total=Sum('total')).annotate(
+            avg=Cast(Round(F('new') / F('total') * 100, 1), FloatField())).order_by('created')
         return stat
+
 
 class CountryComment(models.Model):
     TYPES = [
@@ -179,13 +185,28 @@ class KeyWord(models.Model):
 
 
 class CountryLanguage(models.Model):
+    """Языковой словарь страны"""
+    POP_KEYSDEEP_COOF = [
+        # population, keys_deep
+        [0, 200],
+        [5, 300],
+        [10, 500],
+        [20, 1000],
+        [40, 2000],
+        [80, 2500],
+        [120, 3500],
+        [160, 4000],
+        [200, 5000],
+        [250, 7000],
+        [300, 8000],
+    ]
+
     language = models.ForeignKey(Language, on_delete=models.CASCADE)
     country = models.ForeignKey(Country, on_delete=models.CASCADE,
                                 related_name='vocabulary',
                                 )
     keys_deep = models.PositiveIntegerField(blank=True, null=True, )
     weight = models.PositiveIntegerField(blank=True, default=1)
-
 
     class Meta:
         verbose_name = 'Словарь по стране'
@@ -195,3 +216,31 @@ class CountryLanguage(models.Model):
     def __str__(self):
         return f'CountryLang: {self.country_id}-{self.language_id}'
 
+    @staticmethod
+    def get_deep_by_pop(population):
+        deep = None
+        if not population:
+            return deep
+        for pop, keys_deep in CountryLanguage.POP_KEYSDEEP_COOF:
+            if population >= pop:
+                deep = keys_deep
+        return deep
+
+    def set_keys_deep(self):
+        deep = CountryLanguage.get_deep_by_pop(self.speakers_population)
+        self.keys_deep = deep
+        self.save()
+
+    @property
+    def percent_of_lang(self) -> float:
+        country = self.country
+        vocs = country.vocabulary.all()
+        total_weight = sum([voc.weight for voc in vocs])
+        try:
+            return round(self.weight / total_weight, 2)
+        except ZeroDivisionError:
+            return 0
+
+    @property
+    def speakers_population(self):
+        return round(self.country.parse_population_conf * self.percent_of_lang)
