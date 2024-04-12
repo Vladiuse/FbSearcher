@@ -213,7 +213,7 @@ def download_page(request):
     content = {
         'used_stat': FbGroup.used_stat(use_border_date=True),
         'groups_updates_border_date': groups_updates_border_date,
-        'not_marked_mail_service_objects_exists': FbGroup.not_marked_mail_service_objects.exists(),
+        'not_marked_mail_service_objects_exists': FbGroup.not_marked_mail_service_objects.count(),
     }
     return render(request, 'ads/download_page.html', content)
 
@@ -227,6 +227,7 @@ def parse_stat_page(request):
 
 def mark_mail_services(request):
     FbGroup.mark_mail_services()
+    FbGroup.mark_ignored_domain_zones()
     return redirect('ads:index')
 
 
