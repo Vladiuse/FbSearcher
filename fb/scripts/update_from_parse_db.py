@@ -36,7 +36,9 @@ for num, group_from_parse in enumerate(groups):
         print(group_from_parse)
         group = FbGroup.objects.get(pk=group_id)
         group.is_in_pars_task = False
+        group.status = FbGroup.FOURBIT_CHAR_IN_NAME
         group.save()
         for_bit_names += 1
 
-print(f'Total: {groups_in_db}, with emails: {emails_count}, 4bit: {for_bit_names}')
+main_percent = int(round(emails_count / groups_in_db,2) * 100)
+print(f'Total: {groups_in_db}, with emails: {emails_count}  (main_percent%), 4bit: {for_bit_names}')
