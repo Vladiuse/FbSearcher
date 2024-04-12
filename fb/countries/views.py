@@ -45,7 +45,7 @@ class CountryLanguageUpdateView(UpdateView):
 
     queryset = CountryLanguage.objects.all()
     template_name = 'countries/test.html'
-    fields = ['keys_deep']
+    fields = ['keys_deep', 'weight']
 
     def get_success_url(self):
         obj = self.get_object()
