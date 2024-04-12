@@ -32,6 +32,6 @@ class ProxyAdmin(admin.ModelAdmin):
             return obj.error_text[:40] + '...'
         return obj.error_text
 
-admin.site.register(Proxy, ProxyAdmin)
-admin.site.register(ProxyAuth, ProxyAdmin)
+# admin.site.register(Proxy, ProxyAdmin)
+# admin.site.register(ProxyAuth, ProxyAdmin)
 admin.site.register(ProxyMobile, ProxyAdmin)
