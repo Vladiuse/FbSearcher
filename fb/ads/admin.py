@@ -1,7 +1,7 @@
 import os.path
 
 from django.contrib import admin
-from .models import FbGroup, FbPagExample, MailService, IgnoredMailGeo, IgnoreGroupWord
+from .models import FbGroup, FbPagExample, MailService, IgnoreGroupWord, IgnoredDomainZone
 from django.utils.safestring import mark_safe
 from django.utils.translation import gettext_lazy as _
 
@@ -65,5 +65,5 @@ class MaiServiceAdmin(admin.ModelAdmin):
 admin.site.register(FbGroup, FbGroupAdmin)
 admin.site.register(FbPagExample, FbPageExampleAdmin)
 admin.site.register(MailService, MaiServiceAdmin)
-admin.site.register(IgnoredMailGeo)
+admin.site.register(IgnoredDomainZone)
 admin.site.register(IgnoreGroupWord)
