@@ -123,6 +123,20 @@ class FullDataManager(CollectedManager):
     def get_queryset(self):
         return super().get_queryset().exclude(Q(email='') | Q(name=''))
 
+class DownloadQuerySet(models.QuerySet):
+    def new(self):
+        return self.filter(used_count=0)
+
+    def used(self, used_count:int):
+        if used_count <=0:
+            raise ValueError('Used count must be more than 0')
+        return self.filter(used_count=used_count)
+
+    def corp_mails(self):
+        return self.filter(email_service_id__isnull=True)
+
+    def not_corp_mails(self):
+        return self.filter(email_service_id__isnull=False)
 
 class DownloadManager(FullDataManager):
 
@@ -132,6 +146,18 @@ class DownloadManager(FullDataManager):
         )
         with_no_ignored_domain_zones = with_marked_mails.filter(is_ignored_domain_zone=False)
         return with_no_ignored_domain_zones
+
+    def new(self):
+        return self.get_queryset().new()
+
+    def used(self, used_count):
+        return self.get_queryset().used(used_count=used_count)
+
+    def corp_mails(self):
+        return self.get_queryset().corp_mails()
+
+    def not_corp_mails(self):
+        return self.get_queryset().not_corp_mails()
 
 
 class FbGroup(models.Model):
@@ -147,7 +173,7 @@ class FbGroup(models.Model):
     not_marked_mail_service_objects = NotMarkMailServiceManager()
     full_objects = FullDataManager()
     actual_objects = ActualGroupManager()
-    download_objects = DownloadManager()
+    download_objects = DownloadManager.from_queryset(DownloadQuerySet)()
 
     FB_GROUP_PATTERN = 'http[s]?://facebook.com/..{0,100}'
     REQ_HTML_DIR = '/home/vlad/PycharmProjects/FbSearcher/fb/media/req_html_data'
