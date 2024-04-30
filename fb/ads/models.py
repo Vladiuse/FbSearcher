@@ -317,6 +317,7 @@ class FbGroup(models.Model):
 
     @staticmethod
     def mark_ignored_domain_zones():
+        print('mark_ignored_domain_zones')
         groups = FbGroup.full_objects.filter(is_ignored_domain_zone__isnull=True)
         if IgnoredDomainZone.objects.exists():
             groups_w_ignored_domain_zones = groups.filter(email__iregex=IgnoredDomainZone.get_regex_for_search())
@@ -440,6 +441,8 @@ class FbGroup(models.Model):
         if not qs:
             qs = FbGroup.objects.all()
             input('Are you whant to remove all? type y?n: ')
+            print('Remove code to submit (dangerous !)')
+            return
         qs.update(name='', email='', status=FbGroup.NOT_LOADED, req_html_data='', title='')
         if os.path.exists(FbGroup.REQ_HTML_DIR):
             shutil.rmtree(FbGroup.REQ_HTML_DIR)
