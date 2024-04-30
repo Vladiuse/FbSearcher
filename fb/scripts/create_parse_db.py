@@ -105,12 +105,14 @@ proxies = ProxyMobile.objects.all()
 
 add_proxy(proxies)
 
-for i in range(6):
-    print(f'Bunch #{i}')
+
+BUNCH_SIZE = 10000
+for i in range(10):
+    print(f'Bunch #{i} ({BUNCH_SIZE})')
     groups = FbGroup.objects.filter(status__in=[
         'not_loaded',
         'error_req',
-    ]).exclude(is_in_pars_task=True)[:10000]
+    ]).exclude(is_in_pars_task=True).order_by('?')[:BUNCH_SIZE]
     add_groups(groups)
 
 #SHOW
