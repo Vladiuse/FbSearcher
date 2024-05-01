@@ -273,3 +273,69 @@ class FbGroupUsedTest(TestCase):
         qs = FbGroup.download_objects.used(1).not_corp_mails()
         self.assertEqual(qs.count(), 1)
         self.assertTrue(qs.contains(self.used_not_corp))
+
+
+class DownloadQuerySetTest(TestCase):
+
+    def setUp(self):
+        self._create_groups()
+
+    def _create_groups(self):
+        FbGroup.objects.create(
+            group_id='group_not_used',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=0,
+        )
+        FbGroup.objects.create(
+            group_id='group_used_one',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=1,
+        )
+        FbGroup.objects.create(
+            group_id='group_used_two',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=2,
+        )
+        FbGroup.objects.create(
+            group_id='group_used_three',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=3,
+        )
+
+        self.assertEqual(FbGroup.objects.count(), 4)
+        for_download = FbGroup.download_objects.all()
+        self.assertEqual(for_download.count(),4, msg='Групп на выгрузку должно быть 4')
+
+    def test_used_count_increase(self):
+        qs = FbGroup.download_objects.all()
+        qs.mark_as_used()
+        g_group_not_used = FbGroup.download_objects.get(pk='group_not_used')
+        g_group_used_one = FbGroup.download_objects.get(pk='group_used_one')
+        g_group_used_two = FbGroup.download_objects.get(pk='group_used_two')
+        g_group_used_three = FbGroup.download_objects.get(pk='group_used_three')
+        self.assertEqual(g_group_not_used.used_count, 1)
+        self.assertEqual(g_group_used_one.used_count, 2)
+        self.assertEqual(g_group_used_two.used_count, 3)
+        self.assertEqual(g_group_used_three.used_count, 4)
+
+

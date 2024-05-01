@@ -1,7 +1,7 @@
 import os.path
 import csv
 from django.db import models
-from django.db.models import Count, Q
+from django.db.models import Count, Q, F
 import re
 from django.utils import timezone
 import requests as req
@@ -138,6 +138,9 @@ class DownloadQuerySet(models.QuerySet):
     def not_corp_mails(self):
         return self.filter(email_service_id__isnull=False)
 
+    def mark_as_used(self):
+        self.update(used_count=F('used_count') + 1)
+
 class DownloadManager(FullDataManager):
 
     def get_queryset(self):
@@ -158,6 +161,9 @@ class DownloadManager(FullDataManager):
 
     def not_corp_mails(self):
         return self.get_queryset().not_corp_mails()
+
+    # def mark_as_used(self):
+    #     return self.get_queryset().mark_as_used()
 
 
 class FbGroup(models.Model):
