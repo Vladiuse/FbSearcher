@@ -40,6 +40,7 @@ def parse_stat(request):
         'dss_today_stat': DS.dss_today_stat(),
         'dss_avg_stat': DS.dss_avg_stat,
         'country_last_date_new_stat': DSDailyStat.country_last_date_new_stat(),
+        'total_new_stat': DSDailyStat.total_new_stat(),
     }
     return render(request, 'remote_pc/parse_stat.html', content)
 @require_http_methods(['GET'])

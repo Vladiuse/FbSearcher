@@ -129,3 +129,14 @@ class ProxyMobile(ProxyAbs):
 
     def test_sleep(self):
         time.sleep(100)
+
+    @staticmethod
+    def print_for_config():
+        proxies =  ProxyMobile.objects.all()
+        print('[Proxy]')
+        for proxy in proxies:
+            print(f'p{proxy.pk} = {proxy.url}')
+        print('')
+        print('[ProxyChangeIpUrl]')
+        for proxy in proxies:
+            print(f'p{proxy.pk} = {proxy.change_ip_url}&format=json')

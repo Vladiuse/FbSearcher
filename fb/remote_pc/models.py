@@ -159,6 +159,20 @@ class DSDailyStat(models.Model):
         ds_daily_stat_record.new = ds_daily_stat_record.new + data['new']
         ds_daily_stat_record.save()
 
+    @staticmethod
+    def total_new_stat():
+        pass
+        stat = DSDailyStat.objects.values('created').annotate(total=Sum('total'), new=Sum('new')).order_by('created')
+        for item in stat:
+            # item['new'] = int(item['new'] / 1000)
+            # item['total'] = int(item['total'] / 1000)
+            try:
+                item['percent'] = round(item['new'] / item['total'] * 100,2)
+            except ZeroDivisionError:
+                item['percent'] = 0
+        for i in stat:
+            print(i)
+        return stat
 
 class Settings(models.Model):
     name = models.CharField(

@@ -319,7 +319,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         code = ""
         page = FbGroupPageNoAuth(code)
         page()
-        self.assertIsNone(page.followers)
+        self.assertIsNone(page.followers_list)
 
     def test_get_followers_from_code(self):
         code = ""
@@ -331,7 +331,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         code = ""
         page = FbGroupPageNoAuth(code)
         page.get_followers()
-        self.assertIsNone(page.followers)
+        self.assertIsNone(page.followers_list)
 
     def test_followers_exists_no_K(self):
         code = """
@@ -340,7 +340,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         """
         page = FbGroupPageNoAuth(code)
         page()
-        self.assertEqual(page.followers, '769')
+        self.assertEqual(page.followers_list, '769')
 
     def test_followers_K_exists(self):
         code = """
@@ -349,7 +349,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         """
         page = FbGroupPageNoAuth(code)
         page()
-        self.assertEqual(page.followers, '2.9K')
+        self.assertEqual(page.followers_list, '2.9K')
 
     def test_followers_K_exists_no_point(self):
         code = """
@@ -358,7 +358,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         """
         page = FbGroupPageNoAuth(code)
         page()
-        self.assertEqual(page.followers, '29K')
+        self.assertEqual(page.followers_list, '29K')
 
     def test_followers_K_exists_small(self):
         code = """
@@ -367,7 +367,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         """
         page = FbGroupPageNoAuth(code)
         page()
-        self.assertEqual(page.followers, '2.9k')
+        self.assertEqual(page.followers_list, '2.9k')
 
     def test_followers_M_exists_small(self):
         code = """
@@ -376,7 +376,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         """
         page = FbGroupPageNoAuth(code)
         page()
-        self.assertEqual(page.followers, '3.3m')
+        self.assertEqual(page.followers_list, '3.3m')
 
     def test_followers_M_exists(self):
         code = """
@@ -385,7 +385,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
         """
         page = FbGroupPageNoAuth(code)
         page()
-        self.assertEqual(page.followers, '3.3M')
+        self.assertEqual(page.followers_list, '3.3M')
 
     def test_bunch(self):
         examples = [
@@ -422,7 +422,7 @@ class FbGroupNoAuthTestFollowers(TestCase):
             code = f'"color_ranges":[],"text":"{i} followers","uri":"https:'
             page = FbGroupPageNoAuth(code)
             page()
-            self.assertEqual(page.followers, i)
+            self.assertEqual(page.followers_list, i)
 
     def test_followers_in_result(self):
         code = """

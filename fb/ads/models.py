@@ -125,10 +125,10 @@ class FullDataManager(CollectedManager):
 
 class DownloadQuerySet(models.QuerySet):
     def new(self):
-        return self.filter(used_count=0)
+        return self.used(used_count=0)
 
     def used(self, used_count:int):
-        if used_count <=0:
+        if used_count <0:
             raise ValueError('Used count must be more than 0')
         return self.filter(used_count=used_count)
 
@@ -139,7 +139,8 @@ class DownloadQuerySet(models.QuerySet):
         return self.filter(email_service_id__isnull=False)
 
     def mark_as_used(self):
-        self.update(used_count=F('used_count') + 1)
+        text_mark = str(datetime.now().date())
+        self.update(used_count=F('used_count') + 1, text_mark=text_mark)
 
 class DownloadManager(FullDataManager):
 
@@ -167,7 +168,7 @@ class DownloadManager(FullDataManager):
 
 
 class FbGroup(models.Model):
-    UPDATE_BORDER_DATE = '2024-03-05'
+    UPDATE_BORDER_DATE = '2024-04-23'
     LOG_DIR_PATH = 'fb_groups_logs'
 
     objects = models.Manager()
@@ -240,9 +241,24 @@ class FbGroup(models.Model):
     is_used = models.BooleanField(default=False)
     used_count = models.PositiveIntegerField(default=0)
     is_in_pars_task = models.BooleanField(default=False)
+    text_mark = models.CharField(max_length=30, blank=True)
+    send_last_date = models.DateField(default='')
 
     def __str__(self):
         return f'<FbGroup> {self.url}'
+
+    @property
+    def followers_num(self) -> int:
+        if not self.followers:
+            return 1
+        numbers = float(''.join([char for char in self.followers if char.isdigit() or char == '.']))
+        if 'K' in self.followers:
+            numbers *= 1000
+        if 'M' in self.followers:
+           numbers *= 1000 * 1000
+        return int(numbers)
+
+
 
     @staticmethod
     def log_data():

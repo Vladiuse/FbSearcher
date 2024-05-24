@@ -228,10 +228,6 @@ class FbGroupUsedTest(TestCase):
         with self.assertRaises(ValueError):
             qs = FbGroup.download_objects.used(-1)
 
-    def test_used_raise_error_zero_value(self):
-        with self.assertRaises(ValueError):
-            qs = FbGroup.download_objects.used(0)
-
     def test_used_groups(self):
         qs = FbGroup.download_objects.used(1)
         self.assertEqual(qs.count(),2)
