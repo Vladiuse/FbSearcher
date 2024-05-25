@@ -1,5 +1,7 @@
 from django.test import TestCase
 from ads.models import FbGroup, MailService
+from datetime import datetime
+from datetime import timedelta
 
 
 class FbGroupFullObjectsManagerTest(TestCase):
@@ -230,13 +232,13 @@ class FbGroupUsedTest(TestCase):
 
     def test_used_groups(self):
         qs = FbGroup.download_objects.used(1)
-        self.assertEqual(qs.count(),2)
+        self.assertEqual(qs.count(), 2)
         self.assertTrue(qs.contains(self.used_not_corp))
         self.assertTrue(qs.contains(self.used_corp))
 
     def test_used_groups_empty_qs(self):
         qs = FbGroup.download_objects.used(2)
-        self.assertEqual(qs.count(),0)
+        self.assertEqual(qs.count(), 0)
 
     def test_corp_mails(self):
         qs = FbGroup.download_objects.corp_mails()
@@ -246,7 +248,7 @@ class FbGroupUsedTest(TestCase):
 
     def test_not_corps_mails(self):
         qs = FbGroup.download_objects.not_corp_mails()
-        self.assertEqual(qs.count(),2)
+        self.assertEqual(qs.count(), 2)
         self.assertTrue(qs.contains(self.new_not_corp))
         self.assertTrue(qs.contains(self.used_not_corp))
 
@@ -320,7 +322,7 @@ class DownloadQuerySetTest(TestCase):
 
         self.assertEqual(FbGroup.objects.count(), 4)
         for_download = FbGroup.download_objects.all()
-        self.assertEqual(for_download.count(),4, msg='Групп на выгрузку должно быть 4')
+        self.assertEqual(for_download.count(), 4, msg='Групп на выгрузку должно быть 4')
 
     def test_used_count_increase(self):
         qs = FbGroup.download_objects.all()
@@ -335,3 +337,84 @@ class DownloadQuerySetTest(TestCase):
         self.assertEqual(g_group_used_three.used_count, 4)
 
 
+class DownloadManagerRestedTest(TestCase):
+
+    def setUp(self):
+        self._create_groups()
+
+    def _create_groups(self):
+        old_date = datetime.today().date() - timedelta(days=FbGroup.REST_DAYS_AGO + 10)
+        not_old_date = datetime.today().date() - timedelta(days=FbGroup.REST_DAYS_AGO - 10)
+        today = datetime.today().date()
+        rest_date_equal = datetime.today().date() - timedelta(days=FbGroup.REST_DAYS_AGO)
+        FbGroup.objects.create(
+            group_id='old_date',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=1,
+            send_last_date=old_date
+        )
+        FbGroup.objects.create(
+            group_id='not_old_date',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=1,
+            send_last_date=not_old_date
+        )
+
+        FbGroup.objects.create(
+            group_id='today',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=1,
+            send_last_date=today
+        )
+        FbGroup.objects.create(
+            group_id='rest_date_equal',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=1,
+            send_last_date=rest_date_equal
+        )
+
+        self.assertEqual(FbGroup.download_objects.count(), 4, msg='Количество созданых групп не совпадает')
+
+    def test_old_date(self):
+        qs_rest = FbGroup.download_objects.used(1).rested()
+        res_group = FbGroup.download_objects.get(group_id='old_date')
+        self.assertEqual(qs_rest.count(), 1)
+        self.assertTrue(res_group in qs_rest)
+
+    def test_not_rest_date(self):
+        qs_rest = FbGroup.download_objects.used(1).rested()
+        res_group = FbGroup.download_objects.get(group_id='not_old_date')
+        self.assertEqual(qs_rest.count(), 1)
+        self.assertTrue(res_group not in qs_rest)
+
+    def test_not_today(self):
+        qs_rest = FbGroup.download_objects.used(1).rested()
+        res_group = FbGroup.download_objects.get(group_id='today')
+        self.assertEqual(qs_rest.count(), 1)
+        self.assertTrue(res_group not in qs_rest)
+
+    def test_rest_date_equal(self):
+        qs_rest = FbGroup.download_objects.used(1).rested()
+        res_group = FbGroup.download_objects.get(group_id='rest_date_equal')
+        self.assertEqual(qs_rest.count(), 1)
+        self.assertTrue(res_group not in qs_rest)

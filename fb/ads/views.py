@@ -227,6 +227,7 @@ def parse_stat_page(request):
 
 def mark_mail_services(request):
     FbGroup.mark_mail_services()
+    print('mark_ignored_domain_zones')
     FbGroup.mark_ignored_domain_zones()
     return redirect('ads:index')
 

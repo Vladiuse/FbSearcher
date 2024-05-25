@@ -139,8 +139,12 @@ class DownloadQuerySet(models.QuerySet):
         return self.filter(email_service_id__isnull=False)
 
     def mark_as_used(self):
-        text_mark = str(datetime.now().date())
-        self.update(used_count=F('used_count') + 1, text_mark=text_mark)
+        today = str(datetime.now().date())
+        self.update(used_count=F('used_count') + 1, text_mark=today, send_last_date=today)
+
+    def rested(self):
+        rest_date = datetime.today().date() - timedelta(days=FbGroup.REST_DAYS_AGO)
+        return self.filter(send_last_date__lt=rest_date)
 
 class DownloadManager(FullDataManager):
 
@@ -163,12 +167,13 @@ class DownloadManager(FullDataManager):
     def not_corp_mails(self):
         return self.get_queryset().not_corp_mails()
 
-    # def mark_as_used(self):
-    #     return self.get_queryset().mark_as_used()
+    def rested(self):
+        return self.get_queryset().rested()
 
 
 class FbGroup(models.Model):
     UPDATE_BORDER_DATE = '2024-04-23'
+    REST_DAYS_AGO = 30
     LOG_DIR_PATH = 'fb_groups_logs'
 
     objects = models.Manager()
@@ -365,7 +370,6 @@ class FbGroup(models.Model):
 
     @staticmethod
     def mark_ignored_domain_zones():
-        print('mark_ignored_domain_zones')
         groups = FbGroup.full_objects.filter(is_ignored_domain_zone__isnull=True)
         if IgnoredDomainZone.objects.exists():
             groups_w_ignored_domain_zones = groups.filter(email__iregex=IgnoredDomainZone.get_regex_for_search())
