@@ -27,7 +27,7 @@ groups = FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 
 # ]).order_by('?'))
 
 proxies = ProxyMobile.objects.only('id','ip','port','login','password','change_ip_url').filter(pk__in=[
- 1,6
+ 13,14,15
 ])
 
 ERROR_REQ_COLOR = '#dc0000'
@@ -183,7 +183,7 @@ class ProxyBar:
     """
     Класс прокси
     """
-    STREAM_COUNT = 7
+    STREAM_COUNT = 4
 
     # auto ip change
     AUTO_CHANGE_IP = True

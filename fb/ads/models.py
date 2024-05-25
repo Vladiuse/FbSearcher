@@ -242,7 +242,7 @@ class FbGroup(models.Model):
     used_count = models.PositiveIntegerField(default=0)
     is_in_pars_task = models.BooleanField(default=False)
     text_mark = models.CharField(max_length=30, blank=True)
-    send_last_date = models.DateField(default='')
+    send_last_date = models.DateField(blank=True, null=True)
 
     def __str__(self):
         return f'<FbGroup> {self.url}'
