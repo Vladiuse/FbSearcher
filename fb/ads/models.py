@@ -16,6 +16,7 @@ from django.db.utils import OperationalError
 from datetime import datetime, timedelta
 from django.conf import settings
 from time import sleep
+from typing import Optional
 
 headers = {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36',
@@ -144,7 +145,7 @@ class DownloadQuerySet(models.QuerySet):
 
     def rested(self):
         rest_date = datetime.today().date() - timedelta(days=FbGroup.REST_DAYS_AGO)
-        return self.filter(send_last_date__lt=rest_date)
+        return self.filter(Q(send_last_date__lt=rest_date) | Q(send_last_date__isnull=True))
 
 class DownloadManager(FullDataManager):
 
@@ -232,6 +233,10 @@ class FbGroup(models.Model):
         max_length=50,
         blank=True,
     )
+    followers_int = models.PositiveIntegerField(
+        blank=True,
+        null=True,
+    )
     address = models.CharField(
         max_length=255,
         blank=True,
@@ -252,14 +257,23 @@ class FbGroup(models.Model):
     def __str__(self):
         return f'<FbGroup> {self.url}'
 
-    @property
-    def followers_num(self) -> int:
-        if not self.followers:
-            return 1
-        numbers = float(''.join([char for char in self.followers if char.isdigit() or char == '.']))
-        if 'K' in self.followers:
+    def save(self, **kwargs):
+        if self.followers and not self.followers_int:
+            self.followers_int = FbGroup.followers_to_int(str(self.followers))
+        super().save(**kwargs)
+
+    @staticmethod
+    def followers_to_int(followers_string:str) -> Optional[int]:
+        if not followers_string:
+            return None
+        followers_string = followers_string.lower()
+        incorrect_letters = [char for char in followers_string if not (char.isdigit() or char in ['.', 'k', 'm'])]
+        if incorrect_letters:
+            raise ValueError('Incorrect chars, only k and m available')
+        numbers = float(''.join([char for char in followers_string if char.isdigit() or char == '.']))
+        if 'k' in followers_string:
             numbers *= 1000
-        if 'M' in self.followers:
+        if 'm' in followers_string:
            numbers *= 1000 * 1000
         return int(numbers)
 

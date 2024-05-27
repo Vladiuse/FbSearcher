@@ -44,7 +44,7 @@ def create_file():
 class FileGroupDrawer:
     FILE_SIZE = 1000
     TESTS_COUNT = 1
-    USED_COUNT = 3
+    USED_COUNT = 1
 
     ROOT = '/home/vlad/csv_reports'
 
@@ -140,12 +140,12 @@ class FileGroupDrawer:
 class FileGroupQuery:
     QSS = {
         'new': FbGroup.download_objects.new(),
-        'used': FbGroup.download_objects.used(FileGroupDrawer.USED_COUNT).order_by('-last_ad_date'),
+        'used': FbGroup.download_objects.used(FileGroupDrawer.USED_COUNT).rested().order_by('-send_last_date'),
 
         'new_corp': FbGroup.download_objects.new().corp_mails(),
         'new_not_corp': FbGroup.download_objects.new().not_corp_mails().order_by('?'),
-        'used_corp': FbGroup.download_objects.used(FileGroupDrawer.USED_COUNT).corp_mails().order_by('-last_ad_date'),
-        'used_not_corp': FbGroup.download_objects.used(FileGroupDrawer.USED_COUNT).not_corp_mails().order_by('-last_ad_date'),
+        'used_corp': FbGroup.download_objects.used(FileGroupDrawer.USED_COUNT).corp_mails().rested().order_by('-send_last_date'),
+        'used_not_corp': FbGroup.download_objects.used(FileGroupDrawer.USED_COUNT).not_corp_mails().rested().order_by('-send_last_date'),
     }
 
     def __init__(self, qs_type, files_count, file_drawer):
@@ -183,7 +183,7 @@ print('File size', file_drawer.file_size)
 res = input('you shore?: ', )
 if res.lower() not in ['y', 'yes']:
     raise exit()
-file_drawer.create_file_qss(new_data_count=30, used_data_count=90, split_corps=False)
+file_drawer.create_file_qss(new_data_count=0, used_data_count=10, split_corps=False)
 file_drawer.info()
 file_drawer.create_files()
 

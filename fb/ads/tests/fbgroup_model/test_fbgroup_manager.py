@@ -392,8 +392,19 @@ class DownloadManagerRestedTest(TestCase):
             used_count=1,
             send_last_date=rest_date_equal
         )
+        FbGroup.objects.create(
+            group_id='not_sent_yet',
+            status=FbGroup.COLLECTED,
+            name='123',
+            email='123',
+            is_main_service_mark=True,
+            email_service=None,
+            is_ignored_domain_zone=False,
+            used_count=0,
+            send_last_date=None
+        )
 
-        self.assertEqual(FbGroup.download_objects.count(), 4, msg='Количество созданых групп не совпадает')
+        self.assertEqual(FbGroup.download_objects.count(), 5, msg='Количество созданых групп не совпадает')
 
     def test_old_date(self):
         qs_rest = FbGroup.download_objects.used(1).rested()
@@ -418,3 +429,9 @@ class DownloadManagerRestedTest(TestCase):
         res_group = FbGroup.download_objects.get(group_id='rest_date_equal')
         self.assertEqual(qs_rest.count(), 1)
         self.assertTrue(res_group not in qs_rest)
+
+    def test_new_and_rest(self):
+        qs = FbGroup.download_objects.new().rested()
+        self.assertEqual(qs.count(),1)
+        not_sent_yet = FbGroup.download_objects.get(group_id='not_sent_yet')
+        self.assertTrue(not_sent_yet in qs)

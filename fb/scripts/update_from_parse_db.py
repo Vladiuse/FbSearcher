@@ -25,7 +25,7 @@ for num, group_from_parse in enumerate(groups):
     group.name = name
     group.title = title
     group.email = email
-    group.followers_list = followers
+    group.followers = followers
     group.status = status
     group.is_in_pars_task = False
     try:
