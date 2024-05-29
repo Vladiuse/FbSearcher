@@ -1,3 +1,4 @@
+from datetime import datetime
 from time import sleep
 from django.db import models
 from .check_proxies import get_current_ip, check_proxy, get_proxy_ip, CheckerNotWorkError, ProxyIpNotChange, CodeNot200
@@ -99,10 +100,34 @@ class ProxyMobile(ProxyAbs):
     def url(self):
         return f'{self.protocol}://{self.login}:{self.password}@{self.ip}:{self.port}/'
 
+
+    @property
+    def change_ip_url_json(self):
+        return f'{self.change_ip_url}&format=json'
+
+    def quik_change_ip(self):
+        for try_num in range(3):
+            print(f'try #{try_num + 1} change proxy ip: p{self.pk}', datetime.today().time())
+            try:
+                res = req.get(self.change_ip_url_json, timeout=90)
+                if res.status_code != 200:
+                    print('Cant change ip status code not 200')
+                    print(res.text)
+                else:
+                    res_data = res.json()
+                    print(f'p{self.pk}',res_data,)
+                    if res_data['status'] == 'OK':
+                        return
+                    if res_data['message'] == 'Already change IP, please wait':
+                        return
+            except RequestException as error:
+                print('Cant change ip', type(error))
+        raise ProxyChangeIpUrlNotWork
+
     def _click_change_ip_url(self):
         """Перейти по ссылки для сменны ip прокси"""
         try:
-            res = req.get(self.change_ip_url, timeout=30)
+            res = req.get(self.change_ip_url, timeout=50)
             if res.status_code != 200:
                 raise CodeNot200
         except (RequestException, CodeNot200) as error:
