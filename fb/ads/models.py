@@ -433,9 +433,9 @@ class FbGroup(models.Model):
         try:
             self.save()
         except OperationalError as error:
-            print(error)
-            print(self)
-            print(data)
+            # print(error)
+            # print(self)
+            # print(data)
             self.status = FbGroup.FOURBIT_CHAR_IN_NAME
             self.title = ''
             self.name = ''
@@ -460,8 +460,8 @@ class FbGroup(models.Model):
             spend_time = res.elapsed.total_seconds()
         except (ConnectTimeout, ReadTimeout, ConnectionError, RequestException) as error:
             sleep(1)
-            print(type(error))
-            print(error, '\n')
+            # print(type(error))
+            # print(error, '\n')
             end = time.time()
             spend_time = end - start
             req_result = {
