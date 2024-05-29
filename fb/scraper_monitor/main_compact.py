@@ -14,17 +14,27 @@ from .devine_array import devine_array
 from .fake_objects import ResponseFake, RequestFake, ProxyFake
 from proxies.models import ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError
 from requests.exceptions import RequestException
+from django.conf import settings
 
-groups = FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
-    'not_loaded',
-    'error_req',
-]).exclude(is_in_pars_task=True).order_by('?')[:60000]
 
-# for outsource parsing
-# groups = (FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
-#     'not_loaded',
-#     'error_req',
-# ]).order_by('?'))
+DB_TYPE = settings.DATABASES['default']['ENGINE']
+DB_TYPE_NAME = DB_TYPE.split('.')[-1]
+if DB_TYPE_NAME == 'mysql':
+    groups = FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
+        'not_loaded',
+        'error_req',
+    ]).exclude(is_in_pars_task=True).order_by('?')[:30000]
+    print('Parse with mysql')
+elif DB_TYPE_NAME == 'sqlite3':
+    # for outsource parsing
+    groups = (FbGroup.objects.only('group_id','name', 'title', 'email', 'followers', 'status').filter(status__in=[
+        'not_loaded',
+        'error_req',
+    ]).order_by('?'))
+    print('Parse with sqlite')
+else:
+    raise TypeError('Некоректный тип бд для парса')
+
 
 proxies = ProxyMobile.objects.only('id','ip','port','login','password','change_ip_url').filter(pk__in=[
 11,12, 13,14,15
@@ -188,10 +198,10 @@ class ProxyBar:
     # auto ip change
     AUTO_CHANGE_IP = True
     REQ_COUNT_CHANGE_IP = 0.55 * 1000
-    WAIT_AFTER_ERROR_IP_CHANGE = 20
-    MAX_TRY_IP_CHANGE_ERROR = 5  # not change
+    WAIT_AFTER_ERROR_IP_CHANGE = 60
+    MAX_TRY_IP_CHANGE_ERROR = 3  # not change
     MISTAKES_IN_ROW = 2
-    MISTAKES_IN_ROW_TIME = 15
+    MISTAKES_IN_ROW_TIME = 30
 
     def __init__(self, proxy_num, proxy, groups):
         self.proxy = proxy
@@ -247,7 +257,6 @@ class ProxyBar:
             self.streams.append(proxy_stream)
 
     def change_ip_bnt_click(self):
-        print('change_ip_bnt_click')
         self.cur_ip_req_count = 0  # сбросить счетчит, если смена айпи делаеться руками
         self.pause_stream_btn['state'] = ["disabled"]
         self.change_ip_btn['state'] = ["disabled"]
@@ -263,7 +272,7 @@ class ProxyBar:
         self.proxy_status_label['text'] = 'Status: change ip'
         self.proxy_status_label['background'] = NO_DATA_COLOR
         try:
-            new_ip = self.proxy.change_ip()
+            new_ip = self.proxy.quik_change_ip()
         except (ProxyChangeIpUrlNotWork, ProxyChangeIpTimeOutError, RequestException) as error:
             self._change_ip_error_count += 1
             self.proxy_status_label['text'] = f'Status: Error({type(error).__name__})'
@@ -275,6 +284,7 @@ class ProxyBar:
                 self.proxy_status_label['text'] = f'Status: Error(Max try to change ip)'
                 self.pause_stream_btn['state'] = []
                 self.change_ip_btn['state'] = []
+                self._change_ip_error_count = 0
                 return
             if ProxyBar.AUTO_CHANGE_IP:
                 sleep(ProxyBar.WAIT_AFTER_ERROR_IP_CHANGE)
